@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { FileDown } from "lucide-react"
+import { FileDown, Loader2 } from "lucide-react"
 import { jsPDF } from "jspdf"
 import { useToast } from "@/hooks/use-toast"
 
@@ -51,7 +51,8 @@ export function PdfGenerator({ fileName, recipe }: PdfGeneratorProps) {
       doc.setFontSize(10)
       doc.setTextColor(100, 100, 100)
       const details = []
-      if (recipe.cookingTime) details.push(`Cooking Time: ${recipe.cookingTime}`)
+      if (recipe.prepTime) details.push(`Prep Time: ${recipe.prepTime}`)
+      if (recipe.cookTime) details.push(`Cook Time: ${recipe.cookTime}`)
       if (recipe.servings) details.push(`Servings: ${recipe.servings}`)
       if (recipe.difficulty) details.push(`Difficulty: ${recipe.difficulty}`)
 
@@ -76,7 +77,7 @@ export function PdfGenerator({ fileName, recipe }: PdfGeneratorProps) {
           const ingredientText =
             typeof ingredient === "string"
               ? ingredient
-              : `${ingredient.name}${ingredient.amount ? ` (${ingredient.amount})` : ""}`
+              : `${ingredient.amount ? `${ingredient.amount} ` : ""}${ingredient.name}`
 
           doc.text(`• ${ingredientText}`, 25, yPos)
           yPos += 6
@@ -168,6 +169,39 @@ export function PdfGenerator({ fileName, recipe }: PdfGeneratorProps) {
         yPos += 6
       }
 
+      // Add food safety tips if available
+      if (recipe.foodSafetyTips && recipe.foodSafetyTips.length > 0) {
+        yPos += 5
+
+        // Check if we need a new page
+        if (yPos > 240) {
+          doc.addPage()
+          yPos = 20
+        }
+
+        doc.setFont("helvetica", "bold")
+        doc.setFontSize(16)
+        doc.setTextColor(220, 53, 69) // Red color for safety
+        doc.text("Food Safety Tips", 20, yPos)
+        yPos += 8
+
+        doc.setFont("helvetica", "normal")
+        doc.setFontSize(12)
+        doc.setTextColor(220, 53, 69) // Red color for safety
+
+        recipe.foodSafetyTips.forEach((tip) => {
+          const lines = doc.splitTextToSize(`• ${tip}`, 165)
+          doc.text(lines, 20, yPos)
+          yPos += 6 * lines.length + 2
+
+          // Check if we need a new page
+          if (yPos > 270) {
+            doc.addPage()
+            yPos = 20
+          }
+        })
+      }
+
       // Add footer
       const pageCount = doc.getNumberOfPages()
       for (let i = 1; i <= pageCount; i++) {
@@ -199,15 +233,15 @@ export function PdfGenerator({ fileName, recipe }: PdfGeneratorProps) {
 
   return (
     <Button
-      variant="outline"
+      variant="ghost"
       size="sm"
       onClick={generatePdf}
       disabled={isGenerating}
-      className="flex items-center gap-1 border-primary/30 text-primary hover:bg-primary/10"
+      className="flex items-center gap-1 text-primary hover:bg-primary/10"
     >
       {isGenerating ? (
         <>
-          <span className="animate-spin mr-1">⏳</span>
+          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
           Generating...
         </>
       ) : (

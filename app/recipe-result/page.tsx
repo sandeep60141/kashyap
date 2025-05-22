@@ -156,6 +156,49 @@ export default function RecipeResult() {
 
   const dietaryTags = getDietaryTags()
 
+  // Determine which tool generated this recipe
+  const determineGenerator = () => {
+    if (recipe.days && Array.isArray(recipe.days)) {
+      return {
+        name: "MealPlanChef",
+        icon: <Clock className="h-5 w-5" />,
+        color: "from-green-500 to-green-600",
+      }
+    } else if (recipe.pairing || recipe.pairingNotes) {
+      return {
+        name: "PairPerfect",
+        icon: <Utensils className="h-5 w-5" />,
+        color: "from-purple-500 to-purple-600",
+      }
+    } else if (recipe.mixingTechnique || recipe.glassware) {
+      return {
+        name: "MixologyMaestro",
+        icon: <DollarSign className="h-5 w-5" />,
+        color: "from-blue-500 to-blue-600",
+      }
+    } else if (recipe.macros || (recipe.nutritionalInfo && recipe.nutritionalInfo.protein)) {
+      return {
+        name: "MacrosChef",
+        icon: <Users className="h-5 w-5" />,
+        color: "from-orange-500 to-orange-600",
+      }
+    } else if (recipe.cuisine) {
+      return {
+        name: "MasterChef",
+        icon: <ChefHat className="h-5 w-5" />,
+        color: "from-primary to-accent",
+      }
+    } else {
+      return {
+        name: "PantryChef",
+        icon: <Utensils className="h-5 w-5" />,
+        color: "from-primary to-accent",
+      }
+    }
+  }
+
+  const generator = determineGenerator()
+
   return (
     <div className="max-w-6xl mx-auto p-4">
       {/* Header Navigation */}
@@ -213,7 +256,13 @@ export default function RecipeResult() {
       </div>
 
       {/* Recipe Header */}
-      <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-8 mb-8">
+      <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-8 mb-8 border-2 border-primary/20 shadow-md relative overflow-hidden">
+        {/* Generator Badge */}
+        <div className="absolute top-0 right-0 bg-gradient-to-r from-primary to-accent text-white px-4 py-2 rounded-bl-lg font-medium flex items-center gap-2 shadow-md">
+          {generator.icon}
+          <span>{generator.name}</span>
+        </div>
+
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex-1">
             <h1 className="text-4xl font-bold text-primary mb-3">{recipe.title}</h1>
@@ -222,7 +271,7 @@ export default function RecipeResult() {
             <div className="flex items-center gap-4 mb-4">
               <Button
                 onClick={() => setShowCookingMode(true)}
-                className="bg-primary text-white hover:bg-primary/90 flex items-center gap-2"
+                className="bg-primary text-white hover:bg-primary/90 flex items-center gap-2 shadow-md"
               >
                 <Play className="h-4 w-4" />
                 Start Cooking Mode
@@ -233,7 +282,7 @@ export default function RecipeResult() {
                   {dietaryTags.map((tag, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium"
+                      className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium border border-green-200 shadow-sm"
                     >
                       {tag}
                     </span>
@@ -247,68 +296,60 @@ export default function RecipeResult() {
 
       {/* Recipe Stats */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
-        <div className="flex items-center gap-2 text-foreground/70">
-          <Clock className="h-5 w-5 text-primary" />
-          <div>
-            <div className="text-sm text-foreground/60">Prep Time</div>
-            <div className="font-semibold">{recipe.prepTime || "15"}</div>
+        {[
+          { label: "Prep Time", value: recipe.prepTime || "15", icon: <Clock className="h-5 w-5 text-primary" /> },
+          { label: "Cook Time", value: recipe.cookTime || "20", icon: <Clock className="h-5 w-5 text-primary" /> },
+          { label: "Total Time", value: recipe.totalTime || "35", icon: <Clock className="h-5 w-5 text-primary" /> },
+          { label: "Servings", value: recipe.servings || "4", icon: <Users className="h-5 w-5 text-primary" /> },
+          {
+            label: "Difficulty",
+            value: recipe.difficulty || "Medium",
+            icon: <ChefHat className="h-5 w-5 text-primary" />,
+          },
+          {
+            label: "Cost",
+            value: recipe.costEstimate || "Moderate",
+            icon: <DollarSign className="h-5 w-5 text-primary" />,
+          },
+        ].map((stat, index) => (
+          <div
+            key={index}
+            className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 bg-white shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="p-2 bg-primary/10 rounded-full">{stat.icon}</div>
+            <div>
+              <div className="text-sm text-foreground/60">{stat.label}</div>
+              <div className="font-semibold">{stat.value}</div>
+            </div>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-foreground/70">
-          <Clock className="h-5 w-5 text-primary" />
-          <div>
-            <div className="text-sm text-foreground/60">Cook Time</div>
-            <div className="font-semibold">{recipe.cookTime || "20"}</div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-foreground/70">
-          <Clock className="h-5 w-5 text-primary" />
-          <div>
-            <div className="text-sm text-foreground/60">Total Time</div>
-            <div className="font-semibold">{recipe.totalTime || "35"}</div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-foreground/70">
-          <Users className="h-5 w-5 text-primary" />
-          <div>
-            <div className="text-sm text-foreground/60">Servings</div>
-            <div className="font-semibold">{recipe.servings || "4"}</div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-foreground/70">
-          <ChefHat className="h-5 w-5 text-primary" />
-          <div>
-            <div className="text-sm text-foreground/60">Difficulty</div>
-            <div className="font-semibold">{recipe.difficulty || "Medium"}</div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-foreground/70">
-          <DollarSign className="h-5 w-5 text-primary" />
-          <div>
-            <div className="text-sm text-foreground/60">Cost</div>
-            <div className="font-semibold">{recipe.costEstimate || "Moderate"}</div>
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="recipe" className="mb-8">
-        <TabsList className="mb-6 bg-secondary/50">
-          <TabsTrigger value="recipe" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+        <TabsList className="mb-6 bg-secondary/50 p-1 rounded-lg border border-primary/20">
+          <TabsTrigger
+            value="recipe"
+            className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md"
+          >
             Recipe
           </TabsTrigger>
-          <TabsTrigger value="nutrition" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+          <TabsTrigger
+            value="nutrition"
+            className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md"
+          >
             Nutrition
           </TabsTrigger>
-          <TabsTrigger value="tips" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+          <TabsTrigger
+            value="tips"
+            className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md"
+          >
             Tips
           </TabsTrigger>
-          <TabsTrigger value="extras" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+          <TabsTrigger
+            value="extras"
+            className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md"
+          >
             Extras
           </TabsTrigger>
         </TabsList>
@@ -316,11 +357,17 @@ export default function RecipeResult() {
         <TabsContent value="recipe">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Ingredients */}
-            <div>
-              <h2 className="text-2xl font-bold mb-6 text-primary">Ingredients</h2>
+            <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+              <h2 className="text-2xl font-bold mb-6 text-primary flex items-center gap-2">
+                <span className="w-1.5 h-6 bg-primary rounded-full"></span>
+                Ingredients
+              </h2>
               <ul className="space-y-3">
                 {ingredientsList.map((ingredient, index) => (
-                  <li key={index} className="flex items-start gap-3">
+                  <li
+                    key={index}
+                    className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
+                  >
                     <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
                     <span className="text-foreground">
                       {typeof ingredient === "string"
@@ -333,13 +380,19 @@ export default function RecipeResult() {
             </div>
 
             {/* Instructions */}
-            <div>
-              <h2 className="text-2xl font-bold mb-6 text-primary">Instructions</h2>
+            <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+              <h2 className="text-2xl font-bold mb-6 text-primary flex items-center gap-2">
+                <span className="w-1.5 h-6 bg-primary rounded-full"></span>
+                Instructions
+              </h2>
               <ol className="space-y-4">
                 {Array.isArray(recipe.instructions) ? (
                   recipe.instructions.map((instruction, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-medium">
+                    <li
+                      key={index}
+                      className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
+                    >
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-medium shadow-sm">
                         {index + 1}
                       </div>
                       <span className="text-foreground pt-1">
@@ -352,8 +405,11 @@ export default function RecipeResult() {
                     .split("\n")
                     .filter(Boolean)
                     .map((instruction, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-medium">
+                      <li
+                        key={index}
+                        className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
+                      >
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-medium shadow-sm">
                           {index + 1}
                         </div>
                         <span className="text-foreground pt-1">{instruction}</span>
@@ -366,11 +422,14 @@ export default function RecipeResult() {
 
               {/* Equipment Needed */}
               {recipe.equipment && recipe.equipment.length > 0 && (
-                <div className="mt-8">
+                <div className="mt-8 p-4 bg-secondary/20 rounded-lg border border-primary/10">
                   <h3 className="text-lg font-semibold mb-4 text-primary">Equipment Needed</h3>
                   <div className="grid grid-cols-2 gap-2">
                     {recipe.equipment.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm text-foreground/80">
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 text-sm text-foreground/80 p-2 bg-white rounded-md shadow-sm"
+                      >
                         <Utensils className="h-4 w-4 text-primary" />
                         {item}
                       </div>
@@ -381,7 +440,7 @@ export default function RecipeResult() {
 
               {/* Food Safety Tips */}
               {recipe.foodSafetyTips && recipe.foodSafetyTips.length > 0 && (
-                <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="mt-8 p-4 bg-red-50 border-2 border-red-200 rounded-lg shadow-sm">
                   <h3 className="text-lg font-semibold mb-3 text-red-800 flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5" />
                     Food Safety Tips
@@ -401,7 +460,7 @@ export default function RecipeResult() {
         </TabsContent>
 
         <TabsContent value="nutrition">
-          <div className="nutrition-tab">
+          <div className="nutrition-tab border-2 border-primary/20 shadow-md">
             <div className="nutrition-header">
               <h3 className="nutrition-title">Nutrition Facts</h3>
               <p className="nutrition-subtitle">Per serving</p>
@@ -459,11 +518,17 @@ export default function RecipeResult() {
         <TabsContent value="tips">
           <div className="space-y-6">
             {recipe.tips && recipe.tips.length > 0 && (
-              <div>
-                <h3 className="text-xl font-bold mb-4 text-primary">Chef's Tips</h3>
+              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <span className="w-1 h-5 bg-primary rounded-full"></span>
+                  Chef's Tips
+                </h3>
                 <ul className="space-y-3">
                   {recipe.tips.map((tip, index) => (
-                    <li key={index} className="flex items-start gap-3">
+                    <li
+                      key={index}
+                      className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
+                    >
                       <div className="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0"></div>
                       <span className="text-foreground">{tip}</span>
                     </li>
@@ -473,22 +538,31 @@ export default function RecipeResult() {
             )}
 
             {recipe.storage && (
-              <div>
-                <h3 className="text-xl font-bold mb-4 text-primary">Storage Instructions</h3>
+              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <span className="w-1 h-5 bg-primary rounded-full"></span>
+                  Storage Instructions
+                </h3>
                 <p className="text-foreground bg-secondary/30 p-4 rounded-lg">{recipe.storage}</p>
               </div>
             )}
 
             {recipe.reheating && (
-              <div>
-                <h3 className="text-xl font-bold mb-4 text-primary">Reheating Instructions</h3>
+              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <span className="w-1 h-5 bg-primary rounded-full"></span>
+                  Reheating Instructions
+                </h3>
                 <p className="text-foreground bg-secondary/30 p-4 rounded-lg">{recipe.reheating}</p>
               </div>
             )}
 
             {recipe.pairingRecommendations && (
-              <div>
-                <h3 className="text-xl font-bold mb-4 text-primary">Pairing Recommendations</h3>
+              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <span className="w-1 h-5 bg-primary rounded-full"></span>
+                  Pairing Recommendations
+                </h3>
                 <p className="text-foreground bg-secondary/30 p-4 rounded-lg">{recipe.pairingRecommendations}</p>
               </div>
             )}
@@ -498,13 +572,16 @@ export default function RecipeResult() {
         <TabsContent value="extras">
           <div className="space-y-6">
             {recipe.allergenWarnings && recipe.allergenWarnings.length > 0 && (
-              <div>
-                <h3 className="text-xl font-bold mb-4 text-primary">Allergen Information</h3>
+              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <span className="w-1 h-5 bg-primary rounded-full"></span>
+                  Allergen Information
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {recipe.allergenWarnings.map((allergen, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium"
+                      className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium border border-yellow-200 shadow-sm"
                     >
                       Contains {allergen}
                     </span>
@@ -514,13 +591,16 @@ export default function RecipeResult() {
             )}
 
             {recipe.dietaryClassifications && recipe.dietaryClassifications.length > 0 && (
-              <div>
-                <h3 className="text-xl font-bold mb-4 text-primary">Dietary Classifications</h3>
+              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <span className="w-1 h-5 bg-primary rounded-full"></span>
+                  Dietary Classifications
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {recipe.dietaryClassifications.map((classification, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium"
+                      className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium border border-green-200 shadow-sm"
                     >
                       {classification}
                     </span>
@@ -530,24 +610,27 @@ export default function RecipeResult() {
             )}
 
             {/* Recipe Scaling */}
-            <div>
-              <h3 className="text-xl font-bold mb-4 text-primary">Recipe Scaling</h3>
+            <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+              <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                <span className="w-1 h-5 bg-primary rounded-full"></span>
+                Recipe Scaling
+              </h3>
               <p className="text-foreground/80 mb-4">
                 This recipe serves {recipe.servings || "4"} people. Adjust quantities proportionally for different
                 serving sizes.
               </p>
               <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-3 bg-secondary/30 rounded-lg">
+                <div className="text-center p-3 bg-secondary/30 rounded-lg border border-primary/10 shadow-sm">
                   <div className="font-semibold">Half Recipe</div>
                   <div className="text-sm text-foreground/70">
                     {Math.ceil((Number.parseInt(recipe.servings) || 4) / 2)} servings
                   </div>
                 </div>
-                <div className="text-center p-3 bg-primary/10 rounded-lg border border-primary/30">
+                <div className="text-center p-3 bg-primary/10 rounded-lg border-2 border-primary/30 shadow-sm">
                   <div className="font-semibold text-primary">Original</div>
                   <div className="text-sm text-primary/70">{recipe.servings || "4"} servings</div>
                 </div>
-                <div className="text-center p-3 bg-secondary/30 rounded-lg">
+                <div className="text-center p-3 bg-secondary/30 rounded-lg border border-primary/10 shadow-sm">
                   <div className="font-semibold">Double Recipe</div>
                   <div className="text-sm text-foreground/70">
                     {(Number.parseInt(recipe.servings) || 4) * 2} servings
@@ -560,7 +643,7 @@ export default function RecipeResult() {
       </Tabs>
 
       {/* Ask ChefGPT Section */}
-      <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-6 border border-primary/20">
+      <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-6 border-2 border-primary/20 shadow-md">
         <div className="flex items-center gap-3 mb-4">
           <ChefHat className="h-6 w-6 text-primary" />
           <h2 className="text-xl font-bold text-primary">Ask ChefGPT</h2>

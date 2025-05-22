@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ShoppingBag, Check, Trash, Download } from "lucide-react"
+import { ShoppingBag, Check, Trash, Download, X } from "lucide-react"
 
 interface Ingredient {
   name: string
@@ -53,66 +53,91 @@ export default function ShoppingListGenerator({ ingredients, recipeName = "Recip
   }
 
   return (
-    <div>
+    <div className="relative">
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
         onClick={() => setShowList(!showList)}
-        className="flex items-center gap-1 border-primary/30 text-primary hover:bg-primary/10"
+        className="flex items-center gap-1 text-primary hover:bg-primary/10"
       >
         <ShoppingBag className="h-4 w-4" />
         Shopping List
       </Button>
 
       {showList && (
-        <div className="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
-          <h3 className="font-medium text-primary mb-2">Shopping List for {recipeName}</h3>
-          {shoppingList.length > 0 ? (
-            <div className="space-y-2">
-              <ul className="space-y-1">
-                {shoppingList.map((item, index) => (
-                  <li key={index} className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 cursor-pointer flex-1" onClick={() => toggleItem(index)}>
-                      <div
-                        className={`w-5 h-5 rounded border flex items-center justify-center ${
-                          item.checked ? "bg-primary border-primary text-white" : "border-primary/30 text-transparent"
-                        }`}
-                      >
-                        <Check className="h-3 w-3" />
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowList(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 bg-gradient-to-r from-primary to-primary/80 text-white flex justify-between items-center">
+              <h3 className="font-bold text-lg">Shopping List for {recipeName}</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowList(false)}
+                className="text-white hover:bg-white/20 p-1 h-8 w-8"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="p-4 overflow-y-auto flex-grow">
+              {shoppingList.length > 0 ? (
+                <ul className="space-y-2">
+                  {shoppingList.map((item, index) => (
+                    <li key={index} className="flex items-center justify-between gap-2 p-2 hover:bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-2 cursor-pointer flex-1" onClick={() => toggleItem(index)}>
+                        <div
+                          className={`w-5 h-5 rounded border flex items-center justify-center ${
+                            item.checked ? "bg-primary border-primary text-white" : "border-primary/30 text-transparent"
+                          }`}
+                        >
+                          <Check className="h-3 w-3" />
+                        </div>
+                        <span className={item.checked ? "line-through text-foreground/60" : ""}>
+                          {item.name}
+                          {item.amount ? ` (${item.amount})` : ""}
+                        </span>
                       </div>
-                      <span className={item.checked ? "line-through text-foreground/60" : ""}>
-                        {item.name}
-                        {item.amount ? ` (${item.amount})` : ""}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => removeItem(index)}
-                      className="text-foreground/60 hover:text-destructive"
-                      aria-label="Remove item"
-                    >
-                      <Trash className="h-4 w-4" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              <div className="flex justify-between pt-2 border-t border-primary/10">
-                <span className="text-xs text-foreground/60">
+                      <button
+                        onClick={() => removeItem(index)}
+                        className="text-foreground/60 hover:text-destructive p-1 rounded-full hover:bg-gray-100"
+                        aria-label="Remove item"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-center py-8 text-foreground/60">No ingredients available</p>
+              )}
+            </div>
+
+            <div className="border-t border-gray-200 p-4 bg-gray-50">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-sm text-foreground/60">
                   {shoppingList.filter((item) => item.checked).length} of {shoppingList.length} items checked
                 </span>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={downloadList}
-                  className="text-xs text-primary hover:bg-primary/10"
+                  className="text-primary border-primary/30 hover:bg-primary/10"
                 >
                   <Download className="h-3 w-3 mr-1" />
                   Download List
                 </Button>
               </div>
+              <Button onClick={() => setShowList(false)} className="w-full bg-primary text-white hover:bg-primary/90">
+                Close
+              </Button>
             </div>
-          ) : (
-            <p className="text-sm text-foreground/60">No ingredients available</p>
-          )}
+          </div>
         </div>
       )}
     </div>
