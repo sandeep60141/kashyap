@@ -54,9 +54,9 @@ export default function RecipeResult() {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="h-8 w-64 bg-gray-200 rounded mb-4"></div>
-          <div className="h-4 w-48 bg-gray-200 rounded mb-8"></div>
-          <div className="h-32 w-full max-w-2xl bg-gray-200 rounded"></div>
+          <div className="h-8 w-64 bg-primary/20 rounded mb-4"></div>
+          <div className="h-4 w-48 bg-primary/10 rounded mb-8"></div>
+          <div className="h-32 w-full max-w-2xl bg-primary/10 rounded"></div>
         </div>
       </div>
     )
@@ -104,23 +104,23 @@ export default function RecipeResult() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
+        <div className="bg-gradient-to-r from-primary to-primary/80 p-6 text-white">
           <h1 className="text-3xl font-bold mb-2">{recipe.title}</h1>
-          <p className="text-blue-50">{recipe.description}</p>
+          <p className="text-primary-foreground/90">{recipe.description}</p>
         </div>
 
         <div className="p-6">
           <div className="flex flex-wrap gap-4 mb-6">
-            <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-full">
-              <Clock className="h-4 w-4 text-blue-500" />
+            <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full">
+              <Clock className="h-4 w-4 text-primary" />
               <span className="text-sm">{recipe.cookingTime || "30 minutes"}</span>
             </div>
-            <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-full">
-              <Users className="h-4 w-4 text-blue-500" />
+            <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full">
+              <Users className="h-4 w-4 text-primary" />
               <span className="text-sm">{recipe.servings || "4 servings"}</span>
             </div>
-            <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-full">
-              <ChefHat className="h-4 w-4 text-blue-500" />
+            <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full">
+              <ChefHat className="h-4 w-4 text-primary" />
               <span className="text-sm">{recipe.difficulty || "Intermediate"}</span>
             </div>
           </div>
@@ -144,11 +144,11 @@ export default function RecipeResult() {
 
             <TabsContent value="recipe" className="space-y-8">
               <div>
-                <h2 className="text-xl font-bold mb-4 text-blue-700">Ingredients</h2>
+                <h2 className="text-xl font-bold mb-4 text-primary">Ingredients</h2>
                 <ul className="space-y-2">
                   {ingredientsList.map((ingredient, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
+                      <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
                       <span>
                         {typeof ingredient === "string"
                           ? ingredient
@@ -160,12 +160,12 @@ export default function RecipeResult() {
               </div>
 
               <div>
-                <h2 className="text-xl font-bold mb-4 text-blue-700">Instructions</h2>
+                <h2 className="text-xl font-bold mb-4 text-primary">Instructions</h2>
                 <ol className="space-y-4">
                   {Array.isArray(recipe.instructions) ? (
                     recipe.instructions.map((instruction, index) => (
                       <li key={index} className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white font-medium">
                           {index + 1}
                         </div>
                         <span>{typeof instruction === "string" ? instruction : instruction.description}</span>
@@ -177,7 +177,7 @@ export default function RecipeResult() {
                       .filter(Boolean)
                       .map((instruction, index) => (
                         <li key={index} className="flex items-start gap-3">
-                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white font-medium">
                             {index + 1}
                           </div>
                           <span>{instruction}</span>
@@ -191,11 +191,11 @@ export default function RecipeResult() {
 
               {recipe.tips && recipe.tips.length > 0 && (
                 <div>
-                  <h2 className="text-xl font-bold mb-4 text-blue-700">Chef's Tips</h2>
+                  <h2 className="text-xl font-bold mb-4 text-primary">Chef's Tips</h2>
                   <ul className="space-y-2">
                     {recipe.tips.map((tip, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
+                        <div className="w-2 h-2 rounded-full bg-accent mt-2"></div>
                         <span>{tip}</span>
                       </li>
                     ))}
@@ -255,27 +255,27 @@ export default function RecipeResult() {
 
             <TabsContent value="tools">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="border rounded-lg p-5">
-                  <h3 className="text-lg font-bold mb-3 text-blue-700">Ask ChefGPT</h3>
-                  <p className="text-gray-600 mb-4">Have questions about this recipe? Ask our AI chef!</p>
+                <div className="border border-primary/20 rounded-lg p-5">
+                  <h3 className="text-lg font-bold mb-3 text-primary">Ask ChefGPT</h3>
+                  <p className="text-foreground/70 mb-4">Have questions about this recipe? Ask our AI chef!</p>
                   <AskChefGPT recipe={recipe} />
                 </div>
 
-                <div className="border rounded-lg p-5">
-                  <h3 className="text-lg font-bold mb-3 text-blue-700">Meal Type Filters</h3>
-                  <p className="text-gray-600 mb-4">Filter recipes by meal type</p>
+                <div className="border border-primary/20 rounded-lg p-5">
+                  <h3 className="text-lg font-bold mb-3 text-primary">Meal Type Filters</h3>
+                  <p className="text-foreground/70 mb-4">Filter recipes by meal type</p>
                   <MealTypeFilters />
                 </div>
 
-                <div className="border rounded-lg p-5">
-                  <h3 className="text-lg font-bold mb-3 text-blue-700">Shopping List</h3>
-                  <p className="text-gray-600 mb-4">Generate a shopping list from this recipe</p>
+                <div className="border border-primary/20 rounded-lg p-5">
+                  <h3 className="text-lg font-bold mb-3 text-primary">Shopping List</h3>
+                  <p className="text-foreground/70 mb-4">Generate a shopping list from this recipe</p>
                   <ShoppingListGenerator ingredients={ingredientsList} />
                 </div>
 
-                <div className="border rounded-lg p-5">
-                  <h3 className="text-lg font-bold mb-3 text-blue-700">Download Recipe</h3>
-                  <p className="text-gray-600 mb-4">Save this recipe as a PDF for offline use</p>
+                <div className="border border-primary/20 rounded-lg p-5">
+                  <h3 className="text-lg font-bold mb-3 text-primary">Download Recipe</h3>
+                  <p className="text-foreground/70 mb-4">Save this recipe as a PDF for offline use</p>
                   <PdfGenerator
                     contentId="recipe-content"
                     fileName={recipe.title.replace(/\s+/g, "-").toLowerCase()}

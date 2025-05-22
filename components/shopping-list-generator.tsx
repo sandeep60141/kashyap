@@ -2,174 +2,119 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ShoppingBag, Check, Printer, Download, Share2 } from "lucide-react"
+import { ShoppingBag, Check, Trash, Download } from "lucide-react"
 
 interface Ingredient {
   name: string
-  amount: string
-  checked: boolean
+  amount?: string
+  checked?: boolean
 }
 
 interface ShoppingListGeneratorProps {
-  ingredients: Ingredient[]
-  recipeName: string
+  ingredients: (Ingredient | string)[]
+  recipeName?: string
 }
 
-export default function ShoppingListGenerator({ ingredients, recipeName }: ShoppingListGeneratorProps) {
-  const [shoppingList, setShoppingList] = useState<Ingredient[]>(
-    ingredients.map((ing) => {
-      // Handle both string ingredients and object ingredients
+export default function ShoppingListGenerator({ ingredients, recipeName = "Recipe" }: ShoppingListGeneratorProps) {
+  const [showList, setShowList] = useState(false)
+  const [shoppingList, setShoppingList] = useState<Ingredient[]>(() => {
+    return ingredients.map((ing) => {
       if (typeof ing === "string") {
-        return { name: ing, amount: "", checked: false }
-      } else if (typeof ing === "object" && ing !== null) {
-        return { ...ing, checked: false }
+        return { name: ing, checked: false }
       }
-      return { name: "Unknown ingredient", amount: "", checked: false }
-    }),
-  )
-  const [dialogOpen, setDialogOpen] = useState(false)
+      return { ...ing, checked: ing.checked || false }
+    })
+  })
 
-  const toggleIngredient = (index: number) => {
-    const newList = [...shoppingList]
-    newList[index].checked = !newList[index].checked
-    setShoppingList(newList)
+  const toggleItem = (index: number) => {
+    setShoppingList((prev) => {
+      const newList = [...prev]
+      newList[index] = { ...newList[index], checked: !newList[index].checked }
+      return newList
+    })
   }
 
-  const handlePrint = () => {
-    const printWindow = window.open("", "_blank")
-    if (!printWindow) return
-
-    const uncheckedItems = shoppingList.filter((item) => !item.checked)
-
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Shopping List for ${recipeName}</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            h1 { color: #800080; } /* Purple color */
-            ul { padding-left: 20px; }
-            li { margin-bottom: 8px; }
-            .amount { color: #6b7280; font-style: italic; }
-          </style>
-        </head>
-        <body>
-          <h1>Shopping List for ${recipeName}</h1>
-          <p>Total items: ${uncheckedItems.length}</p>
-          <ul>
-            ${uncheckedItems
-              .map(
-                (item) => `
-              <li>
-                ${item.name} <span class="amount">(${item.amount})</span>
-              </li>
-            `,
-              )
-              .join("")}
-          </ul>
-        </body>
-      </html>
-    `)
-
-    printWindow.document.close()
-    printWindow.print()
+  const removeItem = (index: number) => {
+    setShoppingList((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handleShare = async () => {
-    const uncheckedItems = shoppingList.filter((item) => !item.checked)
-    const text = `Shopping List for ${recipeName}:
-
-${uncheckedItems.map((item) => `• ${item.name} (${item.amount})`).join("\n")}`
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Shopping List for ${recipeName}`,
-          text: text,
-        })
-      } catch (err) {
-        console.error("Error sharing:", err)
-      }
-    } else {
-      // Fallback for browsers that don't support the Web Share API
-      navigator.clipboard
-        .writeText(text)
-        .then(() => alert("Shopping list copied to clipboard!"))
-        .catch((err) => console.error("Failed to copy:", err))
-    }
-  }
-
-  const handleDownload = () => {
-    const uncheckedItems = shoppingList.filter((item) => !item.checked)
-    const text = `Shopping List for ${recipeName}:
-
-${uncheckedItems.map((item) => `• ${item.name} (${item.amount})`).join("\n")}`
+  const downloadList = () => {
+    const listText = shoppingList
+      .map((item) => `${item.checked ? "[x]" : "[ ]"} ${item.name}${item.amount ? ` (${item.amount})` : ""}`)
+      .join("\n")
 
     const element = document.createElement("a")
-    const file = new Blob([text], { type: "text/plain" })
+    const file = new Blob([`Shopping List for ${recipeName}\n\n${listText}`], { type: "text/plain" })
     element.href = URL.createObjectURL(file)
-    element.download = `shopping-list-${recipeName.replace(/\s+/g, "-").toLowerCase()}.txt`
+    element.download = `shopping-list-${recipeName.toLowerCase().replace(/\s+/g, "-")}.txt`
     document.body.appendChild(element)
     element.click()
     document.body.removeChild(element)
   }
 
   return (
-    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2">
-          <ShoppingBag className="h-4 w-4" />
-          Shopping List
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Shopping List for {recipeName}</DialogTitle>
-        </DialogHeader>
+    <div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setShowList(!showList)}
+        className="flex items-center gap-1 border-primary/30 text-primary hover:bg-primary/10"
+      >
+        <ShoppingBag className="h-4 w-4" />
+        Shopping List
+      </Button>
 
-        <div className="max-h-[60vh] overflow-y-auto py-4">
-          {shoppingList.length === 0 ? (
-            <p className="text-center text-gray-500">No ingredients found</p>
+      {showList && (
+        <div className="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
+          <h3 className="font-medium text-primary mb-2">Shopping List for {recipeName}</h3>
+          {shoppingList.length > 0 ? (
+            <div className="space-y-2">
+              <ul className="space-y-1">
+                {shoppingList.map((item, index) => (
+                  <li key={index} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 cursor-pointer flex-1" onClick={() => toggleItem(index)}>
+                      <div
+                        className={`w-5 h-5 rounded border flex items-center justify-center ${
+                          item.checked ? "bg-primary border-primary text-white" : "border-primary/30 text-transparent"
+                        }`}
+                      >
+                        <Check className="h-3 w-3" />
+                      </div>
+                      <span className={item.checked ? "line-through text-foreground/60" : ""}>
+                        {item.name}
+                        {item.amount ? ` (${item.amount})` : ""}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => removeItem(index)}
+                      className="text-foreground/60 hover:text-destructive"
+                      aria-label="Remove item"
+                    >
+                      <Trash className="h-4 w-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex justify-between pt-2 border-t border-primary/10">
+                <span className="text-xs text-foreground/60">
+                  {shoppingList.filter((item) => item.checked).length} of {shoppingList.length} items checked
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={downloadList}
+                  className="text-xs text-primary hover:bg-primary/10"
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  Download List
+                </Button>
+              </div>
+            </div>
           ) : (
-            <ul className="space-y-2">
-              {shoppingList.map((ingredient, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <button
-                    onClick={() => toggleIngredient(index)}
-                    className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded border ${
-                      ingredient.checked
-                        ? "bg-primary border-primary flex items-center justify-center"
-                        : "border-primary/30"
-                    }`}
-                  >
-                    {ingredient.checked && <Check className="h-3 w-3 text-white" />}
-                  </button>
-                  <span className={ingredient.checked ? "line-through text-gray-400" : ""}>
-                    <span className="font-medium">{ingredient.name}</span>
-                    {ingredient.amount && <span className="text-gray-500 text-sm"> ({ingredient.amount})</span>}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <p className="text-sm text-foreground/60">No ingredients available</p>
           )}
         </div>
-
-        <div className="flex justify-between mt-4">
-          <Button variant="outline" size="sm" onClick={handlePrint}>
-            <Printer className="h-4 w-4 mr-2" />
-            Print
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleDownload}>
-            <Download className="h-4 w-4 mr-2" />
-            Download
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleShare}>
-            <Share2 className="h-4 w-4 mr-2" />
-            Share
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </div>
   )
 }

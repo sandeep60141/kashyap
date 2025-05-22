@@ -2,45 +2,44 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Coffee, Utensils, Moon, Cookie, Apple } from "lucide-react"
 
-interface MealTypeFiltersProps {
-  onFilterChange: (mealType: string | null) => void
-}
-
-export default function MealTypeFilters({ onFilterChange }: MealTypeFiltersProps) {
-  const [activeFilter, setActiveFilter] = useState<string | null>(null)
+export default function MealTypeFilters() {
+  const [selectedType, setSelectedType] = useState<string | null>(null)
 
   const mealTypes = [
-    { id: "breakfast", label: "Breakfast", icon: <Coffee className="h-4 w-4" /> },
-    { id: "lunch", label: "Lunch", icon: <Utensils className="h-4 w-4" /> },
-    { id: "dinner", label: "Dinner", icon: <Moon className="h-4 w-4" /> },
-    { id: "dessert", label: "Dessert", icon: <Cookie className="h-4 w-4" /> },
-    { id: "snack", label: "Snack", icon: <Apple className="h-4 w-4" /> },
+    { id: "breakfast", label: "Breakfast" },
+    { id: "lunch", label: "Lunch" },
+    { id: "dinner", label: "Dinner" },
+    { id: "dessert", label: "Dessert" },
+    { id: "snack", label: "Snack" },
+    { id: "appetizer", label: "Appetizer" },
   ]
 
-  const handleFilterClick = (mealType: string) => {
-    const newFilter = activeFilter === mealType ? null : mealType
-    setActiveFilter(newFilter)
-    onFilterChange(newFilter)
+  const handleTypeClick = (typeId: string) => {
+    setSelectedType(typeId === selectedType ? null : typeId)
   }
 
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
-      {mealTypes.map((type) => (
-        <Button
-          key={type.id}
-          variant={activeFilter === type.id ? "default" : "outline"}
-          size="sm"
-          onClick={() => handleFilterClick(type.id)}
-          className={`flex items-center gap-1 ${
-            activeFilter === type.id ? "bg-primary text-white" : "border-primary/30 text-foreground hover:bg-primary/10"
-          }`}
-        >
-          {type.icon}
-          {type.label}
-        </Button>
-      ))}
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
+        {mealTypes.map((type) => (
+          <Button
+            key={type.id}
+            variant={selectedType === type.id ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleTypeClick(type.id)}
+            className={selectedType === type.id ? "bg-primary text-white" : ""}
+          >
+            {type.label}
+          </Button>
+        ))}
+      </div>
+      {selectedType && (
+        <p className="text-sm text-primary mt-2">
+          Showing recipes for:{" "}
+          <span className="font-medium">{mealTypes.find((t) => t.id === selectedType)?.label}</span>
+        </p>
+      )}
     </div>
   )
 }

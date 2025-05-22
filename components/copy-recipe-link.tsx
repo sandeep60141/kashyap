@@ -2,60 +2,39 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Link, Check } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { Link } from "lucide-react"
 
 interface CopyRecipeLinkProps {
-  recipeId?: string
-  recipeName: string
+  recipe: any
 }
 
-export default function CopyRecipeLink({ recipeId, recipeName }: CopyRecipeLinkProps) {
+export default function CopyRecipeLink({ recipe }: CopyRecipeLinkProps) {
   const [copied, setCopied] = useState(false)
-  const { toast } = useToast()
 
-  const handleCopyLink = () => {
-    // In a real app, this would use a unique recipe ID
-    // For now, we'll create a shareable link with the recipe name in the URL
-    const shareableLink = `${window.location.origin}/shared-recipe?name=${encodeURIComponent(recipeName)}&id=${
-      recipeId || "latest"
-    }`
+  const handleCopy = () => {
+    // Create a shareable link - in a real app, this would be a proper URL
+    // For now, we'll just create a dummy URL with the recipe title
+    const shareableLink = `${window.location.origin}/shared-recipe?title=${encodeURIComponent(
+      recipe.title || "Recipe",
+    )}`
 
-    navigator.clipboard
-      .writeText(shareableLink)
-      .then(() => {
-        setCopied(true)
-        toast({
-          title: "Link copied!",
-          description: "Recipe link has been copied to clipboard",
-        })
+    navigator.clipboard.writeText(shareableLink)
+    setCopied(true)
 
-        // Reset the copied state after 2 seconds
-        setTimeout(() => setCopied(false), 2000)
-      })
-      .catch((err) => {
-        console.error("Failed to copy link:", err)
-        toast({
-          title: "Failed to copy link",
-          description: "Please try again",
-          variant: "destructive",
-        })
-      })
+    setTimeout(() => {
+      setCopied(false)
+    }, 2000)
   }
 
   return (
-    <Button onClick={handleCopyLink} variant="outline" className="flex items-center gap-2">
-      {copied ? (
-        <>
-          <Check className="h-4 w-4 text-green-500" />
-          Copied!
-        </>
-      ) : (
-        <>
-          <Link className="h-4 w-4" />
-          Copy Link
-        </>
-      )}
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleCopy}
+      className="flex items-center gap-1 border-primary/30 text-primary hover:bg-primary/10"
+    >
+      <Link className="h-4 w-4" />
+      {copied ? "Link Copied!" : "Copy Recipe Link"}
     </Button>
   )
 }
