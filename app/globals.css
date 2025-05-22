@@ -1,0 +1,245 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 270 70% 10%;
+    --foreground: 270 10% 95%;
+
+    --card: 270 60% 15%;
+    --card-foreground: 270 10% 95%;
+
+    --popover: 270 60% 15%;
+    --popover-foreground: 270 10% 95%;
+
+    --primary: 300 80% 65%;
+    --primary-foreground: 270 10% 95%;
+
+    --secondary: 270 50% 25%;
+    --secondary-foreground: 270 10% 95%;
+
+    --muted: 270 50% 20%;
+    --muted-foreground: 270 10% 70%;
+
+    --accent: 300 80% 65%;
+    --accent-foreground: 270 10% 95%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 270 10% 95%;
+
+    --border: 270 50% 20%;
+    --input: 270 50% 20%;
+    --ring: 300 80% 65%;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom button styles */
+.btn-primary {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-6 py-3 font-medium transition-all shadow-lg hover:shadow-xl;
+}
+
+.btn-secondary {
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-full px-6 py-3 font-medium transition-all shadow-lg hover:shadow-xl;
+}
+
+.btn-outline {
+  @apply border-2 border-primary text-primary hover:bg-primary/10 rounded-full px-6 py-3 font-medium transition-all;
+}
+
+.btn-generate {
+  @apply bg-gradient-to-r from-primary to-purple-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all;
+}
+
+/* Tab styling */
+.tab-active {
+  @apply bg-primary text-white;
+}
+
+.tab-inactive {
+  @apply bg-secondary text-white/80 hover:bg-secondary/80;
+}
+
+/* Card styling */
+.feature-card {
+  @apply bg-card rounded-xl p-6 shadow-lg border border-primary/20 hover:border-primary/40 transition-all;
+}
+
+/* Container */
+.container-custom {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Input styling */
+.input-primary {
+  @apply bg-secondary/50 border border-primary/30 rounded-lg px-4 py-3 text-foreground placeholder:text-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/50;
+}
+
+/* Nutrition styling */
+.nutrition-tab {
+  @apply bg-card shadow-md rounded-lg overflow-hidden border border-primary/20;
+}
+
+.nutrition-header {
+  @apply bg-gradient-to-r from-primary/20 to-primary/10 px-6 py-4;
+}
+
+.nutrition-title {
+  @apply text-xl font-bold text-primary;
+}
+
+.nutrition-subtitle {
+  @apply text-sm text-primary/80;
+}
+
+.nutrition-content {
+  @apply px-6 py-4;
+}
+
+.nutrition-calories {
+  @apply border-b-2 border-primary py-2 flex justify-between items-center;
+}
+
+.nutrition-item {
+  @apply border-b border-primary/20 py-3 flex justify-between items-center;
+}
+
+.nutrition-item-label {
+  @apply font-medium;
+}
+
+.nutrition-item-sub {
+  @apply pl-4 text-foreground/80;
+}
+
+.nutrition-footer {
+  @apply bg-secondary/30 px-6 py-3;
+}
+
+.nutrition-disclaimer {
+  @apply text-xs text-primary/80;
+}
+
+.nutrition-highlights {
+  @apply mt-6 bg-card p-4 rounded-lg shadow-md border border-primary/20;
+}
+
+.nutrition-highlights-title {
+  @apply text-lg font-semibold mb-2 text-primary;
+}
+
+.nutrition-bullet {
+  @apply w-2 h-2 rounded-full bg-primary mt-2;
+}
+
+/* Generator page styling */
+.generator-container {
+  @apply max-w-4xl mx-auto p-6;
+}
+
+.generator-header {
+  @apply bg-gradient-to-r from-primary/30 to-primary/10 p-6 rounded-lg mb-6 shadow-md;
+}
+
+.generator-title {
+  @apply text-2xl md:text-3xl font-bold text-primary mb-2;
+}
+
+.generator-description {
+  @apply text-foreground/80;
+}
+
+.generator-form {
+  @apply bg-card rounded-lg shadow-md p-6 border border-primary/20;
+}
+
+.generator-section {
+  @apply mb-6;
+}
+
+.generator-section-title {
+  @apply text-lg font-semibold mb-3 text-primary;
+}
+
+.generator-input {
+  @apply w-full bg-secondary/50 border border-primary/30 rounded-lg px-4 py-3 text-foreground placeholder:text-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/50;
+}
+
+.generator-textarea {
+  @apply w-full bg-secondary/50 border border-primary/30 rounded-lg px-4 py-3 text-foreground placeholder:text-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[120px];
+}
+
+.generator-button {
+  @apply w-full bg-gradient-to-r from-primary to-purple-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all;
+}
+
+.generator-option {
+  @apply flex items-center gap-2 p-3 rounded-lg border border-primary/30 hover:bg-primary/10 cursor-pointer transition-all;
+}
+
+.generator-option-active {
+  @apply bg-primary/20 border-primary;
+}
+
+.generator-checkbox {
+  @apply h-4 w-4 rounded border-primary/50 text-primary focus:ring-primary/50;
+}
+
+.generator-radio {
+  @apply h-4 w-4 border-primary/50 text-primary focus:ring-primary/50;
+}
+
+.generator-select {
+  @apply w-full bg-secondary/50 border border-primary/30 rounded-lg px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50;
+}
+
+.generator-tabs {
+  @apply mb-6;
+}
+
+.generator-tab {
+  @apply px-4 py-2 font-medium rounded-t-lg;
+}
+
+.generator-tab-active {
+  @apply bg-primary text-white;
+}
+
+.generator-tab-inactive {
+  @apply bg-secondary text-white/80 hover:bg-secondary/80;
+}
+
+.generator-result {
+  @apply bg-card rounded-lg shadow-md p-6 border border-primary/20 mt-6;
+}
+
+.generator-result-title {
+  @apply text-xl font-bold text-primary mb-4;
+}
+
+.generator-result-content {
+  @apply text-foreground;
+}
+
+.generator-loading {
+  @apply flex justify-center items-center py-8;
+}
+
+.generator-loading-spinner {
+  @apply animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary;
+}
+
+.generator-error {
+  @apply bg-red-100 text-red-700 p-4 rounded-lg mb-6;
+}
