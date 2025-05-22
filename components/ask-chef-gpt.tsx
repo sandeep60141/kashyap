@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -26,6 +25,9 @@ export default function AskChefGPT({ recipe }: AskChefGPTProps) {
     setError(null)
 
     try {
+      // Log the recipe data to ensure it's being passed correctly
+      console.log("Sending recipe data:", JSON.stringify(recipe).substring(0, 100) + "...")
+
       const response = await fetch("/api/quick-answer", {
         method: "POST",
         headers: {
@@ -34,14 +36,8 @@ export default function AskChefGPT({ recipe }: AskChefGPTProps) {
         body: JSON.stringify({
           prompt: question,
           recipeName: recipe.title,
-          recipeData: {
-            title: recipe.title,
-            ingredients: recipe.ingredients,
-            instructions: recipe.instructions,
-            cookTime: recipe.cookTime,
-            prepTime: recipe.prepTime,
-            difficulty: recipe.difficulty,
-          },
+          // Send the complete recipe object
+          recipeData: recipe,
         }),
       })
 
@@ -60,7 +56,12 @@ export default function AskChefGPT({ recipe }: AskChefGPTProps) {
   }
 
   return (
-    <div>
+    <div className="bg-white rounded-lg shadow-md p-4 border border-primary/20">
+      <h3 className="text-lg font-semibold mb-3 flex items-center">
+        <span className="w-1.5 h-5 bg-primary rounded-full mr-2"></span>
+        Ask Chef About This Recipe
+      </h3>
+
       <form onSubmit={handleSubmit} className="space-y-3">
         <Textarea
           placeholder="Ask a question about this recipe..."
@@ -71,7 +72,7 @@ export default function AskChefGPT({ recipe }: AskChefGPTProps) {
         <Button
           type="submit"
           disabled={isLoading || !question.trim()}
-          className="w-full bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90"
+          className="w-full bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90 transition-all duration-200"
         >
           {isLoading ? (
             <>
