@@ -4,282 +4,118 @@ import { openai } from "@ai-sdk/openai"
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const {
-      ingredients,
-      cuisine,
-      dietaryRestrictions,
-      cookingTime,
-      servings,
-      difficulty,
-      tool = "pantryChef", // Default tool
-      modelInfo = { provider: "openai", value: "gpt-4o" },
-    } = body
+    const { ingredients, cuisine, dietaryRestrictions, cookingTime, servings, difficulty, tool, modelInfo } =
+      await request.json()
 
-    // Enhanced prompt that ensures food safety tips are always included
-    const getPromptForTool = (tool: string) => {
-      const basePrompt = `You are ChefGPT, an expert culinary AI assistant. Create a detailed recipe based on the following requirements:
-
-Ingredients: ${ingredients}
-Cuisine: ${cuisine || "Any"}
-Dietary Restrictions: ${dietaryRestrictions || "None"}
-Cooking Time: ${cookingTime || "Any"}
-Servings: ${servings || "4"}
-Difficulty: ${difficulty || "Medium"}
-
-IMPORTANT: You MUST include food safety tips for every recipe. Always consider:
-- Proper cooking temperatures for proteins
-- Safe food handling practices
-- Storage guidelines
-- Cross-contamination prevention
-- Allergen warnings
-
-Return a JSON object with this exact structure:`
-
-      const commonStructure = `{
-  "title": "Recipe Name",
-  "description": "Brief description",
-  "ingredients": [
+    // Construct the prompt based on the tool and inputs
+    let systemPrompt = `You are ChefGPT, an expert AI chef. Generate a detailed recipe based on the following information.
+    Always include food safety tips specific to the ingredients and cooking methods.
+    Format your response as a valid JSON object with the following structure:
     {
-      "name": "ingredient name",
-      "amount": "quantity and unit",
-      "allergens": ["list", "of", "allergens"],
-      "substitutes": "alternative ingredients if any"
-    }
-  ],
-  "instructions": [
-    {
-      "step": 1,
-      "description": "detailed instruction",
-      "timingTip": "timing guidance if applicable",
-      "safetyTip": "safety note if applicable"
-    }
-  ],
-  "prepTime": "15 minutes",
-  "cookTime": "30 minutes",
-  "totalTime": "45 minutes",
-  "servings": "4",
-  "difficulty": "Medium",
-  "cuisine": "${cuisine || "Mixed"}",
-  "nutritionalInfo": {
-    "calories": "per serving",
-    "protein": "grams",
-    "carbs": "grams",
-    "fat": "grams",
-    "fiber": "grams",
-    "sodium": "mg"
-  },
-  "equipment": ["required", "cooking", "equipment"],
-  "foodSafetyTips": [
-    "Always wash hands before handling food",
-    "Cook proteins to safe internal temperatures",
-    "Store leftovers in refrigerator within 2 hours",
-    "Use separate cutting boards for raw meat and vegetables"
-  ],
-  "allergenWarnings": ["common", "allergens", "present"],
-  "dietaryClassifications": ["vegetarian", "gluten-free", "etc"],
-  "tips": ["helpful", "cooking", "tips"],
-  "storage": "How to store leftovers",
-  "reheating": "How to reheat safely",
-  "pairingRecommendations": "What goes well with this dish",
-  "costEstimate": "Low/Medium/High"
-}`
+      "title": "Recipe Title",
+      "description": "Brief description",
+      "ingredients": ["ingredient 1", "ingredient 2", ...],
+      "instructions": ["step 1", "step 2", ...],
+      "prepTime": "preparation time",
+      "cookTime": "cooking time",
+      "totalTime": "total time",
+      "servings": "number of servings",
+      "difficulty": "difficulty level",
+      "cuisine": "cuisine type",
+      "nutritionalInfo": {
+        "calories": "amount",
+        "protein": "amount",
+        "carbs": "amount",
+        "fat": "amount"
+      },
+      "equipment": ["equipment 1", "equipment 2", ...],
+      "foodSafetyTips": ["safety tip 1", "safety tip 2", ...],
+      "allergenWarnings": ["allergen 1", "allergen 2", ...],
+      "dietaryClassifications": ["classification 1", "classification 2", ...],
+      "tips": ["tip 1", "tip 2", ...],
+      "storage": "storage instructions",
+      "reheating": "reheating instructions",
+      "pairingRecommendations": "pairing suggestions",
+      "costEstimate": "estimated cost"
+    }`
 
-      switch (tool) {
-        case "masterChef":
-          return `${basePrompt}
-          
-Focus on creating an authentic, restaurant-quality ${cuisine} recipe with professional techniques and presentation tips.
-
-${commonStructure}`
-
-        case "pantryChef":
-          return `${basePrompt}
-          
-Focus on using common pantry ingredients and creating a practical, home-friendly recipe.
-
-${commonStructure}`
-
-        case "macrosChef":
-          return `${basePrompt}
-          
-Focus on nutritional balance and macro tracking. Include detailed nutritional information and portion control guidance.
-
-${commonStructure}`
-
-        case "mealPlanChef":
-          return `${basePrompt}
-          
-Create a recipe that's perfect for meal planning with make-ahead tips and batch cooking guidance.
-
-${commonStructure}`
-
-        case "pairPerfect":
-          return `${basePrompt}
-          
-Focus on flavor pairing and complementary dishes. Include detailed pairing recommendations.
-
-${commonStructure}`
-
-        case "mixologyMaestro":
-          return `${basePrompt}
-          
-Create a beverage recipe with proper mixing techniques and garnish suggestions. Include responsible serving guidelines.
-
-{
-  "title": "Drink Name",
-  "description": "Brief description",
-  "ingredients": [
-    {
-      "name": "ingredient name",
-      "amount": "quantity and unit",
-      "type": "spirit/mixer/garnish"
-    }
-  ],
-  "instructions": [
-    {
-      "step": 1,
-      "description": "detailed instruction",
-      "technique": "mixing technique"
-    }
-  ],
-  "prepTime": "5 minutes",
-  "servings": "1",
-  "difficulty": "Easy",
-  "glassware": "recommended glass",
-  "garnish": "garnish suggestions",
-  "alcoholContent": "approximate ABV",
-  "foodSafetyTips": [
-    "Always use fresh ingredients",
-    "Keep perishable mixers refrigerated",
-    "Serve responsibly and check IDs",
-    "Clean bar tools between uses"
-  ],
-  "tips": ["mixing", "tips"],
-  "variations": "recipe variations"
-}`
-
-        default:
-          return `${basePrompt}
-
-${commonStructure}`
-      }
+    // Add tool-specific instructions
+    if (tool === "pantryChef") {
+      systemPrompt += `\nYou are using the Pantry Chef tool. Create a recipe using ONLY the ingredients provided. Be creative with limited ingredients.`
+    } else if (tool === "masterChef") {
+      systemPrompt += `\nYou are using the Master Chef tool. Create a gourmet, restaurant-quality recipe.`
+    } else if (tool === "macrosChef") {
+      systemPrompt += `\nYou are using the Macros Chef tool. Create a nutrition-focused recipe with detailed macronutrient information.`
+    } else if (tool === "mealPlanChef") {
+      systemPrompt += `\nYou are using the Meal Plan Chef tool. Create a recipe suitable for meal prepping and batch cooking.`
+    } else if (tool === "pairPerfect") {
+      systemPrompt += `\nYou are using the Pair Perfect tool. Create a recipe with perfect flavor pairings and suggest complementary dishes.`
+    } else if (tool === "mixologyMaestro") {
+      systemPrompt += `\nYou are using the Mixology Maestro tool. Create a cocktail or beverage recipe. Include both alcoholic and non-alcoholic versions if appropriate.`
     }
 
-    const prompt = getPromptForTool(tool)
+    // Add food safety emphasis
+    systemPrompt += `\nIMPORTANT: Always include comprehensive food safety tips specific to the ingredients and cooking methods in your recipe. This is critical for user safety.`
 
-    // Use the appropriate model based on the provider
-    let model
-    if (modelInfo.provider === "deepseek") {
-      if (!process.env.DEEPSEEK_API_KEY) {
-        return NextResponse.json(
-          {
-            error: "DeepSeek API key not configured",
-            recipe: JSON.stringify({
-              title: "API Key Missing",
-              description: "The DeepSeek API key is not configured.",
-              foodSafetyTips: [
-                "Always wash hands before handling food",
-                "Cook proteins to safe internal temperatures",
-                "Store leftovers properly",
-              ],
-            }),
-          },
-          { status: 400 },
-        )
-      }
-      model = openai(modelInfo.value, { apiKey: process.env.DEEPSEEK_API_KEY, baseURL: "https://api.deepseek.com/v1" })
-    } else {
-      model = openai(modelInfo.value)
+    // Construct the user prompt
+    let userPrompt = `Create a recipe with these ingredients: ${ingredients}`
+
+    if (cuisine) {
+      userPrompt += `\nCuisine style: ${cuisine}`
     }
 
+    if (dietaryRestrictions) {
+      userPrompt += `\nDietary restrictions: ${dietaryRestrictions}`
+    }
+
+    if (cookingTime) {
+      userPrompt += `\nCooking time: ${cookingTime}`
+    }
+
+    if (servings) {
+      userPrompt += `\nServings: ${servings}`
+    }
+
+    if (difficulty) {
+      userPrompt += `\nDifficulty level: ${difficulty}`
+    }
+
+    // Generate the recipe using the AI SDK
     const { text } = await generateText({
-      model,
-      prompt,
-      temperature: 0.7,
-      maxTokens: 2000,
+      model: openai(modelInfo.value),
+      system: systemPrompt,
+      prompt: userPrompt,
     })
 
-    // Parse the JSON response
+    // Parse the response to ensure it's valid JSON
     let recipe
     try {
-      // Extract JSON from the response
+      // Find JSON in the response (in case the model outputs additional text)
       const jsonMatch = text.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         recipe = JSON.parse(jsonMatch[0])
       } else {
-        throw new Error("No JSON found in response")
+        throw new Error("No valid JSON found in response")
       }
-    } catch (parseError) {
-      console.error("Error parsing recipe JSON:", parseError)
-      // Fallback response with food safety tips
-      recipe = {
-        title: "Recipe Generation Error",
-        description: "There was an error generating your recipe. Please try again.",
-        ingredients: [],
-        instructions: [],
-        foodSafetyTips: [
-          "Always wash hands before handling food",
-          "Cook proteins to safe internal temperatures",
-          "Store leftovers in refrigerator within 2 hours",
-          "Use separate cutting boards for raw meat and vegetables",
-        ],
-        error: true,
+
+      // Ensure food safety tips are included
+      if (!recipe.foodSafetyTips || !Array.isArray(recipe.foodSafetyTips) || recipe.foodSafetyTips.length === 0) {
+        recipe.foodSafetyTips = [
+          "Always wash hands before and after handling food",
+          "Cook meats to proper internal temperatures",
+          "Keep raw and cooked foods separate to prevent cross-contamination",
+          "Refrigerate leftovers within 2 hours",
+          "Use a food thermometer to ensure safe cooking temperatures",
+        ]
       }
-    }
-
-    // Ensure food safety tips are always present
-    if (!recipe.foodSafetyTips || !Array.isArray(recipe.foodSafetyTips) || recipe.foodSafetyTips.length === 0) {
-      recipe.foodSafetyTips = [
-        "Always wash hands thoroughly before handling food",
-        "Cook proteins to safe internal temperatures (165°F for poultry, 160°F for ground meat, 145°F for whole cuts)",
-        "Store leftovers in refrigerator within 2 hours of cooking",
-        "Use separate cutting boards for raw meat and vegetables to prevent cross-contamination",
-        "Keep hot foods hot (above 140°F) and cold foods cold (below 40°F)",
-      ]
-    }
-
-    // Add tool-specific food safety tips
-    const toolSpecificSafetyTips = {
-      masterChef: [
-        "When using advanced techniques, ensure proper temperature control",
-        "Taste dishes safely using clean utensils",
-      ],
-      pantryChef: ["Check expiration dates on pantry items", "Store opened canned goods in refrigerator"],
-      macrosChef: ["Weigh portions accurately for food safety", "Monitor caloric density of ingredients"],
-      mealPlanChef: ["Label and date meal prep containers", "Reheat foods to 165°F before consuming"],
-      pairPerfect: [
-        "Consider food allergies when pairing dishes",
-        "Serve complementary foods at appropriate temperatures",
-      ],
-      mixologyMaestro: [
-        "Use fresh citrus and mixers",
-        "Keep alcoholic beverages away from minors",
-        "Serve responsibly",
-      ],
-    }
-
-    if (toolSpecificSafetyTips[tool]) {
-      recipe.foodSafetyTips = [...recipe.foodSafetyTips, ...toolSpecificSafetyTips[tool]]
+    } catch (error) {
+      console.error("Error parsing recipe JSON:", error)
+      return NextResponse.json({ error: "Failed to generate a valid recipe. Please try again." }, { status: 500 })
     }
 
     return NextResponse.json({ recipe: JSON.stringify(recipe) })
   } catch (error) {
     console.error("Error generating recipe:", error)
-    return NextResponse.json(
-      {
-        error: "Failed to generate recipe",
-        recipe: JSON.stringify({
-          title: "Error",
-          description: "Failed to generate recipe. Please try again.",
-          foodSafetyTips: [
-            "Always wash hands before handling food",
-            "Cook proteins to safe internal temperatures",
-            "Store leftovers properly",
-          ],
-        }),
-      },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: "Failed to generate recipe. Please try again." }, { status: 500 })
   }
 }
