@@ -1,383 +1,718 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent } from "@/components/ui/card"
-import { Clock, Users, ChefHat, Utensils, AlertTriangle, ArrowLeft } from "lucide-react"
-import Link from "next/link"
-import PDFGenerator from "@/components/pdf-generator"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import {
+  Clock,
+  Users,
+  ChefHat,
+  ArrowLeft,
+  Heart,
+  Printer,
+  Share,
+  Play,
+  DollarSign,
+  Utensils,
+  AlertTriangle,
+  Shield,
+} from "lucide-react"
+import { PdfGenerator } from "@/components/pdf-generator"
 import ShoppingListGenerator from "@/components/shopping-list-generator"
 import CopyRecipeLink from "@/components/copy-recipe-link"
 import AskChefGPT from "@/components/ask-chef-gpt"
-import MealTypeFilters from "@/components/meal-type-filters"
-import { Header } from "@/components/header"
+import CookingMode from "@/components/cooking-mode"
 
 export default function RecipeResult() {
-  const searchParams = useSearchParams()
-  const recipeJson = searchParams.get("recipe")
+  const router = useRouter()
   const [recipe, setRecipe] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState("ingredients")
+  const [isLoading, setIsLoading] = useState(true)
+  const [showCookingMode, setShowCookingMode] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
 
   useEffect(() => {
-    if (recipeJson) {
-      try {
-        const parsedRecipe = JSON.parse(decodeURIComponent(recipeJson))
-        setRecipe(parsedRecipe)
-      } catch (error) {
-        console.error("Error parsing recipe:", error)
-      }
-    }
-  }, [recipeJson])
+    // Get the recipe from localStorage
+    const storedRecipe = localStorage.getItem("generatedRecipe")
 
-  if (!recipe) {
+    if (!storedRecipe) {
+      router.push("/pantryChef")
+      return
+    }
+
+    try {
+      // Parse the recipe if it's JSON
+      const parsedRecipe = JSON.parse(storedRecipe)
+      setRecipe(parsedRecipe)
+
+      // Ensure food safety tips exist - add defaults if missing
+      if (!parsedRecipe.foodSafetyTips || parsedRecipe.foodSafetyTips.length === 0) {
+        parsedRecipe.foodSafetyTips = [
+          "Always wash hands thoroughly before handling food",
+          "Cook proteins to safe internal temperatures",
+          "Store leftovers in refrigerator within 2 hours",
+          "Use separate cutting boards for raw meat and vegetables",
+          "Keep hot foods hot (above 140°F) and cold foods cold (below 40°F)",
+        ]
+        setRecipe(parsedRecipe)
+      }
+    } catch (e) {
+      // If it's not JSON, use it as a string with default safety tips
+      setRecipe({
+        title: "Generated Recipe",
+        description: storedRecipe,
+        ingredients: [],
+        instructions: [],
+        prepTime: "N/A",
+        cookTime: "N/A",
+        totalTime: "N/A",
+        servings: "N/A",
+        difficulty: "N/A",
+        costEstimate: "N/A",
+        foodSafetyTips: [
+          "Always wash hands thoroughly before handling food",
+          "Cook proteins to safe internal temperatures",
+          "Store leftovers in refrigerator within 2 hours",
+          "Use separate cutting boards for raw meat and vegetables",
+        ],
+        nutritionalInfo: {
+          calories: "N/A",
+          protein: "N/A",
+          carbs: "N/A",
+          fat: "N/A",
+        },
+      })
+    }
+
+    setIsLoading(false)
+  }, [router])
+
+  const handleSave = () => {
+    setIsSaved(!isSaved)
+    // In a real app, this would save to a database
+  }
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: recipe.title,
+        text: recipe.description,
+        url: window.location.href,
+      })
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      navigator.clipboard.writeText(window.location.href)
+      alert("Link copied to clipboard!")
+    }
+  }
+
+  const handlePrint = () => {
+    window.print()
+  }
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-lg">Loading recipe...</p>
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-8 w-64 bg-primary/20 rounded mb-4"></div>
+          <div className="h-4 w-48 bg-primary/10 rounded mb-8"></div>
+          <div className="h-32 w-full max-w-2xl bg-primary/10 rounded"></div>
         </div>
       </div>
     )
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
+  if (!recipe) {
+    return (
+      <div className="max-w-3xl mx-auto p-6 text-center">
+        <h1 className="text-2xl font-bold mb-4">No Recipe Found</h1>
+        <p className="mb-6">We couldn't find a recipe. Please try generating a new one.</p>
+        <Button onClick={() => router.push("/pantryChef")}>Create New Recipe</Button>
+      </div>
+    )
+  }
 
-      {/* Navigation */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto px-4 py-3 flex items-center">
-          <Link href="/" className="text-gray-600 hover:text-primary flex items-center">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            <span>Back to Home</span>
-          </Link>
+  // Extract ingredients from the recipe
+  const extractIngredients = () => {
+    if (!recipe) return []
+
+    const ingredients = recipe.ingredients || []
+
+    // If ingredients is a string, convert it to an array of objects
+    if (typeof ingredients === "string") {
+      return ingredients
+        .split("\n")
+        .filter(Boolean)
+        .map((ing) => ({ name: ing, amount: "", checked: false }))
+    }
+
+    // If ingredients is an array of strings, convert to objects
+    if (Array.isArray(ingredients)) {
+      return ingredients.map((ing) => {
+        if (typeof ing === "string") {
+          return { name: ing, amount: "", checked: false }
+        }
+        return { ...ing, checked: false }
+      })
+    }
+
+    return []
+  }
+
+  const ingredientsList = extractIngredients()
+
+  // Get dietary classifications for tags
+  const getDietaryTags = () => {
+    const tags = []
+    if (recipe.dietaryClassifications && Array.isArray(recipe.dietaryClassifications)) {
+      tags.push(...recipe.dietaryClassifications)
+    }
+    if (recipe.allergenWarnings && Array.isArray(recipe.allergenWarnings) && recipe.allergenWarnings.length === 0) {
+      // If no allergens, it might be considered safer
+    }
+    return tags.slice(0, 3) // Limit to 3 tags
+  }
+
+  const dietaryTags = getDietaryTags()
+
+  // Determine which tool generated this recipe
+  const determineGenerator = () => {
+    if (recipe.days && Array.isArray(recipe.days)) {
+      return {
+        name: "MealPlanChef",
+        icon: <Clock className="h-5 w-5" />,
+        color: "from-green-500 to-green-600",
+      }
+    } else if (recipe.pairing || recipe.pairingNotes) {
+      return {
+        name: "PairPerfect",
+        icon: <Utensils className="h-5 w-5" />,
+        color: "from-purple-500 to-purple-600",
+      }
+    } else if (recipe.mixingTechnique || recipe.glassware) {
+      return {
+        name: "MixologyMaestro",
+        icon: <DollarSign className="h-5 w-5" />,
+        color: "from-blue-500 to-blue-600",
+      }
+    } else if (recipe.macros || (recipe.nutritionalInfo && recipe.nutritionalInfo.protein)) {
+      return {
+        name: "MacrosChef",
+        icon: <Users className="h-5 w-5" />,
+        color: "from-orange-500 to-orange-600",
+      }
+    } else if (recipe.cuisine) {
+      return {
+        name: "MasterChef",
+        icon: <ChefHat className="h-5 w-5" />,
+        color: "from-primary to-accent",
+      }
+    } else {
+      return {
+        name: "PantryChef",
+        icon: <Utensils className="h-5 w-5" />,
+        color: "from-primary to-accent",
+      }
+    }
+  }
+
+  const generator = determineGenerator()
+
+  return (
+    <div className="max-w-6xl mx-auto p-4">
+      {/* Header Navigation */}
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-primary/20">
+        <Button
+          variant="ghost"
+          onClick={() => router.push("/")}
+          className="flex items-center gap-2 text-primary hover:bg-primary/10"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSave}
+            className={`flex items-center gap-1 ${isSaved ? "text-red-500" : "text-primary"} hover:bg-primary/10`}
+          >
+            <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+            Save
+          </Button>
+
+          <PdfGenerator
+            contentId="recipe-content"
+            fileName={recipe.title?.replace(/\s+/g, "-").toLowerCase() || "recipe"}
+            recipe={recipe}
+          />
+
+          <CopyRecipeLink recipe={recipe} />
+
+          <ShoppingListGenerator ingredients={ingredientsList} recipeName={recipe.title || "Recipe"} />
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handlePrint}
+            className="flex items-center gap-1 text-primary hover:bg-primary/10"
+          >
+            <Printer className="h-4 w-4" />
+            Print
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShare}
+            className="flex items-center gap-1 text-primary hover:bg-primary/10"
+          >
+            <Share className="h-4 w-4" />
+            Share
+          </Button>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Recipe Title Section */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+      {/* Recipe Header */}
+      <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-8 mb-8 border-2 border-primary/20 shadow-md relative overflow-hidden">
+        {/* Generator Badge */}
+        <div className="absolute top-0 right-0 bg-gradient-to-r from-primary to-accent text-white px-4 py-2 rounded-bl-lg font-medium flex items-center gap-2 shadow-md">
+          {generator.icon}
+          <span>{generator.name}</span>
+        </div>
+
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold text-primary mb-3">{recipe.title}</h1>
+            <p className="text-lg text-foreground/80 mb-4">{recipe.description}</p>
+
+            <div className="flex items-center gap-4 mb-4">
+              <Button
+                onClick={() => setShowCookingMode(true)}
+                className="bg-primary text-white hover:bg-primary/90 flex items-center gap-2 shadow-md"
+              >
+                <Play className="h-4 w-4" />
+                Start Cooking Mode
+              </Button>
+
+              {dietaryTags.length > 0 && (
+                <div className="flex gap-2">
+                  {dietaryTags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium border border-green-200 shadow-sm"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recipe Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+        {[
+          { label: "Prep Time", value: recipe.prepTime || "15", icon: <Clock className="h-5 w-5 text-primary" /> },
+          { label: "Cook Time", value: recipe.cookTime || "20", icon: <Clock className="h-5 w-5 text-primary" /> },
+          { label: "Total Time", value: recipe.totalTime || "35", icon: <Clock className="h-5 w-5 text-primary" /> },
+          { label: "Servings", value: recipe.servings || "4", icon: <Users className="h-5 w-5 text-primary" /> },
+          {
+            label: "Difficulty",
+            value: recipe.difficulty || "Medium",
+            icon: <ChefHat className="h-5 w-5 text-primary" />,
+          },
+          {
+            label: "Cost",
+            value: recipe.costEstimate || "Moderate",
+            icon: <DollarSign className="h-5 w-5 text-primary" />,
+          },
+        ].map((stat, index) => (
+          <div
+            key={index}
+            className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 bg-white shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="p-2 bg-primary/10 rounded-full">{stat.icon}</div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">{recipe.title}</h1>
-              <p className="text-gray-600 mt-2">{recipe.description}</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <PDFGenerator recipe={recipe} />
-              <ShoppingListGenerator ingredients={recipe.ingredients} title={recipe.title} />
-              <CopyRecipeLink />
+              <div className="text-sm text-foreground/60">{stat.label}</div>
+              <div className="font-semibold">{stat.value}</div>
             </div>
           </div>
+        ))}
+      </div>
 
-          {/* Recipe Type Badge */}
-          <div className="inline-block bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-full px-3 py-1 text-sm font-medium text-primary mb-4">
-            {recipe.cuisine || "Mixed"} Cuisine
+      {/* Food Safety Alert - Always Visible */}
+      {recipe.foodSafetyTips && recipe.foodSafetyTips.length > 0 && (
+        <div className="mb-8 p-6 bg-red-50 border-l-4 border-red-500 border-t border-r border-b border-red-200 rounded-lg shadow-md">
+          <div className="flex items-center mb-4">
+            <Shield className="h-6 w-6 text-red-600 mr-3" />
+            <h2 className="text-xl font-bold text-red-800">Important Food Safety Tips</h2>
           </div>
-
-          {/* Recipe Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-            <Card className="border border-primary/20 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <CardContent className="p-4 flex items-center">
-                <Clock className="h-5 w-5 text-primary mr-3" />
-                <div>
-                  <p className="text-xs text-gray-500">Prep Time</p>
-                  <p className="font-medium">{recipe.prepTime || "N/A"}</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-primary/20 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <CardContent className="p-4 flex items-center">
-                <Utensils className="h-5 w-5 text-primary mr-3" />
-                <div>
-                  <p className="text-xs text-gray-500">Cook Time</p>
-                  <p className="font-medium">{recipe.cookTime || "N/A"}</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-primary/20 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <CardContent className="p-4 flex items-center">
-                <Users className="h-5 w-5 text-primary mr-3" />
-                <div>
-                  <p className="text-xs text-gray-500">Servings</p>
-                  <p className="font-medium">{recipe.servings || "N/A"}</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-primary/20 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <CardContent className="p-4 flex items-center">
-                <ChefHat className="h-5 w-5 text-primary mr-3" />
-                <div>
-                  <p className="text-xs text-gray-500">Difficulty</p>
-                  <p className="font-medium">{recipe.difficulty || "N/A"}</p>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {recipe.foodSafetyTips.map((tip, index) => (
+              <div key={index} className="flex items-start gap-3 p-3 bg-white rounded-lg border border-red-200">
+                <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                <span className="text-sm text-red-700">{tip}</span>
+              </div>
+            ))}
           </div>
         </div>
+      )}
 
-        {/* Meal Type Filters */}
-        <div className="mb-6">
-          <MealTypeFilters />
-        </div>
+      {/* Tabs */}
+      <Tabs defaultValue="recipe" className="mb-8">
+        <TabsList className="mb-6 bg-secondary/50 p-1 rounded-lg border border-primary/20">
+          <TabsTrigger
+            value="recipe"
+            className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md"
+          >
+            Recipe
+          </TabsTrigger>
+          <TabsTrigger
+            value="nutrition"
+            className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md"
+          >
+            Nutrition
+          </TabsTrigger>
+          <TabsTrigger
+            value="tips"
+            className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md"
+          >
+            Tips
+          </TabsTrigger>
+          <TabsTrigger
+            value="extras"
+            className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md"
+          >
+            Extras
+          </TabsTrigger>
+        </TabsList>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Tabs */}
-          <div className="lg:col-span-2">
-            <Tabs defaultValue="ingredients" value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full bg-white border border-primary/20 rounded-lg p-1 mb-4">
-                <TabsTrigger
-                  value="ingredients"
-                  className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-white rounded-md transition-all"
-                >
-                  Ingredients
-                </TabsTrigger>
-                <TabsTrigger
-                  value="instructions"
-                  className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-white rounded-md transition-all"
-                >
-                  Instructions
-                </TabsTrigger>
-                <TabsTrigger
-                  value="nutrition"
-                  className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-white rounded-md transition-all"
-                >
-                  Nutrition
-                </TabsTrigger>
-              </TabsList>
+        <TabsContent value="recipe">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Ingredients */}
+            <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+              <h2 className="text-2xl font-bold mb-6 text-primary flex items-center gap-2">
+                <span className="w-1.5 h-6 bg-primary rounded-full"></span>
+                Ingredients
+              </h2>
+              <ul className="space-y-3">
+                {ingredientsList.map((ingredient, index) => (
+                  <li
+                    key={index}
+                    className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+                    <span className="text-foreground">
+                      {typeof ingredient === "string"
+                        ? ingredient
+                        : `${ingredient.amount ? `${ingredient.amount} ` : ""}${ingredient.name}`}
+                      {ingredient.allergens && ingredient.allergens.length > 0 && (
+                        <span className="text-red-500 text-sm ml-2">(Contains: {ingredient.allergens.join(", ")})</span>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-              <TabsContent value="ingredients" className="mt-0">
-                <div className="bg-white rounded-lg shadow-md p-6 border border-primary/20">
-                  <h2 className="text-xl font-semibold mb-4 flex items-center">
-                    <span className="w-1.5 h-5 bg-primary rounded-full mr-2"></span>
-                    Ingredients
-                  </h2>
-                  <ul className="space-y-2">
-                    {recipe.ingredients &&
-                      recipe.ingredients.map((ingredient: any, index: number) => (
-                        <li
-                          key={index}
-                          className="flex items-start gap-2 p-2 hover:bg-gray-50 rounded-md transition-colors"
-                        >
-                          <div className="h-2 w-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-                          <span>
-                            {ingredient.amount && <span className="font-medium">{ingredient.amount}</span>}{" "}
-                            {ingredient.name}
-                            {ingredient.allergens && ingredient.allergens.length > 0 && (
-                              <span className="text-red-500 text-sm ml-2">
-                                (Contains: {ingredient.allergens.join(", ")})
-                              </span>
-                            )}
-                            {ingredient.substitutes && (
-                              <span className="text-gray-500 text-sm block mt-1">
-                                Substitute: {ingredient.substitutes}
-                              </span>
-                            )}
-                          </span>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="instructions" className="mt-0">
-                <div className="bg-white rounded-lg shadow-md p-6 border border-primary/20">
-                  <h2 className="text-xl font-semibold mb-4 flex items-center">
-                    <span className="w-1.5 h-5 bg-primary rounded-full mr-2"></span>
-                    Instructions
-                  </h2>
-                  <ol className="space-y-4">
-                    {recipe.instructions &&
-                      recipe.instructions.map((instruction: any, index: number) => {
-                        const step =
-                          typeof instruction === "string"
-                            ? instruction
-                            : instruction.description || instruction.step || ""
-
-                        const timingTip = instruction.timingTip
-                        const safetyTip = instruction.safetyTip
-
-                        return (
-                          <li key={index} className="ml-8 relative">
-                            <div className="absolute -left-8 top-0 w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium">
-                              {index + 1}
-                            </div>
-                            <p>{step}</p>
-
-                            {timingTip && <p className="text-sm text-primary mt-1 italic">Timing Tip: {timingTip}</p>}
-
-                            {safetyTip && <p className="text-sm text-red-500 mt-1 italic">Safety Tip: {safetyTip}</p>}
-                          </li>
-                        )
-                      })}
-                  </ol>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="nutrition" className="mt-0">
-                <div className="bg-white rounded-lg shadow-md p-6 border border-primary/20">
-                  <h2 className="text-xl font-semibold mb-4 flex items-center">
-                    <span className="w-1.5 h-5 bg-primary rounded-full mr-2"></span>
-                    Nutritional Information
-                  </h2>
-                  {recipe.nutritionalInfo ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {Object.entries(recipe.nutritionalInfo).map(([key, value]: [string, any]) => (
-                        <div key={key} className="p-3 bg-primary/5 rounded-lg border border-primary/10">
-                          <p className="text-sm text-gray-500 capitalize">{key}</p>
-                          <p className="font-medium">{value}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p>Nutritional information not available.</p>
-                  )}
-
-                  {recipe.allergenWarnings && recipe.allergenWarnings.length > 0 && (
-                    <div className="mt-6">
-                      <h3 className="text-lg font-medium mb-2 text-red-600 flex items-center">
-                        <AlertTriangle className="h-4 w-4 mr-1" />
-                        Allergen Warnings
-                      </h3>
-                      <ul className="list-disc pl-5 space-y-1">
-                        {recipe.allergenWarnings.map((allergen: string, index: number) => (
-                          <li key={index} className="text-red-600">
-                            {allergen}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {recipe.dietaryClassifications && recipe.dietaryClassifications.length > 0 && (
-                    <div className="mt-6">
-                      <h3 className="text-lg font-medium mb-2">Dietary Classifications</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {recipe.dietaryClassifications.map((diet: string, index: number) => (
-                          <span key={index} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                            {diet}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-
-            {/* Equipment Needed */}
-            {recipe.equipment && recipe.equipment.length > 0 && (
-              <div className="bg-white rounded-lg shadow-md p-6 mt-6 border border-primary/20">
-                <h2 className="text-xl font-semibold mb-4 flex items-center">
-                  <span className="w-1.5 h-5 bg-primary rounded-full mr-2"></span>
-                  Equipment Needed
-                </h2>
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {recipe.equipment.map((item: string, index: number) => (
+            {/* Instructions */}
+            <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+              <h2 className="text-2xl font-bold mb-6 text-primary flex items-center gap-2">
+                <span className="w-1.5 h-6 bg-primary rounded-full"></span>
+                Instructions
+              </h2>
+              <ol className="space-y-4">
+                {Array.isArray(recipe.instructions) ? (
+                  recipe.instructions.map((instruction, index) => (
                     <li
                       key={index}
-                      className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-md transition-colors"
+                      className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
                     >
-                      <Utensils className="h-4 w-4 text-primary" />
-                      <span>{item}</span>
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-medium shadow-sm">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-foreground">
+                          {typeof instruction === "string" ? instruction : instruction.description}
+                        </span>
+                        {instruction.safetyTip && (
+                          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                            <div className="flex items-start gap-2">
+                              <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm text-red-700">{instruction.safetyTip}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                  ))
+                ) : typeof recipe.instructions === "string" ? (
+                  recipe.instructions
+                    .split("\n")
+                    .filter(Boolean)
+                    .map((instruction, index) => (
+                      <li
+                        key={index}
+                        className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
+                      >
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-medium shadow-sm">
+                          {index + 1}
+                        </div>
+                        <span className="text-foreground pt-1">{instruction}</span>
+                      </li>
+                    ))
+                ) : (
+                  <li>No instructions available</li>
+                )}
+              </ol>
 
-            {/* Food Safety Tips */}
-            {recipe.foodSafetyTips && recipe.foodSafetyTips.length > 0 && (
-              <div className="bg-white rounded-lg shadow-md p-6 mt-6 border-l-4 border-red-500 border-t border-r border-b">
-                <h2 className="text-xl font-semibold mb-4 flex items-center text-red-600">
-                  <AlertTriangle className="h-5 w-5 mr-2" />
-                  Food Safety Tips
-                </h2>
-                <ul className="space-y-2">
-                  {recipe.foodSafetyTips.map((tip: string, index: number) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <div className="h-2 w-2 rounded-full bg-red-500 mt-2 flex-shrink-0"></div>
-                      <span>{tip}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          {/* Right Column - Additional Info */}
-          <div className="space-y-6">
-            {/* Generator Badge */}
-            <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-4 border border-primary/20 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <ChefHat className="h-5 w-5 text-primary mr-2" />
-                  <span className="font-medium">Generated by ChefGPT</span>
+              {/* Equipment Needed */}
+              {recipe.equipment && recipe.equipment.length > 0 && (
+                <div className="mt-8 p-4 bg-secondary/20 rounded-lg border border-primary/10">
+                  <h3 className="text-lg font-semibold mb-4 text-primary">Equipment Needed</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {recipe.equipment.map((item, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 text-sm text-foreground/80 p-2 bg-white rounded-md shadow-sm"
+                      >
+                        <Utensils className="h-4 w-4 text-primary" />
+                        {item}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">AI Recipe</span>
-              </div>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="nutrition">
+          <div className="nutrition-tab border-2 border-primary/20 shadow-md">
+            <div className="nutrition-header">
+              <h3 className="nutrition-title">Nutrition Facts</h3>
+              <p className="nutrition-subtitle">Per serving</p>
             </div>
 
-            {/* Ask ChefGPT */}
-            <AskChefGPT recipe={recipe} />
-
-            {/* Storage & Reheating */}
-            {(recipe.storage || recipe.reheating) && (
-              <div className="bg-white rounded-lg shadow-md p-4 border border-primary/20">
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <span className="w-1.5 h-5 bg-primary rounded-full mr-2"></span>
-                  Storage & Reheating
-                </h3>
-
-                {recipe.storage && (
-                  <div className="mb-3">
-                    <h4 className="font-medium text-sm text-gray-600 mb-1">Storage</h4>
-                    <p className="text-sm">{recipe.storage}</p>
-                  </div>
-                )}
-
-                {recipe.reheating && (
-                  <div>
-                    <h4 className="font-medium text-sm text-gray-600 mb-1">Reheating</h4>
-                    <p className="text-sm">{recipe.reheating}</p>
-                  </div>
-                )}
+            <div className="nutrition-content">
+              <div className="nutrition-calories">
+                <span className="text-lg font-bold">Calories</span>
+                <span className="text-lg font-bold">{recipe.nutritionalInfo?.calories || "N/A"}</span>
               </div>
-            )}
 
-            {/* Pairing Recommendations */}
-            {recipe.pairingRecommendations && (
-              <div className="bg-white rounded-lg shadow-md p-4 border border-primary/20">
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <span className="w-1.5 h-5 bg-primary rounded-full mr-2"></span>
-                  Pairing Recommendations
-                </h3>
-                <p className="text-sm">{recipe.pairingRecommendations}</p>
+              <div className="nutrition-item">
+                <span className="nutrition-item-label">Protein</span>
+                <span>{recipe.nutritionalInfo?.protein || "N/A"}</span>
               </div>
-            )}
 
-            {/* Tips */}
+              <div className="nutrition-item">
+                <span className="nutrition-item-label">Carbohydrates</span>
+                <span>{recipe.nutritionalInfo?.carbs || "N/A"}</span>
+              </div>
+
+              {recipe.nutritionalInfo?.fiber && (
+                <div className="nutrition-item">
+                  <span className="nutrition-item-sub">Fiber</span>
+                  <span>{recipe.nutritionalInfo.fiber}</span>
+                </div>
+              )}
+
+              {recipe.nutritionalInfo?.sugar && (
+                <div className="nutrition-item">
+                  <span className="nutrition-item-sub">Sugars</span>
+                  <span>{recipe.nutritionalInfo.sugar}</span>
+                </div>
+              )}
+
+              <div className="nutrition-item">
+                <span className="nutrition-item-label">Fat</span>
+                <span>{recipe.nutritionalInfo?.fat || "N/A"}</span>
+              </div>
+
+              {recipe.nutritionalInfo?.sodium && (
+                <div className="nutrition-item">
+                  <span className="nutrition-item-label">Sodium</span>
+                  <span>{recipe.nutritionalInfo.sodium}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="nutrition-footer">
+              <p className="nutrition-disclaimer">* Percent Daily Values are based on a 2,000 calorie diet.</p>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="tips">
+          <div className="space-y-6">
             {recipe.tips && recipe.tips.length > 0 && (
-              <div className="bg-white rounded-lg shadow-md p-4 border border-primary/20">
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <span className="w-1.5 h-5 bg-primary rounded-full mr-2"></span>
+              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <span className="w-1 h-5 bg-primary rounded-full"></span>
                   Chef's Tips
                 </h3>
-                <ul className="space-y-2">
-                  {recipe.tips.map((tip: string, index: number) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <div className="h-2 w-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-                      <span className="text-sm">{tip}</span>
+                <ul className="space-y-3">
+                  {recipe.tips.map((tip, index) => (
+                    <li
+                      key={index}
+                      className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0"></div>
+                      <span className="text-foreground">{tip}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
+
+            {recipe.storage && (
+              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <span className="w-1 h-5 bg-primary rounded-full"></span>
+                  Storage Instructions
+                </h3>
+                <p className="text-foreground bg-secondary/30 p-4 rounded-lg">{recipe.storage}</p>
+              </div>
+            )}
+
+            {recipe.reheating && (
+              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <span className="w-1 h-5 bg-primary rounded-full"></span>
+                  Reheating Instructions
+                </h3>
+                <p className="text-foreground bg-secondary/30 p-4 rounded-lg">{recipe.reheating}</p>
+              </div>
+            )}
+
+            {recipe.pairingRecommendations && (
+              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <span className="w-1 h-5 bg-primary rounded-full"></span>
+                  Pairing Recommendations
+                </h3>
+                <p className="text-foreground bg-secondary/30 p-4 rounded-lg">{recipe.pairingRecommendations}</p>
+              </div>
+            )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="extras">
+          <div className="space-y-6">
+            {recipe.allergenWarnings && recipe.allergenWarnings.length > 0 && (
+              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <span className="w-1 h-5 bg-primary rounded-full"></span>
+                  Allergen Information
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {recipe.allergenWarnings.map((allergen, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium border border-yellow-200 shadow-sm"
+                    >
+                      Contains {allergen}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {recipe.dietaryClassifications && recipe.dietaryClassifications.length > 0 && (
+              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <span className="w-1 h-5 bg-primary rounded-full"></span>
+                  Dietary Classifications
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {recipe.dietaryClassifications.map((classification, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium border border-green-200 shadow-sm"
+                    >
+                      {classification}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Recipe Scaling */}
+            <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+              <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                <span className="w-1 h-5 bg-primary rounded-full"></span>
+                Recipe Scaling
+              </h3>
+              <p className="text-foreground/80 mb-4">
+                This recipe serves {recipe.servings || "4"} people. Adjust quantities proportionally for different
+                serving sizes.
+              </p>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center p-3 bg-secondary/30 rounded-lg border border-primary/10 shadow-sm">
+                  <div className="font-semibold">Half Recipe</div>
+                  <div className="text-sm text-foreground/70">
+                    {Math.ceil((Number.parseInt(recipe.servings) || 4) / 2)} servings
+                  </div>
+                </div>
+                <div className="text-center p-3 bg-primary/10 rounded-lg border-2 border-primary/30 shadow-sm">
+                  <div className="font-semibold text-primary">Original</div>
+                  <div className="text-sm text-primary/70">{recipe.servings || "4"} servings</div>
+                </div>
+                <div className="text-center p-3 bg-secondary/30 rounded-lg border border-primary/10 shadow-sm">
+                  <div className="font-semibold">Double Recipe</div>
+                  <div className="text-sm text-foreground/70">
+                    {(Number.parseInt(recipe.servings) || 4) * 2} servings
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Ask ChefGPT Section */}
+      <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-6 border-2 border-primary/20 shadow-md">
+        <div className="flex items-center gap-3 mb-4">
+          <ChefHat className="h-6 w-6 text-primary" />
+          <h2 className="text-xl font-bold text-primary">Ask ChefGPT</h2>
+        </div>
+
+        <AskChefGPT recipe={recipe} />
+      </div>
+
+      {/* Cooking Mode Modal */}
+      {showCookingMode && (
+        <CookingMode
+          title={recipe.title}
+          instructions={recipe.instructions || []}
+          onClose={() => setShowCookingMode(false)}
+        />
+      )}
+
+      {/* Bottom Actions */}
+      <div className="text-center mt-8 pt-8 border-t border-primary/20">
+        <div className="flex flex-wrap justify-center gap-4">
+          <Button
+            onClick={() => router.push("/pantryChef")}
+            variant="outline"
+            className="border-primary/30 text-primary hover:bg-primary/10"
+          >
+            Create New Recipe
+          </Button>
+          <Button
+            onClick={handlePrint}
+            variant="outline"
+            className="border-primary/30 text-primary hover:bg-primary/10"
+          >
+            Print Recipe
+          </Button>
+          <Button onClick={() => router.push("/")} className="bg-primary text-white hover:bg-primary/90">
+            Back to Home
+          </Button>
         </div>
       </div>
     </div>
