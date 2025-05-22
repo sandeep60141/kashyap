@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Lightbulb } from "lucide-react"
+import { Lightbulb, ChefHat, Clock, Heart, Zap } from "lucide-react"
 
 interface RecipeSuggestionsProps {
   onSuggestionClick: (suggestion: string) => void
@@ -11,36 +11,36 @@ interface RecipeSuggestionsProps {
 export default function RecipeSuggestions({ onSuggestionClick, type = "general" }: RecipeSuggestionsProps) {
   const suggestionSets = {
     general: [
-      "Creamy Garlic Parmesan Pasta",
-      "Honey Glazed Salmon with Vegetables",
-      "Classic Beef Stir Fry",
-      "Chicken Caesar Salad",
-      "Vegetarian Buddha Bowl",
-      "Spicy Thai Curry",
+      { name: "Creamy Garlic Parmesan Pasta", icon: <ChefHat className="h-3 w-3" /> },
+      { name: "Honey Glazed Salmon with Vegetables", icon: <ChefHat className="h-3 w-3" /> },
+      { name: "Classic Beef Stir Fry", icon: <ChefHat className="h-3 w-3" /> },
+      { name: "Chicken Caesar Salad", icon: <ChefHat className="h-3 w-3" /> },
+      { name: "Vegetarian Buddha Bowl", icon: <ChefHat className="h-3 w-3" /> },
+      { name: "Spicy Thai Curry", icon: <ChefHat className="h-3 w-3" /> },
     ],
     healthy: [
-      "Quinoa Power Bowl with Avocado",
-      "Grilled Chicken with Sweet Potato",
-      "Mediterranean Chickpea Salad",
-      "Zucchini Noodles with Pesto",
-      "Baked Cod with Herbs",
-      "Green Smoothie Bowl",
+      { name: "Quinoa Power Bowl with Avocado", icon: <Heart className="h-3 w-3" /> },
+      { name: "Grilled Chicken with Sweet Potato", icon: <Heart className="h-3 w-3" /> },
+      { name: "Mediterranean Chickpea Salad", icon: <Heart className="h-3 w-3" /> },
+      { name: "Zucchini Noodles with Pesto", icon: <Heart className="h-3 w-3" /> },
+      { name: "Baked Cod with Herbs", icon: <Heart className="h-3 w-3" /> },
+      { name: "Green Smoothie Bowl", icon: <Heart className="h-3 w-3" /> },
     ],
     quick: [
-      "15-Minute Pasta Aglio e Olio",
-      "Quick Chicken Quesadillas",
-      "5-Minute Avocado Toast",
-      "Instant Ramen Upgrade",
-      "Microwave Mug Omelet",
-      "No-Cook Greek Salad",
+      { name: "15-Minute Pasta Aglio e Olio", icon: <Clock className="h-3 w-3" /> },
+      { name: "Quick Chicken Quesadillas", icon: <Clock className="h-3 w-3" /> },
+      { name: "5-Minute Avocado Toast", icon: <Clock className="h-3 w-3" /> },
+      { name: "Instant Ramen Upgrade", icon: <Clock className="h-3 w-3" /> },
+      { name: "Microwave Mug Omelet", icon: <Clock className="h-3 w-3" /> },
+      { name: "No-Cook Greek Salad", icon: <Clock className="h-3 w-3" /> },
     ],
     comfort: [
-      "Classic Mac and Cheese",
-      "Homemade Chicken Soup",
-      "Beef and Mushroom Stew",
-      "Loaded Baked Potato",
-      "Grilled Cheese and Tomato Soup",
-      "Chocolate Chip Cookies",
+      { name: "Classic Mac and Cheese", icon: <Zap className="h-3 w-3" /> },
+      { name: "Homemade Chicken Soup", icon: <Zap className="h-3 w-3" /> },
+      { name: "Beef and Mushroom Stew", icon: <Zap className="h-3 w-3" /> },
+      { name: "Loaded Baked Potato", icon: <Zap className="h-3 w-3" /> },
+      { name: "Grilled Cheese and Tomato Soup", icon: <Zap className="h-3 w-3" /> },
+      { name: "Chocolate Chip Cookies", icon: <Zap className="h-3 w-3" /> },
     ],
   }
 
@@ -55,13 +55,14 @@ export default function RecipeSuggestions({ onSuggestionClick, type = "general" 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {suggestions.map((suggestion) => (
           <Button
-            key={suggestion}
+            key={suggestion.name}
             variant="outline"
             size="sm"
-            onClick={() => onSuggestionClick(suggestion)}
-            className="text-xs text-left justify-start border-primary/30 text-primary hover:bg-primary/10"
+            onClick={() => onSuggestionClick(suggestion.name)}
+            className="text-xs text-left justify-start border-primary/30 text-primary hover:bg-primary/10 flex items-center gap-2"
           >
-            {suggestion}
+            <span className="text-primary">{suggestion.icon}</span>
+            {suggestion.name}
           </Button>
         ))}
       </div>

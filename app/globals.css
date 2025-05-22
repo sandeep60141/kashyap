@@ -60,16 +60,29 @@
 }
 
 .btn-generate {
-  @apply bg-gradient-to-r from-primary to-accent text-white font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all;
+  @apply bg-gradient-to-r from-primary to-accent text-white font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center;
+}
+
+/* Cuisine button styles */
+.cuisine-button {
+  @apply flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-all font-medium;
+}
+
+.cuisine-button-active {
+  @apply bg-primary text-white border-primary hover:bg-primary/90;
+}
+
+.cuisine-button span {
+  @apply text-lg;
 }
 
 /* Tab styling */
 .tab-active {
-  @apply bg-primary text-white;
+  @apply bg-primary text-white flex items-center justify-center;
 }
 
 .tab-inactive {
-  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center justify-center;
 }
 
 /* Card styling */
@@ -193,12 +206,22 @@
   @apply bg-primary/20 border-primary;
 }
 
+/* Custom checkbox styling */
 .generator-checkbox {
-  @apply h-4 w-4 rounded border-primary/50 text-primary focus:ring-primary/50;
+  @apply h-4 w-4 rounded border-primary/50 text-primary focus:ring-primary/50 accent-primary;
 }
 
 .generator-radio {
-  @apply h-4 w-4 border-primary/50 text-primary focus:ring-primary/50;
+  @apply h-4 w-4 border-primary/50 text-primary focus:ring-primary/50 accent-primary;
+}
+
+/* Custom checkbox for dietary requirements */
+input[type="checkbox"] {
+  @apply accent-primary;
+}
+
+input[type="radio"] {
+  @apply accent-primary;
 }
 
 .generator-select {

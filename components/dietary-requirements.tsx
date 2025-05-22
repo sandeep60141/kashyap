@@ -1,5 +1,5 @@
 "use client"
-import { Check } from "lucide-react"
+import { Check, Leaf, Wheat, Milk, Nut, Fish, Egg } from "lucide-react"
 
 interface DietaryRequirementsProps {
   selectedRequirements: string[]
@@ -8,17 +8,18 @@ interface DietaryRequirementsProps {
 
 export default function DietaryRequirements({ selectedRequirements, onChange }: DietaryRequirementsProps) {
   const requirements = [
-    "Vegetarian",
-    "Vegan",
-    "Gluten-Free",
-    "Dairy-Free",
-    "Nut-Free",
-    "Low-Carb",
-    "Keto",
-    "Paleo",
-    "Pescatarian",
-    "Halal",
-    "Kosher",
+    { name: "Vegetarian", icon: <Leaf className="h-4 w-4" /> },
+    { name: "Vegan", icon: <Leaf className="h-4 w-4" /> },
+    { name: "Gluten-Free", icon: <Wheat className="h-4 w-4" /> },
+    { name: "Dairy-Free", icon: <Milk className="h-4 w-4" /> },
+    { name: "Nut-Free", icon: <Nut className="h-4 w-4" /> },
+    { name: "Low-Carb", icon: <Wheat className="h-4 w-4" /> },
+    { name: "Keto", icon: <Leaf className="h-4 w-4" /> },
+    { name: "Paleo", icon: <Leaf className="h-4 w-4" /> },
+    { name: "Pescatarian", icon: <Fish className="h-4 w-4" /> },
+    { name: "Egg-Free", icon: <Egg className="h-4 w-4" /> },
+    { name: "Halal", icon: <Leaf className="h-4 w-4" /> },
+    { name: "Kosher", icon: <Leaf className="h-4 w-4" /> },
   ]
 
   const toggleRequirement = (requirement: string) => {
@@ -30,23 +31,26 @@ export default function DietaryRequirements({ selectedRequirements, onChange }: 
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
       {requirements.map((requirement) => (
         <div
-          key={requirement}
-          className={`generator-option ${selectedRequirements.includes(requirement) ? "generator-option-active" : ""}`}
-          onClick={() => toggleRequirement(requirement)}
+          key={requirement.name}
+          className={`generator-option ${selectedRequirements.includes(requirement.name) ? "generator-option-active" : ""}`}
+          onClick={() => toggleRequirement(requirement.name)}
         >
           <div
-            className={`flex-shrink-0 w-5 h-5 rounded border ${
-              selectedRequirements.includes(requirement)
-                ? "bg-primary border-primary flex items-center justify-center"
+            className={`flex-shrink-0 w-5 h-5 rounded border flex items-center justify-center ${
+              selectedRequirements.includes(requirement.name)
+                ? "bg-primary border-primary text-white"
                 : "border-primary/30"
             }`}
           >
-            {selectedRequirements.includes(requirement) && <Check className="h-3 w-3 text-white" />}
+            {selectedRequirements.includes(requirement.name) && <Check className="h-3 w-3" />}
           </div>
-          <span>{requirement}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-primary">{requirement.icon}</span>
+            <span className="text-sm font-medium">{requirement.name}</span>
+          </div>
         </div>
       ))}
     </div>

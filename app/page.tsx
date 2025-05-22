@@ -12,6 +12,8 @@ import {
   ShoppingBag,
   Link2,
   MessageSquare,
+  ChefHat,
+  Sparkles,
 } from "lucide-react"
 
 export default function Home() {
@@ -20,18 +22,31 @@ export default function Home() {
       {/* Hero Section */}
       <section className="py-20 md:py-32 text-center">
         <div className="container px-4 md:px-6">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            <span className="text-primary">Culina</span>AI
-          </h1>
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <ChefHat className="h-12 w-12 text-primary" />
+            <h1 className="text-4xl md:text-6xl font-bold">
+              <span className="text-primary">Culina</span>AI
+            </h1>
+            <Sparkles className="h-8 w-8 text-accent" />
+          </div>
           <p className="text-xl md:text-2xl text-foreground/80 mb-12 max-w-3xl mx-auto">
             AI-Powered Recipe Generation & Cooking Assistant
           </p>
 
           <div className="max-w-3xl mx-auto bg-card rounded-xl p-8 shadow-lg border border-primary/20">
             <div className="flex mb-6 overflow-hidden rounded-lg">
-              <button className="flex-1 py-2 px-4 tab-active">Generate Recipe</button>
-              <button className="flex-1 py-2 px-4 tab-inactive">Meal Planning</button>
-              <button className="flex-1 py-2 px-4 tab-inactive">Ask ChefGPT</button>
+              <button className="flex-1 py-2 px-4 tab-active">
+                <ChefHat className="h-4 w-4 mr-2 inline" />
+                Generate Recipe
+              </button>
+              <button className="flex-1 py-2 px-4 tab-inactive">
+                <Calendar className="h-4 w-4 mr-2 inline" />
+                Meal Planning
+              </button>
+              <button className="flex-1 py-2 px-4 tab-inactive">
+                <MessageSquare className="h-4 w-4 mr-2 inline" />
+                Ask ChefGPT
+              </button>
             </div>
 
             <div className="mb-6">
@@ -42,20 +57,33 @@ export default function Home() {
             </div>
 
             <div className="mb-6">
-              <p className="text-left mb-2 text-foreground/80">Select Cuisine Style</p>
-              <div className="flex flex-wrap gap-2">
-                <button className="px-4 py-2 rounded-lg bg-primary text-white">Italian</button>
-                <button className="px-4 py-2 rounded-lg bg-secondary text-white/80 hover:bg-secondary/80">
+              <p className="text-left mb-3 text-foreground/80 font-medium flex items-center gap-2">
+                <Globe className="h-4 w-4 text-primary" />
+                Select Cuisine Style
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <button className="cuisine-button cuisine-button-active">
+                  <span>🇮🇹</span>
+                  Italian
+                </button>
+                <button className="cuisine-button">
+                  <span>🇲🇽</span>
                   Mexican
                 </button>
-                <button className="px-4 py-2 rounded-lg bg-secondary text-white/80 hover:bg-secondary/80">Asian</button>
-                <button className="px-4 py-2 rounded-lg bg-secondary text-white/80 hover:bg-secondary/80">
+                <button className="cuisine-button">
+                  <span>🇨🇳</span>
+                  Asian
+                </button>
+                <button className="cuisine-button">
+                  <span>🇬🇷</span>
                   Mediterranean
                 </button>
-                <button className="px-4 py-2 rounded-lg bg-secondary text-white/80 hover:bg-secondary/80">
+                <button className="cuisine-button">
+                  <span>🇺🇸</span>
                   American
                 </button>
-                <button className="px-4 py-2 rounded-lg bg-secondary text-white/80 hover:bg-secondary/80">
+                <button className="cuisine-button">
+                  <span>🇮🇳</span>
                   Indian
                 </button>
               </div>
@@ -63,7 +91,10 @@ export default function Home() {
 
             <div className="flex justify-center">
               <Link href="/recipe-result">
-                <button className="btn-generate">Generate Recipe</button>
+                <button className="btn-generate">
+                  <ChefHat className="h-5 w-5 mr-2" />
+                  Generate Recipe
+                </button>
               </Link>
             </div>
 
