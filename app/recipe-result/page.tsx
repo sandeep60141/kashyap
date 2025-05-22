@@ -73,14 +73,33 @@ export default function RecipeResult() {
   }
 
   // Extract ingredients from the recipe
-  const ingredients = recipe.ingredients || []
+  const extractIngredients = () => {
+    if (!recipe) return []
 
-  // If ingredients is a string, convert it to an array
-  const ingredientsList = Array.isArray(ingredients)
-    ? ingredients
-    : typeof ingredients === "string"
-      ? ingredients.split("\n").filter(Boolean)
-      : []
+    const ingredients = recipe.ingredients || []
+
+    // If ingredients is a string, convert it to an array of objects
+    if (typeof ingredients === "string") {
+      return ingredients
+        .split("\n")
+        .filter(Boolean)
+        .map((ing) => ({ name: ing, amount: "", checked: false }))
+    }
+
+    // If ingredients is an array of strings, convert to objects
+    if (Array.isArray(ingredients)) {
+      return ingredients.map((ing) => {
+        if (typeof ing === "string") {
+          return { name: ing, amount: "", checked: false }
+        }
+        return { ...ing, checked: false }
+      })
+    }
+
+    return []
+  }
+
+  const ingredientsList = extractIngredients()
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -112,7 +131,7 @@ export default function RecipeResult() {
               fileName={recipe.title.replace(/\s+/g, "-").toLowerCase()}
               recipe={recipe}
             />
-            <ShoppingListGenerator ingredients={ingredientsList} />
+            <ShoppingListGenerator ingredients={ingredientsList} recipeName={recipe.title || "Recipe"} />
             <CopyRecipeLink recipe={recipe} />
           </div>
 
@@ -130,7 +149,11 @@ export default function RecipeResult() {
                   {ingredientsList.map((ingredient, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <div className="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
-                      <span>{ingredient}</span>
+                      <span>
+                        {typeof ingredient === "string"
+                          ? ingredient
+                          : `${ingredient.name}${ingredient.amount ? ` (${ingredient.amount})` : ""}`}
+                      </span>
                     </li>
                   ))}
                 </ul>

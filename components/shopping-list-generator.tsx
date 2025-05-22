@@ -8,7 +8,7 @@ import { ShoppingBag, Check, Printer, Download, Share2 } from "lucide-react"
 interface Ingredient {
   name: string
   amount: string
-  checked?: boolean
+  checked: boolean
 }
 
 interface ShoppingListGeneratorProps {
@@ -17,7 +17,17 @@ interface ShoppingListGeneratorProps {
 }
 
 export default function ShoppingListGenerator({ ingredients, recipeName }: ShoppingListGeneratorProps) {
-  const [shoppingList, setShoppingList] = useState<Ingredient[]>(ingredients.map((ing) => ({ ...ing, checked: false })))
+  const [shoppingList, setShoppingList] = useState<Ingredient[]>(
+    ingredients.map((ing) => {
+      // Handle both string ingredients and object ingredients
+      if (typeof ing === "string") {
+        return { name: ing, amount: "", checked: false }
+      } else if (typeof ing === "object" && ing !== null) {
+        return { ...ing, checked: false }
+      }
+      return { name: "Unknown ingredient", amount: "", checked: false }
+    }),
+  )
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const toggleIngredient = (index: number) => {
@@ -137,7 +147,7 @@ ${uncheckedItems.map((item) => `• ${item.name} (${item.amount})`).join("\n")}`
                   </button>
                   <span className={ingredient.checked ? "line-through text-gray-400" : ""}>
                     <span className="font-medium">{ingredient.name}</span>
-                    <span className="text-gray-500 text-sm"> ({ingredient.amount})</span>
+                    {ingredient.amount && <span className="text-gray-500 text-sm"> ({ingredient.amount})</span>}
                   </span>
                 </li>
               ))}

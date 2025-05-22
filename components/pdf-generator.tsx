@@ -252,10 +252,19 @@ export function PdfGenerator({ contentId, fileName, buttonText = "Download as PD
           recipe.ingredients.forEach((ingredient) => {
             pdf.setFontSize(10)
             pdf.setTextColor(0, 0, 0)
-            let text = `• ${ingredient.amount} ${ingredient.name}`
-            if (ingredient.substitutes) {
-              text += ` (Substitute: ${ingredient.substitutes})`
+
+            let text = ""
+            if (typeof ingredient === "string") {
+              text = `• ${ingredient}`
+            } else if (ingredient && typeof ingredient === "object") {
+              text = `• ${ingredient.amount || ""} ${ingredient.name || ""}`
+              if (ingredient.substitutes) {
+                text += ` (Substitute: ${ingredient.substitutes})`
+              }
+            } else {
+              text = "• Unknown ingredient"
             }
+
             yPos = addWrappedText(text, margin + 5, yPos, contentWidth - 5, 5)
           })
 
