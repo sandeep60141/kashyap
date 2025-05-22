@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
+import { Button } from "@/components/ui/button"
 import { generateRecipe } from "@/lib/client-recipe-generator"
 import { ChefForm } from "@/components/chef-form"
 import FormStep from "@/components/form-step"
@@ -24,6 +25,31 @@ export default function MacrosChef() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
+
+  const mealTypeOptions = [
+    "Breakfast",
+    "Lunch",
+    "Dinner",
+    "Snack",
+    "Post-workout",
+    "Pre-workout",
+    "Brunch",
+    "Light meal",
+  ]
+
+  const macroPresets = [
+    { name: "High Protein", protein: 40, carbs: 30, fat: 30, calories: 600 },
+    { name: "Low Carb", protein: 35, carbs: 15, fat: 50, calories: 500 },
+    { name: "Balanced", protein: 30, carbs: 40, fat: 30, calories: 500 },
+    { name: "Endurance", protein: 20, carbs: 60, fat: 20, calories: 700 },
+  ]
+
+  const handlePresetClick = (preset: (typeof macroPresets)[0]) => {
+    setProtein(preset.protein)
+    setCarbs(preset.carbs)
+    setFat(preset.fat)
+    setCalories(preset.calories)
+  }
 
   const handleSubmit = async () => {
     if (!mealType.trim()) {
@@ -66,7 +92,7 @@ export default function MacrosChef() {
         isLoading={isGenerating}
       >
         <FormStep number={1} title="Meal Information" subtitle="Tell us about the meal you want to create">
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <label htmlFor="mealType" className="block text-sm font-medium text-primary mb-2">
                 What type of meal would you like? *
@@ -81,12 +107,33 @@ export default function MacrosChef() {
             </div>
 
             <div>
+              <h4 className="text-sm font-medium text-primary mb-3">Quick Meal Types</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {mealTypeOptions.map((option) => (
+                  <Button
+                    key={option}
+                    variant={mealType === option ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setMealType(option)}
+                    className={`text-xs ${
+                      mealType === option
+                        ? "bg-primary text-white"
+                        : "border-primary/30 text-primary hover:bg-primary/10"
+                    }`}
+                  >
+                    {option}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div>
               <label htmlFor="preferences" className="block text-sm font-medium text-primary mb-2">
                 Any preferences or additional instructions? (optional)
               </label>
               <Textarea
                 id="preferences"
-                placeholder="E.g., high protein, low carb, quick to prepare, etc."
+                placeholder="E.g., high protein, low carb, quick to prepare, muscle building, weight loss, etc."
                 value={preferences}
                 onChange={(e) => setPreferences(e.target.value)}
                 className="generator-textarea"
@@ -99,6 +146,23 @@ export default function MacrosChef() {
         <FormStep number={2} title="Macronutrient Targets" subtitle="Set your specific macro and calorie goals">
           <div className="space-y-6">
             <div>
+              <h4 className="text-sm font-medium text-primary mb-3">Macro Presets</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {macroPresets.map((preset) => (
+                  <Button
+                    key={preset.name}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePresetClick(preset)}
+                    className="text-xs border-primary/30 text-primary hover:bg-primary/10"
+                  >
+                    {preset.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-primary mb-4">Total Calories: {calories}</label>
               <Slider
                 value={[calories]}
@@ -108,6 +172,10 @@ export default function MacrosChef() {
                 onValueChange={(value) => setCalories(value[0])}
                 className="[&>span]:bg-primary"
               />
+              <div className="flex justify-between text-xs text-foreground/60 mt-2">
+                <span>200 cal</span>
+                <span>1,000 cal</span>
+              </div>
             </div>
 
             <div className="space-y-6">

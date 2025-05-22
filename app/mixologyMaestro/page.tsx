@@ -3,11 +3,13 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
 import { generateRecipe } from "@/lib/client-recipe-generator"
 import { ChefForm } from "@/components/chef-form"
 import FormStep from "@/components/form-step"
 import FreeTierBanner from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
+import PopularIngredients from "@/components/popular-ingredients"
 
 export default function MixologyMaestro() {
   const router = useRouter()
@@ -17,6 +19,35 @@ export default function MixologyMaestro() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
+
+  const handleIngredientClick = (ingredient: string) => {
+    const currentIngredients = ingredients
+      .split(",")
+      .map((i) => i.trim())
+      .filter(Boolean)
+    if (!currentIngredients.some((existing) => existing.toLowerCase() === ingredient.toLowerCase())) {
+      const newIngredients = currentIngredients.length > 0 ? `${ingredients}, ${ingredient}` : ingredient
+      setIngredients(newIngredients)
+    }
+  }
+
+  const drinkStyles = [
+    "Sweet and fruity",
+    "Sour and tart",
+    "Strong and bold",
+    "Light and refreshing",
+    "Tropical",
+    "Classic cocktail",
+    "Modern twist",
+    "Creamy and smooth",
+  ]
+
+  const classicCombos = [
+    { name: "Classic Mojito", ingredients: "White rum, lime juice, mint, sugar, soda water" },
+    { name: "Margarita Base", ingredients: "Tequila, lime juice, triple sec, salt" },
+    { name: "Old Fashioned", ingredients: "Whiskey, sugar, bitters, orange peel" },
+    { name: "Gin & Tonic", ingredients: "Gin, tonic water, lime, ice" },
+  ]
 
   const handleSubmit = async () => {
     if (!ingredients.trim()) {
@@ -59,7 +90,7 @@ export default function MixologyMaestro() {
         isLoading={isGenerating}
       >
         <FormStep number={1} title="Available Ingredients" subtitle="What ingredients do you have for your drink?">
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <label htmlFor="ingredients" className="block text-sm font-medium text-primary mb-2">
                 What ingredients do you have? *
@@ -75,6 +106,28 @@ export default function MixologyMaestro() {
               <p className="text-xs text-foreground/60 mt-2">
                 💡 Include spirits, mixers, fruits, herbs, and any garnishes you have
               </p>
+            </div>
+
+            <PopularIngredients
+              onIngredientClick={handleIngredientClick}
+              selectedIngredients={ingredients.split(",")}
+              type="cocktail"
+            />
+
+            <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+              <h4 className="text-sm font-medium text-primary mb-2">Classic Combinations</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {classicCombos.map((combo) => (
+                  <button
+                    key={combo.name}
+                    onClick={() => setIngredients(combo.ingredients)}
+                    className="text-xs text-left p-2 rounded border border-primary/30 hover:bg-primary/10 text-primary"
+                  >
+                    <div className="font-medium">{combo.name}</div>
+                    <div className="text-foreground/60 mt-1">{combo.ingredients}</div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </FormStep>
@@ -131,6 +184,27 @@ export default function MixologyMaestro() {
                 className="generator-textarea"
                 rows={3}
               />
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium text-primary mb-3">Drink Styles</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {drinkStyles.map((style) => (
+                  <Button
+                    key={style}
+                    variant={preferences === style ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setPreferences(style)}
+                    className={`text-xs ${
+                      preferences === style
+                        ? "bg-primary text-white"
+                        : "border-primary/30 text-primary hover:bg-primary/10"
+                    }`}
+                  >
+                    {style}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
         </FormStep>

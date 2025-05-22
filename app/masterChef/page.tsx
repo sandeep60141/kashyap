@@ -10,6 +10,8 @@ import FormStep from "@/components/form-step"
 import DietaryRequirements from "@/components/dietary-requirements"
 import FreeTierBanner from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
+import CuisineSuggestions from "@/components/cuisine-suggestions"
+import RecipeSuggestions from "@/components/recipe-suggestions"
 
 export default function MasterChef() {
   const router = useRouter()
@@ -62,7 +64,7 @@ export default function MasterChef() {
         isLoading={isGenerating}
       >
         <FormStep number={1} title="Recipe Description" subtitle="Describe the recipe you want to create">
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <label htmlFor="recipeName" className="block text-sm font-medium text-primary mb-2">
                 What recipe would you like to create? *
@@ -77,6 +79,8 @@ export default function MasterChef() {
               />
             </div>
 
+            <RecipeSuggestions onSuggestionClick={setRecipeName} type="general" />
+
             <div>
               <label htmlFor="cuisine" className="block text-sm font-medium text-primary mb-2">
                 Cuisine Type (optional)
@@ -89,6 +93,8 @@ export default function MasterChef() {
                 className="generator-input"
               />
             </div>
+
+            <CuisineSuggestions onCuisineClick={setCuisine} selectedCuisine={cuisine} />
           </div>
         </FormStep>
 
@@ -97,7 +103,11 @@ export default function MasterChef() {
             <div>
               <label className="block text-sm font-medium text-primary mb-3">Difficulty Level</label>
               <div className="grid grid-cols-3 gap-4">
-                {["beginner", "intermediate", "advanced"].map((level) => (
+                {[
+                  { level: "beginner", desc: "Simple techniques, basic ingredients" },
+                  { level: "intermediate", desc: "Moderate skills, some special techniques" },
+                  { level: "advanced", desc: "Complex techniques, professional methods" },
+                ].map(({ level, desc }) => (
                   <div
                     key={level}
                     className={`generator-option ${difficulty === level ? "generator-option-active" : ""}`}
@@ -111,9 +121,10 @@ export default function MasterChef() {
                       onChange={() => setDifficulty(level)}
                       className="generator-radio"
                     />
-                    <label htmlFor={level} className="capitalize cursor-pointer">
-                      {level}
-                    </label>
+                    <div className="cursor-pointer">
+                      <div className="capitalize font-medium">{level}</div>
+                      <div className="text-xs text-foreground/70 mt-1">{desc}</div>
+                    </div>
                   </div>
                 ))}
               </div>
