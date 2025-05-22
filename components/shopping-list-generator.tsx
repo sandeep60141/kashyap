@@ -11,17 +11,23 @@ interface Ingredient {
 }
 
 interface ShoppingListGeneratorProps {
-  ingredients: Ingredient[] | string[]
-  recipeName: string
+  ingredients?: Ingredient[] | string[]
+  recipeName?: string
 }
 
-export function ShoppingListGenerator({ ingredients, recipeName }: ShoppingListGeneratorProps) {
+export function ShoppingListGenerator({ ingredients = [], recipeName = "Recipe" }: ShoppingListGeneratorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [shoppingList, setShoppingList] = useState<Ingredient[]>(() => {
+    // Safely check if ingredients exists and has items
+    if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
+      return []
+    }
+
     // Convert string[] to Ingredient[] if needed
-    if (ingredients.length > 0 && typeof ingredients[0] === "string") {
+    if (typeof ingredients[0] === "string") {
       return (ingredients as string[]).map((name) => ({ name, checked: false }))
     }
+
     return ingredients as Ingredient[]
   })
   const [copied, setCopied] = useState(false)
@@ -33,40 +39,37 @@ export function ShoppingListGenerator({ ingredients, recipeName }: ShoppingListG
   }
 
   const handlePrint = () => {
-    const printContent = document.getElementById("shopping-list-content")
-    if (printContent) {
-      const printWindow = window.open("", "_blank")
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Shopping List for ${recipeName}</title>
-              <style>
-                body { font-family: Arial, sans-serif; padding: 20px; }
-                h1 { color: #2e7d32; }
-                ul { list-style-type: none; padding: 0; }
-                li { padding: 8px 0; border-bottom: 1px solid #eee; }
-                .checked { text-decoration: line-through; color: #888; }
-              </style>
-            </head>
-            <body>
-              <h1>Shopping List for ${recipeName}</h1>
-              <ul>
-                ${shoppingList
-                  .map(
-                    (item) =>
-                      `<li class="${item.checked ? "checked" : ""}">${item.amount ? item.amount + " " : ""}${
-                        item.name
-                      }</li>`,
-                  )
-                  .join("")}
-              </ul>
-            </body>
-          </html>
-        `)
-        printWindow.document.close()
-        printWindow.print()
-      }
+    const printWindow = window.open("", "_blank")
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Shopping List for ${recipeName}</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              h1 { color: #2e7d32; }
+              ul { list-style-type: none; padding: 0; }
+              li { padding: 8px 0; border-bottom: 1px solid #eee; }
+              .checked { text-decoration: line-through; color: #888; }
+            </style>
+          </head>
+          <body>
+            <h1>Shopping List for ${recipeName}</h1>
+            <ul>
+              ${shoppingList
+                .map(
+                  (item) =>
+                    `<li class="${item.checked ? "checked" : ""}">${item.amount ? item.amount + " " : ""}${
+                      item.name
+                    }</li>`,
+                )
+                .join("")}
+            </ul>
+          </body>
+        </html>
+      `)
+      printWindow.document.close()
+      printWindow.print()
     }
   }
 
@@ -77,6 +80,16 @@ export function ShoppingListGenerator({ ingredients, recipeName }: ShoppingListG
     navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  // Don't render if no ingredients
+  if (!shoppingList || shoppingList.length === 0) {
+    return (
+      <Button variant="ghost" size="sm" disabled className="flex items-center gap-1 text-gray-400 cursor-not-allowed">
+        <ShoppingBag className="h-4 w-4" />
+        No Ingredients
+      </Button>
+    )
   }
 
   return (
@@ -124,7 +137,7 @@ export function ShoppingListGenerator({ ingredients, recipeName }: ShoppingListG
                     >
                       <input
                         type="checkbox"
-                        checked={item.checked}
+                        checked={item.checked || false}
                         onChange={() => toggleItem(index)}
                         className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
                       />
@@ -134,7 +147,7 @@ export function ShoppingListGenerator({ ingredients, recipeName }: ShoppingListG
                         } transition-all`}
                       >
                         {item.amount && <span className="font-medium">{item.amount} </span>}
-                        {item.name}
+                        {item.name || "Unknown ingredient"}
                       </span>
                     </li>
                   ))}

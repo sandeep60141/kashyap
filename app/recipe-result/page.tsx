@@ -98,27 +98,31 @@ export default function RecipeResultPage() {
     )
   }
 
-  // Extract ingredients from the recipe
+  // Extract ingredients from the recipe safely
   const extractIngredients = () => {
-    if (!recipe) return []
+    if (!recipe || !recipe.ingredients) return []
 
-    const ingredients = recipe.ingredients || []
+    const ingredients = recipe.ingredients
 
     // If ingredients is a string, convert it to an array of objects
     if (typeof ingredients === "string") {
       return ingredients
         .split("\n")
         .filter(Boolean)
-        .map((ing: string) => ({ name: ing, amount: "", checked: false }))
+        .map((ing: string) => ({ name: ing.trim(), amount: "", checked: false }))
     }
 
     // If ingredients is an array of strings, convert to objects
     if (Array.isArray(ingredients)) {
       return ingredients.map((ing: any) => {
         if (typeof ing === "string") {
-          return { name: ing, amount: "", checked: false }
+          return { name: ing.trim(), amount: "", checked: false }
         }
-        return { ...ing, checked: false }
+        return {
+          name: ing.name || ing.ingredient || "Unknown ingredient",
+          amount: ing.amount || ing.quantity || "",
+          checked: false,
+        }
       })
     }
 
@@ -198,7 +202,7 @@ export default function RecipeResultPage() {
       </div>
 
       {/* Food Safety Alert - Always visible */}
-      {recipe.foodSafetyTips && recipe.foodSafetyTips.length > 0 && (
+      {recipe.foodSafetyTips && Array.isArray(recipe.foodSafetyTips) && recipe.foodSafetyTips.length > 0 && (
         <Alert className="mb-6 bg-red-50 border-red-200 text-red-800">
           <AlertTriangle className="h-4 w-4 text-red-600" />
           <AlertTitle className="text-red-700 font-bold">Food Safety Tips</AlertTitle>
@@ -213,36 +217,36 @@ export default function RecipeResultPage() {
       )}
 
       <div className="bg-gradient-to-r from-primary/20 to-primary/10 p-6 rounded-lg mb-6 shadow-md">
-        <h1 className="text-3xl font-bold text-primary mb-2">{recipe.title}</h1>
-        <p className="text-foreground/80">{recipe.description}</p>
+        <h1 className="text-3xl font-bold text-primary mb-2">{recipe.title || "Recipe"}</h1>
+        <p className="text-foreground/80">{recipe.description || "A delicious recipe"}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card className="p-4 flex items-center justify-center flex-col text-center border-primary/20">
           <Clock className="h-6 w-6 text-primary mb-2" />
           <p className="text-sm text-foreground/70">Prep Time</p>
-          <p className="font-bold">{recipe.prepTime}</p>
+          <p className="font-bold">{recipe.prepTime || "N/A"}</p>
         </Card>
         <Card className="p-4 flex items-center justify-center flex-col text-center border-primary/20">
           <Clock className="h-6 w-6 text-primary mb-2" />
           <p className="text-sm text-foreground/70">Cook Time</p>
-          <p className="font-bold">{recipe.cookTime}</p>
+          <p className="font-bold">{recipe.cookTime || "N/A"}</p>
         </Card>
         <Card className="p-4 flex items-center justify-center flex-col text-center border-primary/20">
           <Users className="h-6 w-6 text-primary mb-2" />
           <p className="text-sm text-foreground/70">Servings</p>
-          <p className="font-bold">{recipe.servings}</p>
+          <p className="font-bold">{recipe.servings || "N/A"}</p>
         </Card>
         <Card className="p-4 flex items-center justify-center flex-col text-center border-primary/20">
           <ChefHat className="h-6 w-6 text-primary mb-2" />
           <p className="text-sm text-foreground/70">Difficulty</p>
-          <p className="font-bold">{recipe.difficulty}</p>
+          <p className="font-bold">{recipe.difficulty || "N/A"}</p>
         </Card>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">
         <PDFGenerator recipe={recipe} />
-        <ShoppingListGenerator recipe={recipe} />
+        <ShoppingListGenerator ingredients={ingredientsList} recipeName={recipe.title || "Recipe"} />
         <CopyRecipeLink recipe={recipe} />
         <MealTypeFilters />
       </div>
@@ -267,12 +271,17 @@ export default function RecipeResultPage() {
           <Card className="p-6 border-primary/20">
             <h2 className="text-xl font-bold text-primary mb-4">Ingredients</h2>
             <ul className="list-disc pl-5 space-y-2">
-              {Array.isArray(recipe.ingredients) &&
-                recipe.ingredients.map((ingredient: string, index: number) => (
+              {ingredientsList.length > 0 ? (
+                ingredientsList.map((ingredient: any, index: number) => (
                   <li key={index} className="text-foreground/90">
-                    {ingredient}
+                    {typeof ingredient === "string"
+                      ? ingredient
+                      : `${ingredient.amount ? ingredient.amount + " " : ""}${ingredient.name}`}
                   </li>
-                ))}
+                ))
+              ) : (
+                <li className="text-foreground/60">No ingredients found</li>
+              )}
             </ul>
           </Card>
         </TabsContent>
@@ -281,12 +290,15 @@ export default function RecipeResultPage() {
           <Card className="p-6 border-primary/20">
             <h2 className="text-xl font-bold text-primary mb-4">Instructions</h2>
             <ol className="list-decimal pl-5 space-y-4">
-              {Array.isArray(recipe.instructions) &&
+              {Array.isArray(recipe.instructions) && recipe.instructions.length > 0 ? (
                 recipe.instructions.map((instruction: string, index: number) => (
                   <li key={index} className="text-foreground/90">
                     {instruction}
                   </li>
-                ))}
+                ))
+              ) : (
+                <li className="text-foreground/60">No instructions found</li>
+              )}
             </ol>
           </Card>
         </TabsContent>
@@ -295,12 +307,15 @@ export default function RecipeResultPage() {
           <Card className="p-6 border-primary/20">
             <h2 className="text-xl font-bold text-primary mb-4">Equipment Needed</h2>
             <ul className="list-disc pl-5 space-y-2">
-              {Array.isArray(recipe.equipment) &&
+              {Array.isArray(recipe.equipment) && recipe.equipment.length > 0 ? (
                 recipe.equipment.map((item: string, index: number) => (
                   <li key={index} className="text-foreground/90">
                     {item}
                   </li>
-                ))}
+                ))
+              ) : (
+                <li className="text-foreground/60">No special equipment needed</li>
+              )}
             </ul>
           </Card>
 
@@ -310,15 +325,15 @@ export default function RecipeResultPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {Object.entries(recipe.nutritionalInfo).map(([key, value]: [string, any]) => (
                   <div key={key} className="text-center p-2 bg-secondary/30 rounded-lg">
-                    <p className="text-sm text-foreground/70">{key}</p>
-                    <p className="font-bold">{value}</p>
+                    <p className="text-sm text-foreground/70 capitalize">{key}</p>
+                    <p className="font-bold">{value || "N/A"}</p>
                   </div>
                 ))}
               </div>
             </Card>
           )}
 
-          {recipe.tips && recipe.tips.length > 0 && (
+          {recipe.tips && Array.isArray(recipe.tips) && recipe.tips.length > 0 && (
             <Card className="p-6 border-primary/20">
               <h2 className="text-xl font-bold text-primary mb-4">Chef's Tips</h2>
               <ul className="list-disc pl-5 space-y-2">
@@ -331,18 +346,22 @@ export default function RecipeResultPage() {
             </Card>
           )}
 
-          {recipe.storage && (
+          {(recipe.storage || recipe.reheating) && (
             <Card className="p-6 border-primary/20">
               <h2 className="text-xl font-bold text-primary mb-4">Storage & Reheating</h2>
               <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-primary">Storage</h3>
-                  <p className="text-foreground/90">{recipe.storage}</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-primary">Reheating</h3>
-                  <p className="text-foreground/90">{recipe.reheating}</p>
-                </div>
+                {recipe.storage && (
+                  <div>
+                    <h3 className="font-semibold text-primary">Storage</h3>
+                    <p className="text-foreground/90">{recipe.storage}</p>
+                  </div>
+                )}
+                {recipe.reheating && (
+                  <div>
+                    <h3 className="font-semibold text-primary">Reheating</h3>
+                    <p className="text-foreground/90">{recipe.reheating}</p>
+                  </div>
+                )}
               </div>
             </Card>
           )}
