@@ -1,15 +1,13 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
-import { Loader2, Utensils, Activity } from "lucide-react"
 import { generateRecipe } from "@/lib/client-recipe-generator"
+import { ChefForm } from "@/components/chef-form"
+import FormStep from "@/components/form-step"
 import DietaryRequirements from "@/components/dietary-requirements"
 import FreeTierBanner from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
@@ -27,8 +25,7 @@ export default function MacrosChef() {
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     if (!mealType.trim()) {
       setError("Please enter a meal type")
       return
@@ -40,21 +37,13 @@ export default function MacrosChef() {
     try {
       const recipe = await generateRecipe({
         mealType,
-        macros: {
-          protein,
-          carbs,
-          fat,
-          calories,
-        },
+        macros: { protein, carbs, fat, calories },
         preferences,
         dietaryRequirements,
         model: selectedModel,
       })
 
-      // Store the recipe in localStorage
       localStorage.setItem("generatedRecipe", JSON.stringify(recipe))
-
-      // Redirect to the recipe result page
       router.push("/recipe-result")
     } catch (err) {
       console.error("Error generating recipe:", err)
@@ -66,159 +55,166 @@ export default function MacrosChef() {
 
   return (
     <div className="generator-container">
-      <div className="generator-header">
-        <h1 className="generator-title">
-          <Activity className="inline-block mr-2 h-8 w-8" />
-          MacrosChef
-        </h1>
-        <p className="generator-description">
-          Generate recipes that match your specific macronutrient and calorie requirements.
-        </p>
-      </div>
-
       <FreeTierBanner />
 
-      <form onSubmit={handleSubmit} className="generator-form">
-        <div className="generator-section">
-          <label htmlFor="mealType" className="generator-section-title">
-            What type of meal would you like?
-          </label>
-          <Input
-            id="mealType"
-            placeholder="E.g., breakfast, lunch, dinner, snack, post-workout, etc."
-            value={mealType}
-            onChange={(e) => setMealType(e.target.value)}
-            className="generator-input"
-          />
-        </div>
+      {error && <div className="generator-error mb-6">{error}</div>}
 
-        <div className="generator-section">
-          <label className="generator-section-title">Macronutrient Distribution</label>
-          <div className="space-y-6">
+      <ChefForm
+        title="MacrosChef - Nutrition-Focused Recipes"
+        buttonText="Generate Recipe"
+        onSubmit={handleSubmit}
+        isLoading={isGenerating}
+      >
+        <FormStep number={1} title="Meal Information" subtitle="Tell us about the meal you want to create">
+          <div className="space-y-4">
             <div>
-              <div className="flex justify-between mb-2">
-                <span>Protein: {protein}%</span>
-                <span className="text-primary">{Math.round((protein / 100) * calories)} calories</span>
-              </div>
-              <Slider
-                value={[protein]}
-                min={10}
-                max={60}
-                step={5}
-                onValueChange={(value) => {
-                  const newProtein = value[0]
-                  setProtein(newProtein)
-                  // Adjust carbs and fat proportionally
-                  const remaining = 100 - newProtein
-                  const ratio = carbs / (carbs + fat)
-                  const newCarbs = Math.round(remaining * ratio)
-                  setCarbs(newCarbs)
-                  setFat(100 - newProtein - newCarbs)
-                }}
-                className="[&>span]:bg-primary"
+              <label htmlFor="mealType" className="block text-sm font-medium text-primary mb-2">
+                What type of meal would you like? *
+              </label>
+              <Input
+                id="mealType"
+                placeholder="E.g., breakfast, lunch, dinner, snack, post-workout, etc."
+                value={mealType}
+                onChange={(e) => setMealType(e.target.value)}
+                className="generator-input"
               />
             </div>
 
             <div>
-              <div className="flex justify-between mb-2">
-                <span>Carbs: {carbs}%</span>
-                <span className="text-primary">{Math.round((carbs / 100) * calories)} calories</span>
-              </div>
-              <Slider
-                value={[carbs]}
-                min={10}
-                max={60}
-                step={5}
-                onValueChange={(value) => {
-                  const newCarbs = value[0]
-                  setCarbs(newCarbs)
-                  // Adjust protein and fat proportionally
-                  const remaining = 100 - newCarbs
-                  const ratio = protein / (protein + fat)
-                  const newProtein = Math.round(remaining * ratio)
-                  setProtein(newProtein)
-                  setFat(100 - newCarbs - newProtein)
-                }}
-                className="[&>span]:bg-primary"
-              />
-            </div>
-
-            <div>
-              <div className="flex justify-between mb-2">
-                <span>Fat: {fat}%</span>
-                <span className="text-primary">{Math.round((fat / 100) * calories)} calories</span>
-              </div>
-              <Slider
-                value={[fat]}
-                min={10}
-                max={60}
-                step={5}
-                onValueChange={(value) => {
-                  const newFat = value[0]
-                  setFat(newFat)
-                  // Adjust protein and carbs proportionally
-                  const remaining = 100 - newFat
-                  const ratio = protein / (protein + carbs)
-                  const newProtein = Math.round(remaining * ratio)
-                  setProtein(newProtein)
-                  setCarbs(100 - newFat - newProtein)
-                }}
-                className="[&>span]:bg-primary"
+              <label htmlFor="preferences" className="block text-sm font-medium text-primary mb-2">
+                Any preferences or additional instructions? (optional)
+              </label>
+              <Textarea
+                id="preferences"
+                placeholder="E.g., high protein, low carb, quick to prepare, etc."
+                value={preferences}
+                onChange={(e) => setPreferences(e.target.value)}
+                className="generator-textarea"
+                rows={3}
               />
             </div>
           </div>
-        </div>
+        </FormStep>
 
-        <div className="generator-section">
-          <label className="generator-section-title">Total Calories: {calories}</label>
-          <Slider
-            value={[calories]}
-            min={200}
-            max={1000}
-            step={50}
-            onValueChange={(value) => setCalories(value[0])}
-            className="[&>span]:bg-primary"
-          />
-        </div>
+        <FormStep number={2} title="Macronutrient Targets" subtitle="Set your specific macro and calorie goals">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-primary mb-4">Total Calories: {calories}</label>
+              <Slider
+                value={[calories]}
+                min={200}
+                max={1000}
+                step={50}
+                onValueChange={(value) => setCalories(value[0])}
+                className="[&>span]:bg-primary"
+              />
+            </div>
 
-        <div className="generator-section">
-          <label htmlFor="preferences" className="generator-section-title">
-            Any preferences or additional instructions? (optional)
-          </label>
-          <Textarea
-            id="preferences"
-            placeholder="E.g., high protein, low carb, quick to prepare, etc."
-            value={preferences}
-            onChange={(e) => setPreferences(e.target.value)}
-            className="generator-textarea"
-          />
-        </div>
+            <div className="space-y-6">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm font-medium text-primary">Protein: {protein}%</span>
+                  <span className="text-sm text-primary">{Math.round((protein / 100) * calories)} calories</span>
+                </div>
+                <Slider
+                  value={[protein]}
+                  min={10}
+                  max={60}
+                  step={5}
+                  onValueChange={(value) => {
+                    const newProtein = value[0]
+                    setProtein(newProtein)
+                    const remaining = 100 - newProtein
+                    const ratio = carbs / (carbs + fat)
+                    const newCarbs = Math.round(remaining * ratio)
+                    setCarbs(newCarbs)
+                    setFat(100 - newProtein - newCarbs)
+                  }}
+                  className="[&>span]:bg-primary"
+                />
+              </div>
 
-        <div className="generator-section">
-          <label className="generator-section-title">Dietary Requirements (optional)</label>
-          <DietaryRequirements selectedRequirements={dietaryRequirements} onChange={setDietaryRequirements} />
-        </div>
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm font-medium text-primary">Carbs: {carbs}%</span>
+                  <span className="text-sm text-primary">{Math.round((carbs / 100) * calories)} calories</span>
+                </div>
+                <Slider
+                  value={[carbs]}
+                  min={10}
+                  max={60}
+                  step={5}
+                  onValueChange={(value) => {
+                    const newCarbs = value[0]
+                    setCarbs(newCarbs)
+                    const remaining = 100 - newCarbs
+                    const ratio = protein / (protein + fat)
+                    const newProtein = Math.round(remaining * ratio)
+                    setProtein(newProtein)
+                    setFat(100 - newCarbs - newProtein)
+                  }}
+                  className="[&>span]:bg-primary"
+                />
+              </div>
 
-        <div className="generator-section">
-          <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
-        </div>
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm font-medium text-primary">Fat: {fat}%</span>
+                  <span className="text-sm text-primary">{Math.round((fat / 100) * calories)} calories</span>
+                </div>
+                <Slider
+                  value={[fat]}
+                  min={10}
+                  max={60}
+                  step={5}
+                  onValueChange={(value) => {
+                    const newFat = value[0]
+                    setFat(newFat)
+                    const remaining = 100 - newFat
+                    const ratio = protein / (protein + carbs)
+                    const newProtein = Math.round(remaining * ratio)
+                    setProtein(newProtein)
+                    setCarbs(100 - newFat - newProtein)
+                  }}
+                  className="[&>span]:bg-primary"
+                />
+              </div>
+            </div>
+          </div>
+        </FormStep>
 
-        {error && <div className="generator-error">{error}</div>}
+        <FormStep number={3} title="Final Settings" subtitle="Set dietary requirements and AI model">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-primary mb-3">Dietary Requirements (optional)</label>
+              <DietaryRequirements selectedRequirements={dietaryRequirements} onChange={setDietaryRequirements} />
+            </div>
 
-        <Button type="submit" disabled={isGenerating || !mealType.trim()} className="generator-button">
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating Recipe...
-            </>
-          ) : (
-            <>
-              <Utensils className="mr-2 h-4 w-4" />
-              Generate Recipe
-            </>
-          )}
-        </Button>
-      </form>
+            <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+
+            <div className="bg-primary/10 p-4 rounded-lg">
+              <h4 className="font-medium text-primary mb-2">Nutrition Summary</h4>
+              <div className="text-sm text-foreground/80 space-y-1">
+                <p>
+                  <strong>Meal Type:</strong> {mealType || "Not specified"}
+                </p>
+                <p>
+                  <strong>Total Calories:</strong> {calories}
+                </p>
+                <p>
+                  <strong>Protein:</strong> {protein}% ({Math.round((protein / 100) * calories)} cal)
+                </p>
+                <p>
+                  <strong>Carbs:</strong> {carbs}% ({Math.round((carbs / 100) * calories)} cal)
+                </p>
+                <p>
+                  <strong>Fat:</strong> {fat}% ({Math.round((fat / 100) * calories)} cal)
+                </p>
+              </div>
+            </div>
+          </div>
+        </FormStep>
+      </ChefForm>
     </div>
   )
 }

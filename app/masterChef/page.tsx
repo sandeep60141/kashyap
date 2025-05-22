@@ -1,14 +1,12 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
-import { Loader2, ChefHat, Utensils } from "lucide-react"
 import { generateRecipe } from "@/lib/client-recipe-generator"
+import { ChefForm } from "@/components/chef-form"
+import FormStep from "@/components/form-step"
 import DietaryRequirements from "@/components/dietary-requirements"
 import FreeTierBanner from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
@@ -23,8 +21,7 @@ export default function MasterChef() {
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     if (!recipeName.trim()) {
       setError("Please enter a recipe name or description")
       return
@@ -42,10 +39,7 @@ export default function MasterChef() {
         model: selectedModel,
       })
 
-      // Store the recipe in localStorage
       localStorage.setItem("generatedRecipe", JSON.stringify(recipe))
-
-      // Redirect to the recipe result page
       router.push("/recipe-result")
     } catch (err) {
       console.error("Error generating recipe:", err)
@@ -57,95 +51,106 @@ export default function MasterChef() {
 
   return (
     <div className="generator-container">
-      <div className="generator-header">
-        <h1 className="generator-title">
-          <ChefHat className="inline-block mr-2 h-8 w-8" />
-          MasterChef
-        </h1>
-        <p className="generator-description">
-          Describe the recipe you want to create, and we'll generate a professional-quality recipe for you.
-        </p>
-      </div>
-
       <FreeTierBanner />
 
-      <form onSubmit={handleSubmit} className="generator-form">
-        <div className="generator-section">
-          <label htmlFor="recipeName" className="generator-section-title">
-            What recipe would you like to create?
-          </label>
-          <Textarea
-            id="recipeName"
-            placeholder="Describe the recipe you want (e.g., Creamy Garlic Parmesan Pasta with Grilled Chicken)"
-            value={recipeName}
-            onChange={(e) => setRecipeName(e.target.value)}
-            className="generator-textarea"
-          />
-        </div>
+      {error && <div className="generator-error mb-6">{error}</div>}
 
-        <div className="generator-section">
-          <label htmlFor="cuisine" className="generator-section-title">
-            Cuisine Type (optional)
-          </label>
-          <Input
-            id="cuisine"
-            placeholder="E.g., Italian, Mexican, Japanese, etc."
-            value={cuisine}
-            onChange={(e) => setCuisine(e.target.value)}
-            className="generator-input"
-          />
-        </div>
+      <ChefForm
+        title="MasterChef - Professional Recipe Creation"
+        buttonText="Generate Recipe"
+        onSubmit={handleSubmit}
+        isLoading={isGenerating}
+      >
+        <FormStep number={1} title="Recipe Description" subtitle="Describe the recipe you want to create">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="recipeName" className="block text-sm font-medium text-primary mb-2">
+                What recipe would you like to create? *
+              </label>
+              <Textarea
+                id="recipeName"
+                placeholder="Describe the recipe you want (e.g., Creamy Garlic Parmesan Pasta with Grilled Chicken)"
+                value={recipeName}
+                onChange={(e) => setRecipeName(e.target.value)}
+                className="generator-textarea"
+                rows={3}
+              />
+            </div>
 
-        <div className="generator-section">
-          <label className="generator-section-title">Difficulty Level</label>
-          <div className="grid grid-cols-3 gap-4">
-            {["beginner", "intermediate", "advanced"].map((level) => (
-              <div
-                key={level}
-                className={`generator-option ${difficulty === level ? "generator-option-active" : ""}`}
-                onClick={() => setDifficulty(level)}
-              >
-                <input
-                  type="radio"
-                  name="difficulty"
-                  id={level}
-                  checked={difficulty === level}
-                  onChange={() => setDifficulty(level)}
-                  className="generator-radio"
-                />
-                <label htmlFor={level} className="capitalize cursor-pointer">
-                  {level}
-                </label>
-              </div>
-            ))}
+            <div>
+              <label htmlFor="cuisine" className="block text-sm font-medium text-primary mb-2">
+                Cuisine Type (optional)
+              </label>
+              <Input
+                id="cuisine"
+                placeholder="E.g., Italian, Mexican, Japanese, French, etc."
+                value={cuisine}
+                onChange={(e) => setCuisine(e.target.value)}
+                className="generator-input"
+              />
+            </div>
           </div>
-        </div>
+        </FormStep>
 
-        <div className="generator-section">
-          <label className="generator-section-title">Dietary Requirements (optional)</label>
-          <DietaryRequirements selectedRequirements={dietaryRequirements} onChange={setDietaryRequirements} />
-        </div>
+        <FormStep number={2} title="Recipe Complexity" subtitle="Choose the difficulty level and dietary preferences">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-primary mb-3">Difficulty Level</label>
+              <div className="grid grid-cols-3 gap-4">
+                {["beginner", "intermediate", "advanced"].map((level) => (
+                  <div
+                    key={level}
+                    className={`generator-option ${difficulty === level ? "generator-option-active" : ""}`}
+                    onClick={() => setDifficulty(level)}
+                  >
+                    <input
+                      type="radio"
+                      name="difficulty"
+                      id={level}
+                      checked={difficulty === level}
+                      onChange={() => setDifficulty(level)}
+                      className="generator-radio"
+                    />
+                    <label htmlFor={level} className="capitalize cursor-pointer">
+                      {level}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-        <div className="generator-section">
-          <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-primary mb-3">Dietary Requirements (optional)</label>
+              <DietaryRequirements selectedRequirements={dietaryRequirements} onChange={setDietaryRequirements} />
+            </div>
+          </div>
+        </FormStep>
 
-        {error && <div className="generator-error">{error}</div>}
+        <FormStep number={3} title="Final Settings" subtitle="Choose your AI model and review your selections">
+          <div className="space-y-6">
+            <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
 
-        <Button type="submit" disabled={isGenerating || !recipeName.trim()} className="generator-button">
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating Recipe...
-            </>
-          ) : (
-            <>
-              <Utensils className="mr-2 h-4 w-4" />
-              Generate Recipe
-            </>
-          )}
-        </Button>
-      </form>
+            <div className="bg-primary/10 p-4 rounded-lg">
+              <h4 className="font-medium text-primary mb-2">Recipe Summary</h4>
+              <div className="text-sm text-foreground/80 space-y-1">
+                <p>
+                  <strong>Recipe:</strong> {recipeName || "Not specified"}
+                </p>
+                <p>
+                  <strong>Cuisine:</strong> {cuisine || "Any"}
+                </p>
+                <p>
+                  <strong>Difficulty:</strong> {difficulty}
+                </p>
+                <p>
+                  <strong>Dietary Requirements:</strong>{" "}
+                  {dietaryRequirements.length > 0 ? dietaryRequirements.join(", ") : "None"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </FormStep>
+      </ChefForm>
     </div>
   )
 }

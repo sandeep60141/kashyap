@@ -1,13 +1,11 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, Wine } from "lucide-react"
 import { generateRecipe } from "@/lib/client-recipe-generator"
+import { ChefForm } from "@/components/chef-form"
+import FormStep from "@/components/form-step"
 import FreeTierBanner from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
 
@@ -20,8 +18,7 @@ export default function PairPerfect() {
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     if (!dish.trim()) {
       setError("Please enter a dish")
       return
@@ -39,10 +36,7 @@ export default function PairPerfect() {
         model: selectedModel,
       })
 
-      // Store the recipe in localStorage
       localStorage.setItem("generatedRecipe", JSON.stringify(recipe))
-
-      // Redirect to the recipe result page
       router.push("/recipe-result")
     } catch (err) {
       console.error("Error generating pairing:", err)
@@ -54,88 +48,104 @@ export default function PairPerfect() {
 
   return (
     <div className="generator-container">
-      <div className="generator-header">
-        <h1 className="generator-title">
-          <Wine className="inline-block mr-2 h-8 w-8" />
-          PairPerfect
-        </h1>
-        <p className="generator-description">Find the perfect wine, beer, or beverage pairing for any dish.</p>
-      </div>
-
       <FreeTierBanner />
 
-      <form onSubmit={handleSubmit} className="generator-form">
-        <div className="generator-section">
-          <label htmlFor="dish" className="generator-section-title">
-            What dish would you like to pair?
-          </label>
-          <Textarea
-            id="dish"
-            placeholder="Describe your dish (e.g., Grilled salmon with lemon and herbs)"
-            value={dish}
-            onChange={(e) => setDish(e.target.value)}
-            className="generator-textarea"
-          />
-        </div>
+      {error && <div className="generator-error mb-6">{error}</div>}
 
-        <div className="generator-section">
-          <label className="generator-section-title">Pairing Type</label>
-          <div className="grid grid-cols-3 gap-4">
-            {["wine", "beer", "beverage"].map((type) => (
-              <div
-                key={type}
-                className={`generator-option ${pairingType === type ? "generator-option-active" : ""}`}
-                onClick={() => setPairingType(type)}
-              >
-                <input
-                  type="radio"
-                  name="pairingType"
-                  id={type}
-                  checked={pairingType === type}
-                  onChange={() => setPairingType(type)}
-                  className="generator-radio"
-                />
-                <label htmlFor={type} className="capitalize cursor-pointer">
-                  {type}
-                </label>
-              </div>
-            ))}
+      <ChefForm
+        title="PairPerfect - Perfect Food & Drink Pairings"
+        buttonText="Find Pairing"
+        onSubmit={handleSubmit}
+        isLoading={isGenerating}
+      >
+        <FormStep number={1} title="Your Dish" subtitle="Tell us about the dish you want to pair">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="dish" className="block text-sm font-medium text-primary mb-2">
+                What dish would you like to pair? *
+              </label>
+              <Textarea
+                id="dish"
+                placeholder="Describe your dish in detail (e.g., Grilled salmon with lemon and herbs, Spicy Thai curry, Chocolate lava cake)"
+                value={dish}
+                onChange={(e) => setDish(e.target.value)}
+                className="generator-textarea"
+                rows={4}
+              />
+              <p className="text-xs text-foreground/60 mt-2">
+                💡 Include cooking method, main ingredients, and flavor profile for better pairing suggestions
+              </p>
+            </div>
           </div>
-        </div>
+        </FormStep>
 
-        <div className="generator-section">
-          <label htmlFor="preferences" className="generator-section-title">
-            Any preferences or additional instructions? (optional)
-          </label>
-          <Textarea
-            id="preferences"
-            placeholder="E.g., red wine only, local beers, non-alcoholic options, etc."
-            value={preferences}
-            onChange={(e) => setPreferences(e.target.value)}
-            className="generator-textarea"
-          />
-        </div>
+        <FormStep number={2} title="Pairing Preferences" subtitle="What type of pairing are you looking for?">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-primary mb-3">Pairing Type</label>
+              <div className="grid grid-cols-3 gap-4">
+                {["wine", "beer", "beverage"].map((type) => (
+                  <div
+                    key={type}
+                    className={`generator-option ${pairingType === type ? "generator-option-active" : ""}`}
+                    onClick={() => setPairingType(type)}
+                  >
+                    <input
+                      type="radio"
+                      name="pairingType"
+                      id={type}
+                      checked={pairingType === type}
+                      onChange={() => setPairingType(type)}
+                      className="generator-radio"
+                    />
+                    <label htmlFor={type} className="capitalize cursor-pointer">
+                      {type === "beverage" ? "Non-Alcoholic" : type}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-        <div className="generator-section">
-          <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
-        </div>
+            <div>
+              <label htmlFor="preferences" className="block text-sm font-medium text-primary mb-2">
+                Any preferences or additional instructions? (optional)
+              </label>
+              <Textarea
+                id="preferences"
+                placeholder="E.g., red wine only, local craft beers, budget-friendly options, specific regions, etc."
+                value={preferences}
+                onChange={(e) => setPreferences(e.target.value)}
+                className="generator-textarea"
+                rows={3}
+              />
+            </div>
+          </div>
+        </FormStep>
 
-        {error && <div className="generator-error">{error}</div>}
+        <FormStep number={3} title="Final Settings" subtitle="Choose your AI model and review your pairing request">
+          <div className="space-y-6">
+            <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
 
-        <Button type="submit" disabled={isGenerating || !dish.trim()} className="generator-button">
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Finding Perfect Pairing...
-            </>
-          ) : (
-            <>
-              <Wine className="mr-2 h-4 w-4" />
-              Find Pairing
-            </>
-          )}
-        </Button>
-      </form>
+            <div className="bg-primary/10 p-4 rounded-lg">
+              <h4 className="font-medium text-primary mb-2">Pairing Summary</h4>
+              <div className="text-sm text-foreground/80 space-y-1">
+                <p>
+                  <strong>Dish:</strong> {dish || "Not specified"}
+                </p>
+                <p>
+                  <strong>Pairing Type:</strong>{" "}
+                  {pairingType === "beverage"
+                    ? "Non-Alcoholic Beverage"
+                    : pairingType.charAt(0).toUpperCase() + pairingType.slice(1)}
+                </p>
+                <p>
+                  <strong>Preferences:</strong> {preferences || "Any"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </FormStep>
+      </ChefForm>
     </div>
   )
 }

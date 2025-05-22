@@ -1,15 +1,11 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ChefForm } from "@/components/chef-form"
-import { Loader2, ChefHat, Utensils } from "lucide-react"
 import { generateRecipe } from "@/lib/client-recipe-generator"
+import { ChefForm } from "@/components/chef-form"
+import FormStep from "@/components/form-step"
 import DietaryRequirements from "@/components/dietary-requirements"
 import FreeTierBanner from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
@@ -23,8 +19,7 @@ export default function PantryChef() {
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     if (!ingredients.trim()) {
       setError("Please enter some ingredients")
       return
@@ -56,87 +51,77 @@ export default function PantryChef() {
 
   return (
     <div className="generator-container">
-      <div className="generator-header">
-        <h1 className="generator-title">
-          <ChefHat className="inline-block mr-2 h-8 w-8" />
-          PantryChef
-        </h1>
-        <p className="generator-description">
-          Enter the ingredients you have on hand, and we'll create a delicious recipe for you.
-        </p>
-      </div>
-
       <FreeTierBanner />
 
-      <form onSubmit={handleSubmit} className="generator-form">
-        <Tabs defaultValue="simple" className="generator-tabs">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="simple" className="generator-tab">
-              Simple
-            </TabsTrigger>
-            <TabsTrigger value="advanced" className="generator-tab">
-              Advanced
-            </TabsTrigger>
-          </TabsList>
+      {error && <div className="generator-error mb-6">{error}</div>}
 
-          <TabsContent value="simple" className="mt-6">
-            <div className="generator-section">
-              <label htmlFor="ingredients" className="generator-section-title">
-                What ingredients do you have?
+      <ChefForm
+        title="PantryChef - Cook with What You Have"
+        buttonText="Generate Recipe"
+        onSubmit={handleSubmit}
+        isLoading={isGenerating}
+      >
+        <FormStep number={1} title="Available Ingredients" subtitle="Tell us what ingredients you have in your pantry">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="ingredients" className="block text-sm font-medium text-primary mb-2">
+                What ingredients do you have? *
               </label>
               <Textarea
                 id="ingredients"
-                placeholder="Enter ingredients separated by commas (e.g., chicken, rice, onions, garlic)"
+                placeholder="Enter ingredients separated by commas (e.g., chicken, rice, onions, garlic, tomatoes)"
                 value={ingredients}
                 onChange={(e) => setIngredients(e.target.value)}
                 className="generator-textarea"
+                rows={4}
               />
+              <p className="text-xs text-foreground/60 mt-2">
+                💡 Tip: Include spices, herbs, and pantry staples you have available
+              </p>
             </div>
+          </div>
+        </FormStep>
 
-            <div className="generator-section">
-              <label htmlFor="preferences" className="generator-section-title">
+        <FormStep
+          number={2}
+          title="Cooking Preferences"
+          subtitle="Let us know your preferences and any special requirements"
+        >
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="preferences" className="block text-sm font-medium text-primary mb-2">
                 Any preferences or additional instructions? (optional)
               </label>
               <Textarea
                 id="preferences"
-                placeholder="E.g., quick meal, spicy, kid-friendly, etc."
+                placeholder="E.g., quick meal (under 30 min), spicy, kid-friendly, comfort food, healthy, etc."
                 value={preferences}
                 onChange={(e) => setPreferences(e.target.value)}
                 className="generator-textarea"
+                rows={3}
               />
             </div>
 
-            <div className="generator-section">
-              <label className="generator-section-title">Dietary Requirements (optional)</label>
+            <div>
+              <label className="block text-sm font-medium text-primary mb-3">Dietary Requirements (optional)</label>
               <DietaryRequirements selectedRequirements={dietaryRequirements} onChange={setDietaryRequirements} />
             </div>
+          </div>
+        </FormStep>
 
-            <div className="generator-section">
-              <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+        <FormStep number={3} title="AI Model Selection" subtitle="Choose the AI model that best fits your needs">
+          <div className="space-y-4">
+            <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+            <div className="bg-primary/10 p-4 rounded-lg">
+              <h4 className="font-medium text-primary mb-2">Ready to Generate!</h4>
+              <p className="text-sm text-foreground/80">
+                We'll create a delicious recipe using your available ingredients and preferences. Click "Generate
+                Recipe" to get started!
+              </p>
             </div>
-
-            {error && <div className="generator-error">{error}</div>}
-
-            <Button type="submit" disabled={isGenerating || !ingredients.trim()} className="generator-button">
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating Recipe...
-                </>
-              ) : (
-                <>
-                  <Utensils className="mr-2 h-4 w-4" />
-                  Generate Recipe
-                </>
-              )}
-            </Button>
-          </TabsContent>
-
-          <TabsContent value="advanced" className="mt-6">
-            <ChefForm />
-          </TabsContent>
-        </Tabs>
-      </form>
+          </div>
+        </FormStep>
+      </ChefForm>
     </div>
   )
 }

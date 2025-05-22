@@ -44,23 +44,27 @@ export function ChefForm({ title, buttonText, onSubmit, isLoading = false, child
 
   return (
     <div className="py-8">
-      <h1 className="text-3xl font-bold text-center mb-8">{title}</h1>
-      <form onSubmit={handleSubmit}>
+      <div className="bg-gradient-to-r from-primary/20 to-primary/10 p-6 rounded-lg mb-6 shadow-md">
+        <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">{title}</h1>
+        <p className="text-foreground/80">Follow the steps below to create your perfect recipe</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="bg-card rounded-lg shadow-md p-6 border border-primary/20">
         <div className="mb-6">
           <div className="flex items-center mb-4">
-            <div className="flex-1 h-2 bg-gray-200 rounded-full">
+            <div className="flex-1 h-3 bg-secondary/30 rounded-full overflow-hidden">
               <div
-                className="h-2 bg-blue-600 rounded-full"
+                className="h-3 bg-gradient-to-r from-primary to-purple-500 rounded-full transition-all duration-300"
                 style={{ width: `${((currentStep + 1) / childrenArray.length) * 100}%` }}
               ></div>
             </div>
-            <span className="ml-4 text-sm font-medium">
+            <span className="ml-4 text-sm font-medium text-primary">
               Step {currentStep + 1} of {childrenArray.length}
             </span>
           </div>
         </div>
 
-        {childrenArray[currentStep]}
+        <div className="min-h-[400px]">{childrenArray[currentStep]}</div>
 
         <div className="mt-8 flex justify-between">
           <Button
@@ -68,19 +72,28 @@ export function ChefForm({ title, buttonText, onSubmit, isLoading = false, child
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 0}
-            className="px-6"
+            className="px-6 border-primary/30 text-primary hover:bg-primary/10"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             Previous
           </Button>
 
           {currentStep < childrenArray.length - 1 ? (
-            <Button type="button" onClick={handleNext} className="px-6">
+            <Button
+              type="button"
+              onClick={handleNext}
+              className="px-6 bg-gradient-to-r from-primary to-purple-500 text-white hover:from-primary/90 hover:to-purple-500/90"
+            >
               Next
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button type="button" onClick={handleGenerateClick} disabled={isLoading} className="px-6">
+            <Button
+              type="button"
+              onClick={handleGenerateClick}
+              disabled={isLoading}
+              className="px-6 bg-gradient-to-r from-primary to-purple-500 text-white hover:from-primary/90 hover:to-purple-500/90"
+            >
               {isLoading ? (
                 <>
                   <span className="animate-spin mr-2">⏳</span>

@@ -1,13 +1,11 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, Wine } from "lucide-react"
 import { generateRecipe } from "@/lib/client-recipe-generator"
+import { ChefForm } from "@/components/chef-form"
+import FormStep from "@/components/form-step"
 import FreeTierBanner from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
 
@@ -20,8 +18,7 @@ export default function MixologyMaestro() {
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     if (!ingredients.trim()) {
       setError("Please enter some ingredients")
       return
@@ -39,10 +36,7 @@ export default function MixologyMaestro() {
         model: selectedModel,
       })
 
-      // Store the recipe in localStorage
       localStorage.setItem("generatedRecipe", JSON.stringify(recipe))
-
-      // Redirect to the recipe result page
       router.push("/recipe-result")
     } catch (err) {
       console.error("Error generating cocktail recipe:", err)
@@ -54,103 +48,118 @@ export default function MixologyMaestro() {
 
   return (
     <div className="generator-container">
-      <div className="generator-header">
-        <h1 className="generator-title">
-          <Wine className="inline-block mr-2 h-8 w-8" />
-          MixologyMaestro
-        </h1>
-        <p className="generator-description">
-          Create delicious cocktails and mocktails with the ingredients you have on hand.
-        </p>
-      </div>
-
       <FreeTierBanner />
 
-      <form onSubmit={handleSubmit} className="generator-form">
-        <div className="generator-section">
-          <label htmlFor="ingredients" className="generator-section-title">
-            What ingredients do you have?
-          </label>
-          <Textarea
-            id="ingredients"
-            placeholder="Enter ingredients separated by commas (e.g., vodka, lime juice, mint, sugar)"
-            value={ingredients}
-            onChange={(e) => setIngredients(e.target.value)}
-            className="generator-textarea"
-          />
-        </div>
+      {error && <div className="generator-error mb-6">{error}</div>}
 
-        <div className="generator-section">
-          <label htmlFor="preferences" className="generator-section-title">
-            Any preferences or additional instructions? (optional)
-          </label>
-          <Textarea
-            id="preferences"
-            placeholder="E.g., sweet, sour, refreshing, strong, etc."
-            value={preferences}
-            onChange={(e) => setPreferences(e.target.value)}
-            className="generator-textarea"
-          />
-        </div>
-
-        <div className="generator-section">
-          <label className="generator-section-title">Drink Type</label>
-          <div className="grid grid-cols-2 gap-4">
-            <div
-              className={`generator-option ${alcoholic ? "generator-option-active" : ""}`}
-              onClick={() => setAlcoholic(true)}
-            >
-              <input
-                type="radio"
-                name="drinkType"
-                id="alcoholic"
-                checked={alcoholic}
-                onChange={() => setAlcoholic(true)}
-                className="generator-radio"
-              />
-              <label htmlFor="alcoholic" className="cursor-pointer">
-                Alcoholic
+      <ChefForm
+        title="MixologyMaestro - Craft Perfect Drinks"
+        buttonText="Create Drink"
+        onSubmit={handleSubmit}
+        isLoading={isGenerating}
+      >
+        <FormStep number={1} title="Available Ingredients" subtitle="What ingredients do you have for your drink?">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="ingredients" className="block text-sm font-medium text-primary mb-2">
+                What ingredients do you have? *
               </label>
-            </div>
-            <div
-              className={`generator-option ${!alcoholic ? "generator-option-active" : ""}`}
-              onClick={() => setAlcoholic(false)}
-            >
-              <input
-                type="radio"
-                name="drinkType"
-                id="nonAlcoholic"
-                checked={!alcoholic}
-                onChange={() => setAlcoholic(false)}
-                className="generator-radio"
+              <Textarea
+                id="ingredients"
+                placeholder="Enter ingredients separated by commas (e.g., vodka, lime juice, mint, sugar, cranberry juice)"
+                value={ingredients}
+                onChange={(e) => setIngredients(e.target.value)}
+                className="generator-textarea"
+                rows={4}
               />
-              <label htmlFor="nonAlcoholic" className="cursor-pointer">
-                Non-Alcoholic
-              </label>
+              <p className="text-xs text-foreground/60 mt-2">
+                💡 Include spirits, mixers, fruits, herbs, and any garnishes you have
+              </p>
             </div>
           </div>
-        </div>
+        </FormStep>
 
-        <div className="generator-section">
-          <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
-        </div>
+        <FormStep number={2} title="Drink Preferences" subtitle="Tell us about your taste preferences and drink type">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-primary mb-3">Drink Type</label>
+              <div className="grid grid-cols-2 gap-4">
+                <div
+                  className={`generator-option ${alcoholic ? "generator-option-active" : ""}`}
+                  onClick={() => setAlcoholic(true)}
+                >
+                  <input
+                    type="radio"
+                    name="drinkType"
+                    id="alcoholic"
+                    checked={alcoholic}
+                    onChange={() => setAlcoholic(true)}
+                    className="generator-radio"
+                  />
+                  <label htmlFor="alcoholic" className="cursor-pointer">
+                    Alcoholic Cocktail
+                  </label>
+                </div>
+                <div
+                  className={`generator-option ${!alcoholic ? "generator-option-active" : ""}`}
+                  onClick={() => setAlcoholic(false)}
+                >
+                  <input
+                    type="radio"
+                    name="drinkType"
+                    id="nonAlcoholic"
+                    checked={!alcoholic}
+                    onChange={() => setAlcoholic(false)}
+                    className="generator-radio"
+                  />
+                  <label htmlFor="nonAlcoholic" className="cursor-pointer">
+                    Non-Alcoholic Mocktail
+                  </label>
+                </div>
+              </div>
+            </div>
 
-        {error && <div className="generator-error">{error}</div>}
+            <div>
+              <label htmlFor="preferences" className="block text-sm font-medium text-primary mb-2">
+                Any preferences or additional instructions? (optional)
+              </label>
+              <Textarea
+                id="preferences"
+                placeholder="E.g., sweet, sour, refreshing, strong, fruity, tropical, classic style, etc."
+                value={preferences}
+                onChange={(e) => setPreferences(e.target.value)}
+                className="generator-textarea"
+                rows={3}
+              />
+            </div>
+          </div>
+        </FormStep>
 
-        <Button type="submit" disabled={isGenerating || !ingredients.trim()} className="generator-button">
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Mixing Drink...
-            </>
-          ) : (
-            <>
-              <Wine className="mr-2 h-4 w-4" />
-              Create Drink
-            </>
-          )}
-        </Button>
-      </form>
+        <FormStep
+          number={3}
+          title="Final Settings"
+          subtitle="Choose your AI model and review your drink specifications"
+        >
+          <div className="space-y-6">
+            <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+
+            <div className="bg-primary/10 p-4 rounded-lg">
+              <h4 className="font-medium text-primary mb-2">Drink Summary</h4>
+              <div className="text-sm text-foreground/80 space-y-1">
+                <p>
+                  <strong>Type:</strong> {alcoholic ? "Alcoholic Cocktail" : "Non-Alcoholic Mocktail"}
+                </p>
+                <p>
+                  <strong>Ingredients:</strong> {ingredients || "Not specified"}
+                </p>
+                <p>
+                  <strong>Style:</strong> {preferences || "Any"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </FormStep>
+      </ChefForm>
     </div>
   )
 }

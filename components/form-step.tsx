@@ -11,17 +11,17 @@ interface FormStepProps {
 
 export default function FormStep({ number, title, subtitle, children }: FormStepProps) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+    <div className="bg-card rounded-lg border border-primary/20 shadow-sm p-6">
       <div className="flex items-start gap-4 mb-6">
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-medium">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-r from-primary to-purple-500 text-white flex items-center justify-center font-medium shadow-lg">
           {number}
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
-          {subtitle && <p className="text-gray-600 mt-1">{subtitle}</p>}
+          <h2 className="text-xl font-semibold text-primary">{title}</h2>
+          {subtitle && <p className="text-foreground/70 mt-1">{subtitle}</p>}
         </div>
       </div>
-      <div>{children}</div>
+      <div className="ml-14">{children}</div>
     </div>
   )
 }
