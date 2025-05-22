@@ -17,6 +17,11 @@ export function ChefForm({ title, buttonText, onSubmit, isLoading = false, child
   const [currentStep, setCurrentStep] = useState(0)
   const childrenArray = React.Children.toArray(children)
 
+  // Add a progress indicator function
+  const getProgressPercentage = () => {
+    return ((currentStep + 1) / childrenArray.length) * 100
+  }
+
   const handleNext = () => {
     if (currentStep < childrenArray.length - 1) {
       setCurrentStep(currentStep + 1)
@@ -42,6 +47,23 @@ export function ChefForm({ title, buttonText, onSubmit, isLoading = false, child
     onSubmit()
   }
 
+  // Add keyboard navigation support
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Allow keyboard navigation with arrow keys
+      if (e.key === "ArrowRight" && currentStep < childrenArray.length - 1) {
+        handleNext()
+      } else if (e.key === "ArrowLeft" && currentStep > 0) {
+        handlePrevious()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [currentStep, childrenArray.length])
+
   return (
     <div className="py-8">
       <div className="bg-gradient-to-r from-primary/20 to-primary/10 p-6 rounded-lg mb-6 shadow-md">
@@ -55,12 +77,29 @@ export function ChefForm({ title, buttonText, onSubmit, isLoading = false, child
             <div className="flex-1 h-3 bg-secondary/30 rounded-full overflow-hidden">
               <div
                 className="h-3 bg-gradient-to-r from-primary to-purple-500 rounded-full transition-all duration-300"
-                style={{ width: `${((currentStep + 1) / childrenArray.length) * 100}%` }}
+                style={{ width: `${getProgressPercentage()}%` }}
               ></div>
             </div>
             <span className="ml-4 text-sm font-medium text-primary">
               Step {currentStep + 1} of {childrenArray.length}
             </span>
+          </div>
+
+          <div className="flex justify-between">
+            {childrenArray.map((_, index) => (
+              <div
+                key={index}
+                className={`text-xs ${
+                  index === currentStep
+                    ? "text-primary font-medium"
+                    : index < currentStep
+                      ? "text-primary/70"
+                      : "text-foreground/40"
+                }`}
+              >
+                Step {index + 1}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -104,6 +143,9 @@ export function ChefForm({ title, buttonText, onSubmit, isLoading = false, child
               )}
             </Button>
           )}
+        </div>
+        <div className="mt-2 text-xs text-center text-foreground/60">
+          Keyboard shortcuts: Use ← → arrow keys to navigate between steps
         </div>
       </form>
     </div>

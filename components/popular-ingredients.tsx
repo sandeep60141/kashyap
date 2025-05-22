@@ -85,6 +85,15 @@ export default function PopularIngredients({
 
   const ingredients = ingredientSets[type]
 
+  // Helper function to check if an ingredient is already selected
+  const isIngredientSelected = (ingredient: string, selectedList: string[]) => {
+    return selectedList.some(
+      (selected) =>
+        selected.toLowerCase().trim() === ingredient.toLowerCase().trim() ||
+        selected.toLowerCase().trim().includes(ingredient.toLowerCase().trim()),
+    )
+  }
+
   return (
     <div className="space-y-3">
       <h4 className="text-sm font-medium text-primary">
@@ -92,9 +101,7 @@ export default function PopularIngredients({
       </h4>
       <div className="flex flex-wrap gap-2">
         {ingredients.map((ingredient) => {
-          const isSelected = selectedIngredients.some((selected) =>
-            selected.toLowerCase().includes(ingredient.toLowerCase()),
-          )
+          const isSelected = selectedIngredients && isIngredientSelected(ingredient, selectedIngredients)
 
           return (
             <Button
@@ -106,12 +113,13 @@ export default function PopularIngredients({
                 isSelected ? "bg-primary text-white" : "border-primary/30 text-primary hover:bg-primary/10"
               }`}
             >
-              <Plus className="h-3 w-3 mr-1" />
+              <Plus className={`h-3 w-3 mr-1 ${isSelected ? "text-white" : "text-primary"}`} />
               {ingredient}
             </Button>
           )
         })}
       </div>
+      <p className="text-xs text-foreground/60">Click an ingredient to add it to your list</p>
     </div>
   )
 }

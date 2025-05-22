@@ -8,6 +8,11 @@ import { ChefForm } from "@/components/chef-form"
 import FormStep from "@/components/form-step"
 import FreeTierBanner from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
+import { Button } from "@/components/ui/button"
+
+// Improve the food pairing tool with better dish suggestions and pairing explanations
+
+// Add dish suggestions
 
 export default function PairPerfect() {
   const router = useRouter()
@@ -17,6 +22,51 @@ export default function PairPerfect() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
+
+  // Add dish suggestions
+  const dishSuggestions = [
+    { name: "Grilled Salmon", type: "seafood" },
+    { name: "Ribeye Steak", type: "meat" },
+    { name: "Mushroom Risotto", type: "vegetarian" },
+    { name: "Spicy Thai Curry", type: "spicy" },
+    { name: "Chocolate Lava Cake", type: "dessert" },
+    { name: "Cheese Platter", type: "appetizer" },
+    { name: "Roast Chicken", type: "poultry" },
+    { name: "Pasta Carbonara", type: "pasta" },
+  ]
+
+  // Add a function to handle dish suggestion clicks
+  const handleDishClick = (suggestion: string) => {
+    setDish(suggestion)
+
+    // Auto-select appropriate pairing type based on the dish
+    const lowerCaseDish = suggestion.toLowerCase()
+    if (
+      lowerCaseDish.includes("cake") ||
+      lowerCaseDish.includes("chocolate") ||
+      lowerCaseDish.includes("dessert") ||
+      lowerCaseDish.includes("sweet")
+    ) {
+      setPairingType("beverage") // Non-alcoholic often pairs better with desserts
+    } else if (
+      lowerCaseDish.includes("seafood") ||
+      lowerCaseDish.includes("fish") ||
+      lowerCaseDish.includes("salmon") ||
+      lowerCaseDish.includes("tuna")
+    ) {
+      setPairingType("wine") // Wine often pairs well with seafood
+    } else if (lowerCaseDish.includes("burger") || lowerCaseDish.includes("bbq") || lowerCaseDish.includes("grill")) {
+      setPairingType("beer") // Beer often pairs well with grilled foods
+    }
+  }
+
+  // Add pairing explanations
+  const pairingExplanations = {
+    wine: "Wine pairs well with many dishes through complementary or contrasting flavors. Red wines typically pair with red meats, while white wines complement seafood and poultry.",
+    beer: "Beer's carbonation and range of flavors make it versatile for food pairing. Lighter beers pair with lighter foods, while robust beers complement hearty dishes.",
+    beverage:
+      "Non-alcoholic beverages like sparkling water, tea, or craft sodas can enhance meals through complementary flavors without the alcohol.",
+  }
 
   const handleSubmit = async () => {
     if (!dish.trim()) {
@@ -77,6 +127,26 @@ export default function PairPerfect() {
               </p>
             </div>
           </div>
+          <div className="mt-4">
+            <h4 className="text-sm font-medium text-primary mb-3">Popular Dishes</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {dishSuggestions.map((suggestion) => (
+                <Button
+                  key={suggestion.name}
+                  variant={dish === suggestion.name ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleDishClick(suggestion.name)}
+                  className={`text-xs ${
+                    dish === suggestion.name
+                      ? "bg-primary text-white"
+                      : "border-primary/30 text-primary hover:bg-primary/10"
+                  }`}
+                >
+                  {suggestion.name}
+                </Button>
+              ))}
+            </div>
+          </div>
         </FormStep>
 
         <FormStep number={2} title="Pairing Preferences" subtitle="What type of pairing are you looking for?">
@@ -104,6 +174,13 @@ export default function PairPerfect() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="mt-4 p-3 bg-primary/5 rounded-lg border border-primary/20">
+              <h4 className="text-sm font-medium text-primary mb-2">
+                About {pairingType.charAt(0).toUpperCase() + pairingType.slice(1)} Pairings
+              </h4>
+              <p className="text-xs text-foreground/80">{pairingExplanations[pairingType]}</p>
             </div>
 
             <div>

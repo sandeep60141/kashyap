@@ -17,6 +17,8 @@ export default function RecipeSuggestions({ onSuggestionClick, type = "general" 
       "Chicken Caesar Salad",
       "Vegetarian Buddha Bowl",
       "Spicy Thai Curry",
+      "Homemade Margherita Pizza",
+      "Beef Tacos with Fresh Salsa",
     ],
     healthy: [
       "Quinoa Power Bowl with Avocado",
@@ -25,6 +27,8 @@ export default function RecipeSuggestions({ onSuggestionClick, type = "general" 
       "Zucchini Noodles with Pesto",
       "Baked Cod with Herbs",
       "Green Smoothie Bowl",
+      "Lentil and Vegetable Soup",
+      "Stuffed Bell Peppers with Turkey",
     ],
     quick: [
       "15-Minute Pasta Aglio e Olio",
@@ -33,6 +37,8 @@ export default function RecipeSuggestions({ onSuggestionClick, type = "general" 
       "Instant Ramen Upgrade",
       "Microwave Mug Omelet",
       "No-Cook Greek Salad",
+      "Tuna Melt Sandwich",
+      "10-Minute Stir Fry",
     ],
     comfort: [
       "Classic Mac and Cheese",
@@ -41,6 +47,8 @@ export default function RecipeSuggestions({ onSuggestionClick, type = "general" 
       "Loaded Baked Potato",
       "Grilled Cheese and Tomato Soup",
       "Chocolate Chip Cookies",
+      "Creamy Mashed Potatoes",
+      "Homestyle Meatloaf",
     ],
   }
 
@@ -65,6 +73,7 @@ export default function RecipeSuggestions({ onSuggestionClick, type = "general" 
           </Button>
         ))}
       </div>
+      <p className="text-xs text-foreground/60">Click a recipe to use it as your starting point</p>
     </div>
   )
 }

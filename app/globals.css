@@ -243,3 +243,91 @@
 .generator-error {
   @apply bg-red-100 text-red-700 p-4 rounded-lg mb-6;
 }
+
+/* Add responsive design improvements to the generator classes */
+
+/* Add responsive design improvements */
+@media (max-width: 768px) {
+  .generator-container {
+    @apply max-w-full p-3;
+  }
+
+  .generator-header {
+    @apply p-4;
+  }
+
+  .generator-form {
+    @apply p-4;
+  }
+
+  .generator-option {
+    @apply p-2;
+  }
+}
+
+/* Add touch-friendly improvements */
+@media (pointer: coarse) {
+  .generator-option {
+    @apply p-3;
+  }
+
+  .generator-checkbox,
+  .generator-radio {
+    @apply h-5 w-5;
+  }
+
+  button,
+  .button,
+  [role="button"] {
+    @apply min-h-[44px] min-w-[44px];
+  }
+}
+
+/* Add accessibility improvements */
+.sr-only {
+  @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+}
+
+/* Focus styles for keyboard navigation */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-primary;
+}
+
+/* Add animation for better feedback */
+.generator-option {
+  @apply transition-all duration-200;
+}
+
+.generator-option:active {
+  @apply scale-95;
+}
+
+button:active {
+  @apply scale-95;
+}
+
+/* Add loading animation */
+.loading-pulse {
+  @apply animate-pulse;
+}
+
+.loading-spin {
+  @apply animate-spin;
+}
+
+/* Add success/error feedback colors */
+.feedback-success {
+  @apply text-green-600 bg-green-50 border-green-200;
+}
+
+.feedback-error {
+  @apply text-red-600 bg-red-50 border-red-200;
+}
+
+.feedback-warning {
+  @apply text-amber-600 bg-amber-50 border-amber-200;
+}
+
+.feedback-info {
+  @apply text-blue-600 bg-blue-50 border-blue-200;
+}

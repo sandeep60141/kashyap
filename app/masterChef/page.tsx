@@ -23,6 +23,33 @@ export default function MasterChef() {
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
 
+  // Improve the recipe name suggestions and add more helpful tooltips
+
+  // Add a function to handle recipe suggestion clicks with better feedback
+  const handleRecipeSuggestionClick = (suggestion: string) => {
+    setRecipeName(suggestion)
+    // Auto-detect cuisine from the recipe name
+    const cuisineMap = {
+      italian: ["pasta", "risotto", "pizza", "lasagna", "carbonara", "parmesan"],
+      mexican: ["taco", "burrito", "enchilada", "quesadilla", "salsa"],
+      chinese: ["stir fry", "fried rice", "dumpling", "noodle"],
+      japanese: ["sushi", "ramen", "teriyaki", "miso", "tempura"],
+      thai: ["curry", "pad thai", "tom yum"],
+      indian: ["curry", "masala", "tikka", "biryani", "tandoori"],
+      french: ["coq au vin", "ratatouille", "croissant", "souffle"],
+      mediterranean: ["hummus", "falafel", "pita", "greek", "olive"],
+    }
+
+    // Check if the recipe name contains any cuisine keywords
+    const lowerCaseName = suggestion.toLowerCase()
+    for (const [cuisine, keywords] of Object.entries(cuisineMap)) {
+      if (keywords.some((keyword) => lowerCaseName.includes(keyword))) {
+        setCuisine(cuisine.charAt(0).toUpperCase() + cuisine.slice(1))
+        break
+      }
+    }
+  }
+
   const handleSubmit = async () => {
     if (!recipeName.trim()) {
       setError("Please enter a recipe name or description")
@@ -79,7 +106,7 @@ export default function MasterChef() {
               />
             </div>
 
-            <RecipeSuggestions onSuggestionClick={setRecipeName} type="general" />
+            <RecipeSuggestions onSuggestionClick={handleRecipeSuggestionClick} type="general" />
 
             <div>
               <label htmlFor="cuisine" className="block text-sm font-medium text-primary mb-2">
@@ -100,18 +127,35 @@ export default function MasterChef() {
 
         <FormStep number={2} title="Recipe Complexity" subtitle="Choose the difficulty level and dietary preferences">
           <div className="space-y-6">
+            {/* Add tooltips for difficulty levels
+            Replace the difficulty section with this enhanced version */}
             <div>
               <label className="block text-sm font-medium text-primary mb-3">Difficulty Level</label>
               <div className="grid grid-cols-3 gap-4">
                 {[
-                  { level: "beginner", desc: "Simple techniques, basic ingredients" },
-                  { level: "intermediate", desc: "Moderate skills, some special techniques" },
-                  { level: "advanced", desc: "Complex techniques, professional methods" },
-                ].map(({ level, desc }) => (
+                  {
+                    level: "beginner",
+                    desc: "Simple techniques, basic ingredients",
+                    tooltip: "Perfect for new cooks. Minimal prep, simple cooking methods, common ingredients.",
+                  },
+                  {
+                    level: "intermediate",
+                    desc: "Moderate skills, some special techniques",
+                    tooltip:
+                      "For those with some cooking experience. May require more prep time and specialized techniques.",
+                  },
+                  {
+                    level: "advanced",
+                    desc: "Complex techniques, professional methods",
+                    tooltip:
+                      "For experienced cooks. Involves complex techniques, precise timing, and specialized equipment.",
+                  },
+                ].map(({ level, desc, tooltip }) => (
                   <div
                     key={level}
                     className={`generator-option ${difficulty === level ? "generator-option-active" : ""}`}
                     onClick={() => setDifficulty(level)}
+                    title={tooltip}
                   >
                     <input
                       type="radio"
