@@ -12,7 +12,7 @@ interface PdfGeneratorProps {
   recipe: any
 }
 
-export function PdfGenerator({ fileName, recipe }: PdfGeneratorProps) {
+export function PDFGenerator({ fileName, recipe }: PdfGeneratorProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const { toast } = useToast()
 

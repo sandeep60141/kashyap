@@ -10,7 +10,7 @@ interface AskChefGPTProps {
   recipe: any
 }
 
-export default function AskChefGPT({ recipe }: AskChefGPTProps) {
+export function AskChefGPT({ recipe }: AskChefGPTProps) {
   const [question, setQuestion] = useState("")
   const [answer, setAnswer] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)

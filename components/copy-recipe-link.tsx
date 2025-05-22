@@ -8,7 +8,7 @@ interface CopyRecipeLinkProps {
   recipe: any
 }
 
-export default function CopyRecipeLink({ recipe }: CopyRecipeLinkProps) {
+export function CopyRecipeLink({ recipe }: CopyRecipeLinkProps) {
   const [copied, setCopied] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 

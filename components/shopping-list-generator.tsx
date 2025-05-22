@@ -15,7 +15,7 @@ interface ShoppingListGeneratorProps {
   recipeName: string
 }
 
-export default function ShoppingListGenerator({ ingredients, recipeName }: ShoppingListGeneratorProps) {
+export function ShoppingListGenerator({ ingredients, recipeName }: ShoppingListGeneratorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [shoppingList, setShoppingList] = useState<Ingredient[]>(() => {
     // Convert string[] to Ingredient[] if needed

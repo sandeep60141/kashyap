@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 
-export default function MealTypeFilters() {
+export function MealTypeFilters() {
   const [selectedType, setSelectedType] = useState<string | null>(null)
 
   const mealTypes = [
