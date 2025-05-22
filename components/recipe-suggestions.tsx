@@ -17,8 +17,6 @@ export default function RecipeSuggestions({ onSuggestionClick, type = "general" 
       "Chicken Caesar Salad",
       "Vegetarian Buddha Bowl",
       "Spicy Thai Curry",
-      "Homemade Margherita Pizza",
-      "Beef Tacos with Fresh Salsa",
     ],
     healthy: [
       "Quinoa Power Bowl with Avocado",
@@ -27,8 +25,6 @@ export default function RecipeSuggestions({ onSuggestionClick, type = "general" 
       "Zucchini Noodles with Pesto",
       "Baked Cod with Herbs",
       "Green Smoothie Bowl",
-      "Lentil and Vegetable Soup",
-      "Stuffed Bell Peppers with Turkey",
     ],
     quick: [
       "15-Minute Pasta Aglio e Olio",
@@ -37,8 +33,6 @@ export default function RecipeSuggestions({ onSuggestionClick, type = "general" 
       "Instant Ramen Upgrade",
       "Microwave Mug Omelet",
       "No-Cook Greek Salad",
-      "Tuna Melt Sandwich",
-      "10-Minute Stir Fry",
     ],
     comfort: [
       "Classic Mac and Cheese",
@@ -47,8 +41,6 @@ export default function RecipeSuggestions({ onSuggestionClick, type = "general" 
       "Loaded Baked Potato",
       "Grilled Cheese and Tomato Soup",
       "Chocolate Chip Cookies",
-      "Creamy Mashed Potatoes",
-      "Homestyle Meatloaf",
     ],
   }
 
@@ -57,7 +49,7 @@ export default function RecipeSuggestions({ onSuggestionClick, type = "general" 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <Lightbulb className="h-4 w-4 text-primary" />
+        <Lightbulb className="h-4 w-4 text-accent" />
         <h4 className="text-sm font-medium text-primary">Recipe Ideas</h4>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -73,7 +65,6 @@ export default function RecipeSuggestions({ onSuggestionClick, type = "general" 
           </Button>
         ))}
       </div>
-      <p className="text-xs text-foreground/60">Click a recipe to use it as your starting point</p>
     </div>
   )
 }

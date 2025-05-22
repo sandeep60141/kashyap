@@ -11,13 +11,6 @@ import FreeTierBanner from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
 import PopularIngredients from "@/components/popular-ingredients"
 
-// Import the new components
-import FormValidation from "@/components/form-validation"
-import TooltipHelper from "@/components/tooltip-helper"
-
-// Import the new component
-import IngredientChips from "@/components/ingredient-chips"
-
 export default function PantryChef() {
   const router = useRouter()
   const [ingredients, setIngredients] = useState("")
@@ -28,40 +21,14 @@ export default function PantryChef() {
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
 
   const handleIngredientClick = (ingredient: string) => {
-    // Split by commas and clean up each ingredient
     const currentIngredients = ingredients
       .split(",")
       .map((i) => i.trim())
       .filter(Boolean)
-
-    // Check if ingredient already exists (case insensitive)
-    const ingredientExists = currentIngredients.some((existing) => existing.toLowerCase() === ingredient.toLowerCase())
-
-    if (!ingredientExists) {
-      // Add the new ingredient with proper comma formatting
-      const newIngredients = currentIngredients.length > 0 ? `${ingredients.trim()}, ${ingredient}` : ingredient
-
+    if (!currentIngredients.some((existing) => existing.toLowerCase() === ingredient.toLowerCase())) {
+      const newIngredients = currentIngredients.length > 0 ? `${ingredients}, ${ingredient}` : ingredient
       setIngredients(newIngredients)
     }
-  }
-
-  // Add a function to clear all ingredients
-  const clearIngredients = () => {
-    setIngredients("")
-  }
-
-  // Add a function to remove a specific ingredient
-  const removeIngredient = (ingredientToRemove: string) => {
-    const currentIngredients = ingredients
-      .split(",")
-      .map((i) => i.trim())
-      .filter(Boolean)
-
-    const updatedIngredients = currentIngredients
-      .filter((i) => i.toLowerCase() !== ingredientToRemove.toLowerCase())
-      .join(", ")
-
-    setIngredients(updatedIngredients)
   }
 
   const handlePreferenceClick = (preference: string) => {
@@ -121,12 +88,9 @@ export default function PantryChef() {
         <FormStep number={1} title="Available Ingredients" subtitle="Tell us what ingredients you have in your pantry">
           <div className="space-y-6">
             <div>
-              <div className="flex items-center gap-1">
-                <label htmlFor="ingredients" className="block text-sm font-medium text-primary mb-2">
-                  What ingredients do you have? *
-                </label>
-                <TooltipHelper content="List the main ingredients you have available. Include proteins, vegetables, grains, and any special ingredients." />
-              </div>
+              <label htmlFor="ingredients" className="block text-sm font-medium text-primary mb-2">
+                What ingredients do you have? *
+              </label>
               <Textarea
                 id="ingredients"
                 placeholder="Enter ingredients separated by commas (e.g., chicken, rice, onions, garlic, tomatoes)"
@@ -134,13 +98,6 @@ export default function PantryChef() {
                 onChange={(e) => setIngredients(e.target.value)}
                 className="generator-textarea"
                 rows={4}
-              />
-              <IngredientChips ingredients={ingredients} onRemove={removeIngredient} onClearAll={clearIngredients} />
-              <FormValidation
-                value={ingredients}
-                validationRules={{ required: true, minLength: 3 }}
-                errorMessage="Please enter at least one ingredient"
-                successMessage="Great! Now we can suggest recipes"
               />
               <p className="text-xs text-foreground/60 mt-2">
                 💡 Tip: Include spices, herbs, and pantry staples you have available
@@ -225,10 +182,7 @@ export default function PantryChef() {
             </div>
 
             <div>
-              <div className="flex items-center gap-1">
-                <label className="block text-sm font-medium text-primary mb-3">Dietary Requirements (optional)</label>
-                <TooltipHelper content="Select any dietary restrictions or preferences. This helps us generate recipes that meet your specific needs." />
-              </div>
+              <label className="block text-sm font-medium text-primary mb-3">Dietary Requirements (optional)</label>
               <DietaryRequirements selectedRequirements={dietaryRequirements} onChange={setDietaryRequirements} />
             </div>
           </div>

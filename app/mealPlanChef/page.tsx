@@ -21,37 +21,11 @@ export default function MealPlanChef() {
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-4")
 
-  // Add a function to validate the form before submission
-  const validateForm = () => {
-    // No specific validation needed for this form as all fields have defaults
-    return true
-  }
-
-  // Update the handleSubmit function with better error handling
   const handleSubmit = async () => {
-    if (!validateForm()) {
-      return
-    }
-
     setIsGenerating(true)
     setError(null)
 
     try {
-      // Show a more detailed loading message
-      const loadingMessages = [
-        "Planning your meals...",
-        "Calculating nutritional balance...",
-        "Designing your menu...",
-        "Creating shopping lists...",
-        "Finalizing your meal plan...",
-      ]
-
-      let messageIndex = 0
-      const messageInterval = setInterval(() => {
-        setError(`${loadingMessages[messageIndex]} This may take a moment for a ${days}-day plan.`)
-        messageIndex = (messageIndex + 1) % loadingMessages.length
-      }, 3000)
-
       const recipe = await generateRecipe({
         days,
         calories,
@@ -61,7 +35,6 @@ export default function MealPlanChef() {
         model: selectedModel,
       })
 
-      clearInterval(messageInterval)
       localStorage.setItem("generatedRecipe", JSON.stringify(recipe))
       router.push("/recipe-result")
     } catch (err) {
@@ -115,40 +88,6 @@ export default function MealPlanChef() {
               <div className="flex justify-between text-xs text-foreground/60 mt-2">
                 <span>1,200 cal</span>
                 <span>3,000 cal</span>
-              </div>
-            </div>
-
-            <div className="mt-4 p-3 bg-primary/5 rounded-lg border border-primary/20">
-              <h4 className="text-sm font-medium text-primary mb-2">Calorie Recommendations</h4>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <button
-                  onClick={() => setCalories(1500)}
-                  className="p-2 rounded border border-primary/30 hover:bg-primary/10 text-primary text-left"
-                >
-                  <div className="font-medium">Weight Loss</div>
-                  <div className="text-foreground/60">1,500 calories</div>
-                </button>
-                <button
-                  onClick={() => setCalories(2000)}
-                  className="p-2 rounded border border-primary/30 hover:bg-primary/10 text-primary text-left"
-                >
-                  <div className="font-medium">Maintenance</div>
-                  <div className="text-foreground/60">2,000 calories</div>
-                </button>
-                <button
-                  onClick={() => setCalories(2500)}
-                  className="p-2 rounded border border-primary/30 hover:bg-primary/10 text-primary text-left"
-                >
-                  <div className="font-medium">Active Lifestyle</div>
-                  <div className="text-foreground/60">2,500 calories</div>
-                </button>
-                <button
-                  onClick={() => setCalories(3000)}
-                  className="p-2 rounded border border-primary/30 hover:bg-primary/10 text-primary text-left"
-                >
-                  <div className="font-medium">Athletic</div>
-                  <div className="text-foreground/60">3,000 calories</div>
-                </button>
               </div>
             </div>
           </div>

@@ -11,9 +11,6 @@ import FreeTierBanner from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
 import PopularIngredients from "@/components/popular-ingredients"
 
-// Import the new component
-import IngredientChips from "@/components/ingredient-chips"
-
 export default function MixologyMaestro() {
   const router = useRouter()
   const [ingredients, setIngredients] = useState("")
@@ -24,40 +21,14 @@ export default function MixologyMaestro() {
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
 
   const handleIngredientClick = (ingredient: string) => {
-    // Split by commas and clean up each ingredient
     const currentIngredients = ingredients
       .split(",")
       .map((i) => i.trim())
       .filter(Boolean)
-
-    // Check if ingredient already exists (case insensitive)
-    const ingredientExists = currentIngredients.some((existing) => existing.toLowerCase() === ingredient.toLowerCase())
-
-    if (!ingredientExists) {
-      // Add the new ingredient with proper comma formatting
-      const newIngredients = currentIngredients.length > 0 ? `${ingredients.trim()}, ${ingredient}` : ingredient
-
+    if (!currentIngredients.some((existing) => existing.toLowerCase() === ingredient.toLowerCase())) {
+      const newIngredients = currentIngredients.length > 0 ? `${ingredients}, ${ingredient}` : ingredient
       setIngredients(newIngredients)
     }
-  }
-
-  // Add a function to clear all ingredients
-  const clearIngredients = () => {
-    setIngredients("")
-  }
-
-  // Add a function to remove a specific ingredient
-  const removeIngredient = (ingredientToRemove: string) => {
-    const currentIngredients = ingredients
-      .split(",")
-      .map((i) => i.trim())
-      .filter(Boolean)
-
-    const updatedIngredients = currentIngredients
-      .filter((i) => i.toLowerCase() !== ingredientToRemove.toLowerCase())
-      .join(", ")
-
-    setIngredients(updatedIngredients)
   }
 
   const drinkStyles = [
@@ -136,10 +107,6 @@ export default function MixologyMaestro() {
                 💡 Include spirits, mixers, fruits, herbs, and any garnishes you have
               </p>
             </div>
-
-            {/* Replace the existing ingredient chips implementation with the new component */}
-            {/* Add this after the ingredients textarea */}
-            <IngredientChips ingredients={ingredients} onRemove={removeIngredient} onClearAll={clearIngredients} />
 
             <PopularIngredients
               onIngredientClick={handleIngredientClick}

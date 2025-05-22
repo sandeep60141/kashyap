@@ -38,19 +38,19 @@ const Slider = React.forwardRef<React.ElementRef<typeof SliderPrimitive.Root>, S
           onValueChange={handleValueChange}
           {...props}
         >
-          <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-indigo-100">
-            <SliderPrimitive.Range className="absolute h-full bg-indigo-500" />
+          <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary">
+            <SliderPrimitive.Range className="absolute h-full bg-primary" />
           </SliderPrimitive.Track>
           {displayValue.map((_, index) => (
             <SliderPrimitive.Thumb
               key={index}
-              className="block h-5 w-5 rounded-full border-2 border-indigo-500 bg-white ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-indigo-50"
+              className="block h-5 w-5 rounded-full border-2 border-primary bg-white ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-primary/10"
             />
           ))}
         </SliderPrimitive.Root>
         {showValue && (
           <div className="absolute -top-8 left-0 right-0 text-center">
-            <span className="inline-block bg-indigo-500 text-white px-2 py-1 rounded text-sm">
+            <span className="inline-block bg-primary text-white px-2 py-1 rounded text-sm">
               {valuePrefix}
               {displayValue[0]}
               {valueSuffix}

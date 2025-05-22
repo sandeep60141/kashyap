@@ -17,11 +17,6 @@ export function ChefForm({ title, buttonText, onSubmit, isLoading = false, child
   const [currentStep, setCurrentStep] = useState(0)
   const childrenArray = React.Children.toArray(children)
 
-  // Add a progress indicator function
-  const getProgressPercentage = () => {
-    return ((currentStep + 1) / childrenArray.length) * 100
-  }
-
   const handleNext = () => {
     if (currentStep < childrenArray.length - 1) {
       setCurrentStep(currentStep + 1)
@@ -47,23 +42,6 @@ export function ChefForm({ title, buttonText, onSubmit, isLoading = false, child
     onSubmit()
   }
 
-  // Add keyboard navigation support
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Allow keyboard navigation with arrow keys
-      if (e.key === "ArrowRight" && currentStep < childrenArray.length - 1) {
-        handleNext()
-      } else if (e.key === "ArrowLeft" && currentStep > 0) {
-        handlePrevious()
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown)
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [currentStep, childrenArray.length])
-
   return (
     <div className="py-8">
       <div className="bg-gradient-to-r from-primary/20 to-primary/10 p-6 rounded-lg mb-6 shadow-md">
@@ -74,32 +52,15 @@ export function ChefForm({ title, buttonText, onSubmit, isLoading = false, child
       <form onSubmit={handleSubmit} className="bg-card rounded-lg shadow-md p-6 border border-primary/20">
         <div className="mb-6">
           <div className="flex items-center mb-4">
-            <div className="flex-1 h-3 bg-secondary/30 rounded-full overflow-hidden">
+            <div className="flex-1 h-3 bg-secondary/70 rounded-full overflow-hidden">
               <div
-                className="h-3 bg-gradient-to-r from-primary to-purple-500 rounded-full transition-all duration-300"
-                style={{ width: `${getProgressPercentage()}%` }}
+                className="h-3 bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-300"
+                style={{ width: `${((currentStep + 1) / childrenArray.length) * 100}%` }}
               ></div>
             </div>
             <span className="ml-4 text-sm font-medium text-primary">
               Step {currentStep + 1} of {childrenArray.length}
             </span>
-          </div>
-
-          <div className="flex justify-between">
-            {childrenArray.map((_, index) => (
-              <div
-                key={index}
-                className={`text-xs ${
-                  index === currentStep
-                    ? "text-primary font-medium"
-                    : index < currentStep
-                      ? "text-primary/70"
-                      : "text-foreground/40"
-                }`}
-              >
-                Step {index + 1}
-              </div>
-            ))}
           </div>
         </div>
 
@@ -121,7 +82,7 @@ export function ChefForm({ title, buttonText, onSubmit, isLoading = false, child
             <Button
               type="button"
               onClick={handleNext}
-              className="px-6 bg-gradient-to-r from-primary to-purple-500 text-white hover:from-primary/90 hover:to-purple-500/90"
+              className="px-6 bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90"
             >
               Next
               <ChevronRight className="ml-2 h-4 w-4" />
@@ -131,7 +92,7 @@ export function ChefForm({ title, buttonText, onSubmit, isLoading = false, child
               type="button"
               onClick={handleGenerateClick}
               disabled={isLoading}
-              className="px-6 bg-gradient-to-r from-primary to-purple-500 text-white hover:from-primary/90 hover:to-purple-500/90"
+              className="px-6 bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90"
             >
               {isLoading ? (
                 <>
@@ -143,9 +104,6 @@ export function ChefForm({ title, buttonText, onSubmit, isLoading = false, child
               )}
             </Button>
           )}
-        </div>
-        <div className="mt-2 text-xs text-center text-foreground/60">
-          Keyboard shortcuts: Use ← → arrow keys to navigate between steps
         </div>
       </form>
     </div>

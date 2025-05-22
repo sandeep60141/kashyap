@@ -44,28 +44,10 @@ export default function MacrosChef() {
     { name: "Endurance", protein: 20, carbs: 60, fat: 20, calories: 700 },
   ]
 
-  // Add a function to ensure macros always add up to 100%
-  const adjustMacros = (protein: number, carbs: number, fat: number) => {
-    const total = protein + carbs + fat
-    if (total !== 100) {
-      // Adjust values proportionally to sum to 100
-      const factor = 100 / total
-      return {
-        protein: Math.round(protein * factor),
-        carbs: Math.round(carbs * factor),
-        fat: Math.round(fat * factor),
-      }
-    }
-    return { protein, carbs, fat }
-  }
-
-  // Update the handlePresetClick function to ensure macros add up to 100%
   const handlePresetClick = (preset: (typeof macroPresets)[0]) => {
-    const { protein: newProtein, carbs: newCarbs, fat: newFat } = adjustMacros(preset.protein, preset.carbs, preset.fat)
-
-    setProtein(newProtein)
-    setCarbs(newCarbs)
-    setFat(newFat)
+    setProtein(preset.protein)
+    setCarbs(preset.carbs)
+    setFat(preset.fat)
     setCalories(preset.calories)
   }
 
@@ -264,43 +246,6 @@ export default function MacrosChef() {
                   }}
                   className="[&>span]:bg-primary"
                 />
-              </div>
-            </div>
-          </div>
-          <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
-            <h4 className="text-sm font-medium text-primary mb-3">Macro Distribution</h4>
-            <div className="h-6 w-full rounded-full overflow-hidden flex">
-              <div
-                className="bg-blue-500 h-full flex items-center justify-center text-xs text-white"
-                style={{ width: `${protein}%` }}
-              >
-                {protein}%
-              </div>
-              <div
-                className="bg-green-500 h-full flex items-center justify-center text-xs text-white"
-                style={{ width: `${carbs}%` }}
-              >
-                {carbs}%
-              </div>
-              <div
-                className="bg-yellow-500 h-full flex items-center justify-center text-xs text-white"
-                style={{ width: `${fat}%` }}
-              >
-                {fat}%
-              </div>
-            </div>
-            <div className="flex justify-between mt-2 text-xs">
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
-                <span>Protein</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-green-500 rounded-full mr-1"></div>
-                <span>Carbs</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full mr-1"></div>
-                <span>Fat</span>
               </div>
             </div>
           </div>

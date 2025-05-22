@@ -13,7 +13,7 @@ export default function FormStep({ number, title, subtitle, children }: FormStep
   return (
     <div className="bg-card rounded-lg border border-primary/20 shadow-sm p-6">
       <div className="flex items-start gap-4 mb-6">
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-r from-primary to-purple-500 text-white flex items-center justify-center font-medium shadow-lg">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-r from-primary to-accent text-white flex items-center justify-center font-medium shadow-lg">
           {number}
         </div>
         <div>
