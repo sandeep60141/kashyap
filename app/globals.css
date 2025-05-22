@@ -87,7 +87,27 @@
 
 /* Card styling */
 .feature-card {
-  @apply bg-card rounded-xl p-6 shadow-lg border border-primary/20 hover:border-primary/40 transition-all;
+  @apply bg-card rounded-xl p-6 shadow-lg border border-primary/20 hover:border-primary/40 hover:shadow-xl transition-all;
+}
+
+/* Add specific hover styles for buttons inside feature cards */
+.feature-card .btn-primary,
+.feature-card .btn-secondary,
+.feature-card button[class*="btn-"],
+.feature-card a[class*="btn-"] {
+  @apply hover:bg-primary hover:text-white transition-colors;
+}
+
+/* Fix hover styles for link buttons */
+.feature-card [variant="link"],
+.feature-card a[class*="text-primary"] {
+  @apply hover:text-primary/80 hover:underline transition-colors;
+}
+
+/* Add specific hover styles for tool section buttons */
+.feature-card button,
+.feature-card a {
+  @apply hover:text-primary transition-colors;
 }
 
 /* Container */

@@ -172,28 +172,40 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-center mb-12">Powerful Recipe Tools</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="feature-card">
-              <FileDown className="h-10 w-10 text-primary mb-4" />
+            <div className="feature-card group">
+              <FileDown className="h-10 w-10 text-primary mb-4 group-hover:text-primary/80" />
               <h3 className="text-xl font-bold mb-2">Download as PDF</h3>
               <p className="text-foreground/80 mb-4">Save your recipes for offline viewing or printing.</p>
+              <Button variant="link" className="text-primary p-0 hover:text-primary/80">
+                Try Now <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             </div>
 
-            <div className="feature-card">
-              <ShoppingBag className="h-10 w-10 text-primary mb-4" />
+            <div className="feature-card group">
+              <ShoppingBag className="h-10 w-10 text-primary mb-4 group-hover:text-primary/80" />
               <h3 className="text-xl font-bold mb-2">Shopping List</h3>
               <p className="text-foreground/80 mb-4">Automatically generate shopping lists from your recipes.</p>
+              <Button variant="link" className="text-primary p-0 hover:text-primary/80">
+                Try Now <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             </div>
 
-            <div className="feature-card">
-              <Link2 className="h-10 w-10 text-primary mb-4" />
+            <div className="feature-card group">
+              <Link2 className="h-10 w-10 text-primary mb-4 group-hover:text-primary/80" />
               <h3 className="text-xl font-bold mb-2">Copy Recipe Link</h3>
               <p className="text-foreground/80 mb-4">Share your favorite recipes with friends and family.</p>
+              <Button variant="link" className="text-primary p-0 hover:text-primary/80">
+                Try Now <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             </div>
 
-            <div className="feature-card">
-              <MessageSquare className="h-10 w-10 text-primary mb-4" />
+            <div className="feature-card group">
+              <MessageSquare className="h-10 w-10 text-primary mb-4 group-hover:text-primary/80" />
               <h3 className="text-xl font-bold mb-2">Ask ChefGPT</h3>
               <p className="text-foreground/80 mb-4">Get answers to your cooking questions instantly.</p>
+              <Button variant="link" className="text-primary p-0 hover:text-primary/80">
+                Try Now <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             </div>
           </div>
 
