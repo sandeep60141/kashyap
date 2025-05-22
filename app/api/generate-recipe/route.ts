@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
       servings,
       difficulty,
       tool = "pantryChef", // Default tool
+      modelInfo = { provider: "openai", value: "gpt-4o" },
     } = body
 
     // Enhanced prompt that ensures food safety tips are always included
@@ -167,9 +168,34 @@ ${commonStructure}`
 
     const prompt = getPromptForTool(tool)
 
+    // Use the appropriate model based on the provider
+    let model
+    if (modelInfo.provider === "deepseek") {
+      if (!process.env.DEEPSEEK_API_KEY) {
+        return NextResponse.json(
+          {
+            error: "DeepSeek API key not configured",
+            recipe: JSON.stringify({
+              title: "API Key Missing",
+              description: "The DeepSeek API key is not configured.",
+              foodSafetyTips: [
+                "Always wash hands before handling food",
+                "Cook proteins to safe internal temperatures",
+                "Store leftovers properly",
+              ],
+            }),
+          },
+          { status: 400 },
+        )
+      }
+      model = openai(modelInfo.value, { apiKey: process.env.DEEPSEEK_API_KEY, baseURL: "https://api.deepseek.com/v1" })
+    } else {
+      model = openai(modelInfo.value)
+    }
+
     const { text } = await generateText({
-      model: openai("gpt-4o"),
-      prompt: prompt,
+      model,
+      prompt,
       temperature: 0.7,
       maxTokens: 2000,
     })
@@ -203,7 +229,7 @@ ${commonStructure}`
     }
 
     // Ensure food safety tips are always present
-    if (!recipe.foodSafetyTips || recipe.foodSafetyTips.length === 0) {
+    if (!recipe.foodSafetyTips || !Array.isArray(recipe.foodSafetyTips) || recipe.foodSafetyTips.length === 0) {
       recipe.foodSafetyTips = [
         "Always wash hands thoroughly before handling food",
         "Cook proteins to safe internal temperatures (165°F for poultry, 160°F for ground meat, 145°F for whole cuts)",
@@ -237,13 +263,13 @@ ${commonStructure}`
       recipe.foodSafetyTips = [...recipe.foodSafetyTips, ...toolSpecificSafetyTips[tool]]
     }
 
-    return NextResponse.json({ recipe })
+    return NextResponse.json({ recipe: JSON.stringify(recipe) })
   } catch (error) {
     console.error("Error generating recipe:", error)
     return NextResponse.json(
       {
         error: "Failed to generate recipe",
-        recipe: {
+        recipe: JSON.stringify({
           title: "Error",
           description: "Failed to generate recipe. Please try again.",
           foodSafetyTips: [
@@ -251,7 +277,7 @@ ${commonStructure}`
             "Cook proteins to safe internal temperatures",
             "Store leftovers properly",
           ],
-        },
+        }),
       },
       { status: 500 },
     )

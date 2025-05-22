@@ -30,6 +30,7 @@ export default function RecipeResult() {
   const [isLoading, setIsLoading] = useState(true)
   const [showCookingMode, setShowCookingMode] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     // Get the recipe from localStorage
@@ -43,10 +44,13 @@ export default function RecipeResult() {
     try {
       // Parse the recipe if it's JSON
       const parsedRecipe = JSON.parse(storedRecipe)
-      setRecipe(parsedRecipe)
 
       // Ensure food safety tips exist - add defaults if missing
-      if (!parsedRecipe.foodSafetyTips || parsedRecipe.foodSafetyTips.length === 0) {
+      if (
+        !parsedRecipe.foodSafetyTips ||
+        !Array.isArray(parsedRecipe.foodSafetyTips) ||
+        parsedRecipe.foodSafetyTips.length === 0
+      ) {
         parsedRecipe.foodSafetyTips = [
           "Always wash hands thoroughly before handling food",
           "Cook proteins to safe internal temperatures",
@@ -54,34 +58,42 @@ export default function RecipeResult() {
           "Use separate cutting boards for raw meat and vegetables",
           "Keep hot foods hot (above 140°F) and cold foods cold (below 40°F)",
         ]
-        setRecipe(parsedRecipe)
       }
+
+      setRecipe(parsedRecipe)
     } catch (e) {
+      console.error("Error parsing recipe:", e)
+      setError("There was an error loading the recipe. Please try generating a new one.")
+
       // If it's not JSON, use it as a string with default safety tips
-      setRecipe({
-        title: "Generated Recipe",
-        description: storedRecipe,
-        ingredients: [],
-        instructions: [],
-        prepTime: "N/A",
-        cookTime: "N/A",
-        totalTime: "N/A",
-        servings: "N/A",
-        difficulty: "N/A",
-        costEstimate: "N/A",
-        foodSafetyTips: [
-          "Always wash hands thoroughly before handling food",
-          "Cook proteins to safe internal temperatures",
-          "Store leftovers in refrigerator within 2 hours",
-          "Use separate cutting boards for raw meat and vegetables",
-        ],
-        nutritionalInfo: {
-          calories: "N/A",
-          protein: "N/A",
-          carbs: "N/A",
-          fat: "N/A",
-        },
-      })
+      try {
+        setRecipe({
+          title: "Generated Recipe",
+          description: storedRecipe,
+          ingredients: [],
+          instructions: [],
+          prepTime: "N/A",
+          cookTime: "N/A",
+          totalTime: "N/A",
+          servings: "N/A",
+          difficulty: "N/A",
+          costEstimate: "N/A",
+          foodSafetyTips: [
+            "Always wash hands thoroughly before handling food",
+            "Cook proteins to safe internal temperatures",
+            "Store leftovers in refrigerator within 2 hours",
+            "Use separate cutting boards for raw meat and vegetables",
+          ],
+          nutritionalInfo: {
+            calories: "N/A",
+            protein: "N/A",
+            carbs: "N/A",
+            fat: "N/A",
+          },
+        })
+      } catch (err) {
+        console.error("Failed to create fallback recipe:", err)
+      }
     }
 
     setIsLoading(false)
@@ -95,8 +107,8 @@ export default function RecipeResult() {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: recipe.title,
-        text: recipe.description,
+        title: recipe?.title || "Recipe",
+        text: recipe?.description || "Check out this recipe!",
         url: window.location.href,
       })
     } else {
@@ -122,6 +134,16 @@ export default function RecipeResult() {
     )
   }
 
+  if (error) {
+    return (
+      <div className="max-w-3xl mx-auto p-6 text-center">
+        <h1 className="text-2xl font-bold mb-4">Error Loading Recipe</h1>
+        <p className="mb-6 text-red-600">{error}</p>
+        <Button onClick={() => router.push("/pantryChef")}>Create New Recipe</Button>
+      </div>
+    )
+  }
+
   if (!recipe) {
     return (
       <div className="max-w-3xl mx-auto p-6 text-center">
@@ -143,12 +165,12 @@ export default function RecipeResult() {
       return ingredients
         .split("\n")
         .filter(Boolean)
-        .map((ing) => ({ name: ing, amount: "", checked: false }))
+        .map((ing: string) => ({ name: ing, amount: "", checked: false }))
     }
 
     // If ingredients is an array of strings, convert to objects
     if (Array.isArray(ingredients)) {
-      return ingredients.map((ing) => {
+      return ingredients.map((ing: any) => {
         if (typeof ing === "string") {
           return { name: ing, amount: "", checked: false }
         }
@@ -345,14 +367,14 @@ export default function RecipeResult() {
       </div>
 
       {/* Food Safety Alert - Always Visible */}
-      {recipe.foodSafetyTips && recipe.foodSafetyTips.length > 0 && (
+      {recipe.foodSafetyTips && Array.isArray(recipe.foodSafetyTips) && recipe.foodSafetyTips.length > 0 && (
         <div className="mb-8 p-6 bg-red-50 border-l-4 border-red-500 border-t border-r border-b border-red-200 rounded-lg shadow-md">
           <div className="flex items-center mb-4">
             <Shield className="h-6 w-6 text-red-600 mr-3" />
             <h2 className="text-xl font-bold text-red-800">Important Food Safety Tips</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {recipe.foodSafetyTips.map((tip, index) => (
+            {recipe.foodSafetyTips.map((tip: string, index: number) => (
               <div key={index} className="flex items-start gap-3 p-3 bg-white rounded-lg border border-red-200">
                 <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
                 <span className="text-sm text-red-700">{tip}</span>
@@ -400,7 +422,7 @@ export default function RecipeResult() {
                 Ingredients
               </h2>
               <ul className="space-y-3">
-                {ingredientsList.map((ingredient, index) => (
+                {ingredientsList.map((ingredient: any, index: number) => (
                   <li
                     key={index}
                     className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
@@ -427,7 +449,7 @@ export default function RecipeResult() {
               </h2>
               <ol className="space-y-4">
                 {Array.isArray(recipe.instructions) ? (
-                  recipe.instructions.map((instruction, index) => (
+                  recipe.instructions.map((instruction: any, index: number) => (
                     <li
                       key={index}
                       className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
@@ -437,7 +459,9 @@ export default function RecipeResult() {
                       </div>
                       <div className="flex-1">
                         <span className="text-foreground">
-                          {typeof instruction === "string" ? instruction : instruction.description}
+                          {typeof instruction === "string"
+                            ? instruction
+                            : instruction.description || instruction.step || ""}
                         </span>
                         {instruction.safetyTip && (
                           <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
@@ -454,7 +478,7 @@ export default function RecipeResult() {
                   recipe.instructions
                     .split("\n")
                     .filter(Boolean)
-                    .map((instruction, index) => (
+                    .map((instruction: string, index: number) => (
                       <li
                         key={index}
                         className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
@@ -471,11 +495,11 @@ export default function RecipeResult() {
               </ol>
 
               {/* Equipment Needed */}
-              {recipe.equipment && recipe.equipment.length > 0 && (
+              {recipe.equipment && Array.isArray(recipe.equipment) && recipe.equipment.length > 0 && (
                 <div className="mt-8 p-4 bg-secondary/20 rounded-lg border border-primary/10">
                   <h3 className="text-lg font-semibold mb-4 text-primary">Equipment Needed</h3>
                   <div className="grid grid-cols-2 gap-2">
-                    {recipe.equipment.map((item, index) => (
+                    {recipe.equipment.map((item: string, index: number) => (
                       <div
                         key={index}
                         className="flex items-center gap-2 text-sm text-foreground/80 p-2 bg-white rounded-md shadow-sm"
@@ -549,14 +573,14 @@ export default function RecipeResult() {
 
         <TabsContent value="tips">
           <div className="space-y-6">
-            {recipe.tips && recipe.tips.length > 0 && (
+            {recipe.tips && Array.isArray(recipe.tips) && recipe.tips.length > 0 && (
               <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
                 <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
                   <span className="w-1 h-5 bg-primary rounded-full"></span>
                   Chef's Tips
                 </h3>
                 <ul className="space-y-3">
-                  {recipe.tips.map((tip, index) => (
+                  {recipe.tips.map((tip: string, index: number) => (
                     <li
                       key={index}
                       className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
@@ -603,43 +627,47 @@ export default function RecipeResult() {
 
         <TabsContent value="extras">
           <div className="space-y-6">
-            {recipe.allergenWarnings && recipe.allergenWarnings.length > 0 && (
-              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
-                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
-                  <span className="w-1 h-5 bg-primary rounded-full"></span>
-                  Allergen Information
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {recipe.allergenWarnings.map((allergen, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium border border-yellow-200 shadow-sm"
-                    >
-                      Contains {allergen}
-                    </span>
-                  ))}
+            {recipe.allergenWarnings &&
+              Array.isArray(recipe.allergenWarnings) &&
+              recipe.allergenWarnings.length > 0 && (
+                <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                  <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                    <span className="w-1 h-5 bg-primary rounded-full"></span>
+                    Allergen Information
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {recipe.allergenWarnings.map((allergen: string, index: number) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium border border-yellow-200 shadow-sm"
+                      >
+                        Contains {allergen}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {recipe.dietaryClassifications && recipe.dietaryClassifications.length > 0 && (
-              <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
-                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
-                  <span className="w-1 h-5 bg-primary rounded-full"></span>
-                  Dietary Classifications
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {recipe.dietaryClassifications.map((classification, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium border border-green-200 shadow-sm"
-                    >
-                      {classification}
-                    </span>
-                  ))}
+            {recipe.dietaryClassifications &&
+              Array.isArray(recipe.dietaryClassifications) &&
+              recipe.dietaryClassifications.length > 0 && (
+                <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
+                  <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                    <span className="w-1 h-5 bg-primary rounded-full"></span>
+                    Dietary Classifications
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {recipe.dietaryClassifications.map((classification: string, index: number) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium border border-green-200 shadow-sm"
+                      >
+                        {classification}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Recipe Scaling */}
             <div className="bg-white p-6 rounded-xl border-2 border-primary/20 shadow-md">
