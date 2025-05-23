@@ -43,3 +43,6 @@ export function MealTypeFilters() {
     </div>
   )
 }
+
+// Add default export that points to the same component
+export default MealTypeFilters
