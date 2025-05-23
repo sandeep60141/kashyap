@@ -91,22 +91,41 @@ ${
     try {
       return JSON.parse(recipe)
     } catch (e) {
-      // If parsing fails, return the raw text
+      console.error("Error parsing recipe JSON:", e)
+      // If parsing fails, create a simple object with the raw text
       return {
         title: "Generated Recipe",
         description: recipe,
         ingredients: [],
         instructions: [],
+        foodSafetyTips: [
+          "Always wash hands before handling food",
+          "Cook proteins to safe internal temperatures",
+          "Store leftovers properly",
+        ],
       }
     }
   } catch (error) {
     console.error("Error in generateRecipe:", error)
-    throw error
+    // Return a fallback recipe in case of error
+    return {
+      title: "Recipe Generation Error",
+      description: "We encountered an error while generating your recipe. Please try again.",
+      ingredients: [],
+      instructions: ["Please try again with different inputs."],
+      foodSafetyTips: [
+        "Always wash hands before handling food",
+        "Cook proteins to safe internal temperatures",
+        "Store leftovers properly",
+      ],
+    }
   }
 }
 
 export async function generateRecipeClient(prompt: string, modelInfo = { provider: "openai", value: "gpt-4o" }) {
   try {
+    console.log("Generating recipe with prompt:", prompt.substring(0, 100) + "...")
+
     // Set a longer timeout for larger meal plans
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 60000) // 60-second timeout
@@ -116,7 +135,15 @@ export async function generateRecipeClient(prompt: string, modelInfo = { provide
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ prompt, modelInfo }),
+      body: JSON.stringify({
+        ingredients: prompt.includes("ingredients:") ? prompt.split("ingredients:")[1]?.split("\n")[0]?.trim() : "",
+        cuisine: prompt.includes("Cuisine:") ? prompt.split("Cuisine:")[1]?.split("\n")[0]?.trim() : "",
+        dietaryRestrictions: prompt.includes("Dietary requirements:")
+          ? prompt.split("Dietary requirements:")[1]?.split("\n")[0]?.trim()
+          : "",
+        prompt,
+        modelInfo,
+      }),
       signal: controller.signal,
     })
 

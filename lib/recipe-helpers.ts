@@ -1,63 +1,84 @@
-// Helper functions for recipe data handling
-
 /**
- * Safely parses a recipe string from localStorage
- * Prevents the React error #31 that occurs when trying to render objects directly
+ * Safely parses recipe data from JSON string
+ * @param recipeData - JSON string or null
+ * @returns Parsed recipe object or null if invalid
  */
-export function parseRecipeData(recipeString: string | null) {
-  if (!recipeString) return null
+export function parseRecipeData(recipeData: string | null): any {
+  if (!recipeData) return null
 
   try {
-    // Parse the recipe JSON
-    const recipe = JSON.parse(recipeString)
+    // Try to parse the JSON
+    const parsedRecipe = JSON.parse(recipeData)
 
-    // Ensure all expected properties exist to prevent rendering errors
+    // Ensure required fields exist
     return {
-      title: recipe.title || "Recipe",
-      description: recipe.description || "A delicious recipe",
-      ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
-      instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
-      prepTime: recipe.prepTime || "N/A",
-      cookTime: recipe.cookTime || "N/A",
-      totalTime: recipe.totalTime || "N/A",
-      servings: recipe.servings || "N/A",
-      difficulty: recipe.difficulty || "Medium",
-      cuisine: recipe.cuisine || "N/A",
-      nutritionalInfo: recipe.nutritionalInfo || {},
-      equipment: Array.isArray(recipe.equipment) ? recipe.equipment : [],
-      foodSafetyTips: Array.isArray(recipe.foodSafetyTips)
-        ? recipe.foodSafetyTips
-        : [
-            "Always wash hands before and after handling food",
-            "Cook meats to proper internal temperatures",
-            "Refrigerate leftovers within 2 hours",
-          ],
-      allergenWarnings: Array.isArray(recipe.allergenWarnings) ? recipe.allergenWarnings : [],
-      dietaryClassifications: Array.isArray(recipe.dietaryClassifications) ? recipe.dietaryClassifications : [],
-      tips: Array.isArray(recipe.tips) ? recipe.tips : [],
-      storage: recipe.storage || "Store in an airtight container in the refrigerator",
-      reheating: recipe.reheating || "Reheat thoroughly before serving",
-      pairingRecommendations: recipe.pairingRecommendations || "Pairs well with your favorite sides",
-      costEstimate: recipe.costEstimate || "Moderate",
+      title: parsedRecipe.title || "Recipe",
+      description: parsedRecipe.description || "A delicious recipe",
+      ingredients: ensureArray(parsedRecipe.ingredients),
+      instructions: ensureArray(parsedRecipe.instructions),
+      prepTime: parsedRecipe.prepTime || "N/A",
+      cookTime: parsedRecipe.cookTime || "N/A",
+      totalTime: parsedRecipe.totalTime || "N/A",
+      servings: parsedRecipe.servings || "4",
+      difficulty: parsedRecipe.difficulty || "Medium",
+      cuisine: parsedRecipe.cuisine || "Mixed",
+      nutritionalInfo: parsedRecipe.nutritionalInfo || {
+        calories: "N/A",
+        protein: "N/A",
+        carbs: "N/A",
+        fat: "N/A",
+      },
+      equipment: ensureArray(parsedRecipe.equipment),
+      foodSafetyTips: ensureArray(parsedRecipe.foodSafetyTips) || [
+        "Always wash hands before handling food",
+        "Cook proteins to safe internal temperatures",
+        "Store leftovers properly",
+        "Use separate cutting boards for raw meat and vegetables",
+      ],
+      allergenWarnings: ensureArray(parsedRecipe.allergenWarnings),
+      dietaryClassifications: ensureArray(parsedRecipe.dietaryClassifications),
+      tips: ensureArray(parsedRecipe.tips),
+      storage: parsedRecipe.storage || "Store in an airtight container in the refrigerator",
+      reheating: parsedRecipe.reheating || "Reheat thoroughly before serving",
+      pairingRecommendations: parsedRecipe.pairingRecommendations || "",
+      costEstimate: parsedRecipe.costEstimate || "Medium",
     }
   } catch (error) {
     console.error("Error parsing recipe data:", error)
+
+    // If parsing fails, try to create a basic recipe object
+    if (typeof recipeData === "string") {
+      return {
+        title: "Recipe",
+        description: recipeData.substring(0, 100) + "...",
+        ingredients: [],
+        instructions: [],
+        prepTime: "N/A",
+        cookTime: "N/A",
+        totalTime: "N/A",
+        servings: "4",
+        difficulty: "Medium",
+        foodSafetyTips: [
+          "Always wash hands before handling food",
+          "Cook proteins to safe internal temperatures",
+          "Store leftovers properly",
+          "Use separate cutting boards for raw meat and vegetables",
+        ],
+      }
+    }
+
     return null
   }
 }
 
 /**
- * Safely stores recipe data in localStorage
+ * Ensures a value is an array
+ * @param value - Value to check
+ * @returns Array version of the value or empty array
  */
-export function storeRecipeData(recipeData: any) {
-  try {
-    // Convert the recipe to a string before storing
-    const recipeString = typeof recipeData === "string" ? recipeData : JSON.stringify(recipeData)
-
-    localStorage.setItem("generatedRecipe", recipeString)
-    return true
-  } catch (error) {
-    console.error("Error storing recipe data:", error)
-    return false
-  }
+function ensureArray(value: any): any[] {
+  if (!value) return []
+  if (Array.isArray(value)) return value
+  if (typeof value === "string") return [value]
+  return []
 }
