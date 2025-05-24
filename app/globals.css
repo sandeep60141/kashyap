@@ -4,36 +4,48 @@
 
 @layer base {
   :root {
-    /* Fresh herb green theme with complementary accents */
     --background: 0 0% 100%;
-    --foreground: 160 15% 20%;
-
-    --card: 160 30% 98%;
-    --card-foreground: 160 15% 20%;
-
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 160 15% 20%;
-
-    --primary: 142 70% 35%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 160 40% 95%;
-    --secondary-foreground: 160 30% 25%;
-
-    --muted: 160 20% 96%;
-    --muted-foreground: 160 10% 40%;
-
-    --accent: 25 95% 55%;
-    --accent-foreground: 0 0% 100%;
-
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
 
-    --border: 160 20% 90%;
-    --input: 160 20% 90%;
-    --ring: 142 70% 35%;
-
-    --radius: 0.75rem;
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
   }
 }
 
@@ -43,6 +55,54 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .container-custom {
+    @apply w-[85%] max-w-7xl mx-auto px-4 md:px-6;
+  }
+
+  .feature-card {
+    @apply bg-card rounded-xl p-6 shadow-sm border border-primary/20 hover:shadow-lg hover:border-primary/40 transition-all duration-300 group;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+
+  /* Mobile-first responsive design */
+  @media (max-width: 768px) {
+    .container-custom {
+      @apply w-[90%] px-2;
+    }
+
+    .feature-card {
+      @apply p-4;
+    }
+  }
+
+  /* SEO-friendly text styles */
+  .seo-heading {
+    @apply text-3xl md:text-4xl font-bold mb-6 text-foreground;
+  }
+
+  .seo-subheading {
+    @apply text-xl md:text-2xl font-semibold mb-4 text-foreground/90;
+  }
+
+  .seo-text {
+    @apply text-base md:text-lg text-foreground/80 leading-relaxed;
+  }
+
+  /* Enhanced mobile touch targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+
+  /* Improved focus states for accessibility */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
   }
 }
 
@@ -86,10 +146,6 @@
 }
 
 /* Card styling */
-.feature-card {
-  @apply bg-card rounded-xl p-6 shadow-lg border border-primary/20 hover:border-primary/40 hover:shadow-xl transition-all;
-}
-
 /* Add specific hover styles for buttons inside feature cards */
 .feature-card .btn-primary,
 .feature-card .btn-secondary,
@@ -111,10 +167,6 @@
 }
 
 /* Container */
-.container-custom {
-  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-}
-
 /* Input styling */
 .input-primary {
   @apply bg-secondary/50 border border-primary/30 rounded-lg px-4 py-3 text-foreground placeholder:text-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/50;
@@ -286,4 +338,75 @@ input[type="radio"] {
 
 .generator-error {
   @apply bg-red-100 text-red-700 p-4 rounded-lg mb-6;
+}
+
+/* Print styles for PDF generation */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-break {
+    page-break-before: always;
+  }
+
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+}
+
+/* Performance optimizations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* SEO-friendly image optimization */
+img {
+  @apply max-w-full h-auto;
+}
+
+/* Enhanced button styles for better CTR */
+.cta-button {
+  @apply bg-gradient-to-r from-primary to-accent text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200;
+}
+
+/* Mobile-optimized form inputs */
+input,
+textarea,
+select {
+  @apply text-base; /* Prevents zoom on iOS */
+}
+
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    @apply text-16px; /* 16px minimum to prevent zoom */
+  }
 }

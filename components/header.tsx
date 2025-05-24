@@ -64,7 +64,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-primary/20 bg-background/90 backdrop-blur-md">
-      <div className="container flex h-16 items-center justify-between px-4 md:px-6">
+      <div className="w-[85%] max-w-7xl mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Logo className="text-primary" />
 
         {/* Desktop Navigation */}
@@ -75,7 +75,7 @@ export default function Header() {
               onClick={() => toggleDropdown("generate")}
               className="flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
-              Generate
+              Food AI Tools
               <ChevronDown
                 className={`h-4 w-4 transition-transform duration-200 ${
                   activeDropdown === "generate" ? "rotate-180" : ""
@@ -92,7 +92,7 @@ export default function Header() {
                   >
                     <ShoppingBag className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Pantry Recipes</div>
+                      <div className="font-medium">Pantry Recipe AI</div>
                       <div className="text-xs text-foreground/50">Use what you have</div>
                     </div>
                   </Link>
@@ -103,8 +103,8 @@ export default function Header() {
                   >
                     <Globe className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Cuisine Explorer</div>
-                      <div className="text-xs text-foreground/50">Global recipes</div>
+                      <div className="font-medium">Global Cuisine AI</div>
+                      <div className="text-xs text-foreground/50">World recipes</div>
                     </div>
                   </Link>
                   <Link
@@ -114,8 +114,8 @@ export default function Header() {
                   >
                     <Leaf className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Nutrition Focus</div>
-                      <div className="text-xs text-foreground/50">Macro-friendly meals</div>
+                      <div className="font-medium">Nutrition AI</div>
+                      <div className="text-xs text-foreground/50">Healthy meals</div>
                     </div>
                   </Link>
                   <Link
@@ -125,8 +125,8 @@ export default function Header() {
                   >
                     <Calendar className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Meal Planning</div>
-                      <div className="text-xs text-foreground/50">Weekly meal plans</div>
+                      <div className="font-medium">Meal Planning AI</div>
+                      <div className="text-xs text-foreground/50">Weekly plans</div>
                     </div>
                   </Link>
                   <Link
@@ -136,7 +136,7 @@ export default function Header() {
                   >
                     <Wine className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Food Pairing</div>
+                      <div className="font-medium">Food Pairing AI</div>
                       <div className="text-xs text-foreground/50">Perfect combinations</div>
                     </div>
                   </Link>
@@ -147,7 +147,7 @@ export default function Header() {
                   >
                     <Zap className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Cocktail Creator</div>
+                      <div className="font-medium">Cocktail AI</div>
                       <div className="text-xs text-foreground/50">Custom drinks</div>
                     </div>
                   </Link>
@@ -162,7 +162,7 @@ export default function Header() {
               onClick={() => toggleDropdown("tools")}
               className="flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
-              Tools
+              Recipe Tools
               <ChevronDown
                 className={`h-4 w-4 transition-transform duration-200 ${
                   activeDropdown === "tools" ? "rotate-180" : ""
@@ -179,7 +179,7 @@ export default function Header() {
                   >
                     <FileDown className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Download as PDF</div>
+                      <div className="font-medium">PDF Export</div>
                       <div className="text-xs text-foreground/50">Save recipes offline</div>
                     </div>
                   </Link>
@@ -190,8 +190,8 @@ export default function Header() {
                   >
                     <ShoppingBag className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Shopping List</div>
-                      <div className="text-xs text-foreground/50">Generate from recipes</div>
+                      <div className="font-medium">Shopping Lists</div>
+                      <div className="text-xs text-foreground/50">Auto-generate lists</div>
                     </div>
                   </Link>
                   <Link
@@ -212,8 +212,8 @@ export default function Header() {
                   >
                     <MessageSquare className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Ask ChefGPT</div>
-                      <div className="text-xs text-foreground/50">Recipe questions</div>
+                      <div className="font-medium">Ask Food AI</div>
+                      <div className="text-xs text-foreground/50">Cooking questions</div>
                     </div>
                   </Link>
                 </div>
@@ -244,7 +244,7 @@ export default function Header() {
                   >
                     <Coffee className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Breakfast</div>
+                      <div className="font-medium">Breakfast AI</div>
                       <div className="text-xs text-foreground/50">Morning meals</div>
                     </div>
                   </Link>
@@ -255,7 +255,7 @@ export default function Header() {
                   >
                     <Utensils className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Lunch</div>
+                      <div className="font-medium">Lunch AI</div>
                       <div className="text-xs text-foreground/50">Midday meals</div>
                     </div>
                   </Link>
@@ -266,7 +266,7 @@ export default function Header() {
                   >
                     <Soup className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Dinner</div>
+                      <div className="font-medium">Dinner AI</div>
                       <div className="text-xs text-foreground/50">Evening meals</div>
                     </div>
                   </Link>
@@ -277,7 +277,7 @@ export default function Header() {
                   >
                     <Cake className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Dessert</div>
+                      <div className="font-medium">Dessert AI</div>
                       <div className="text-xs text-foreground/50">Sweet treats</div>
                     </div>
                   </Link>
@@ -288,7 +288,7 @@ export default function Header() {
                   >
                     <Apple className="h-4 w-4 text-primary" />
                     <div>
-                      <div className="font-medium">Snack</div>
+                      <div className="font-medium">Snack AI</div>
                       <div className="text-xs text-foreground/50">Light bites</div>
                     </div>
                   </Link>
@@ -298,10 +298,10 @@ export default function Header() {
           </div>
 
           <Link
-            href="/recipes"
+            href="/search"
             className="rounded-full px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10"
           >
-            Recipes
+            Recipe Search
           </Link>
           <Link
             href="/pricing"
@@ -331,14 +331,14 @@ export default function Header() {
         <div className="md:hidden bg-card border-b border-primary/20">
           <div className="space-y-1 px-4 py-3">
             <div className="rounded-lg bg-primary/10 p-2">
-              <div className="mb-2 px-2 text-sm font-medium">Generate</div>
+              <div className="mb-2 px-2 text-sm font-medium">Food AI Tools</div>
               <Link
                 href="/pantryChef"
                 className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-primary/10"
                 onClick={toggleMobileMenu}
               >
                 <ShoppingBag className="h-4 w-4 text-primary" />
-                <span>Pantry Recipes</span>
+                <span>Pantry Recipe AI</span>
               </Link>
               <Link
                 href="/masterChef"
@@ -346,7 +346,7 @@ export default function Header() {
                 onClick={toggleMobileMenu}
               >
                 <Globe className="h-4 w-4 text-primary" />
-                <span>Cuisine Explorer</span>
+                <span>Global Cuisine AI</span>
               </Link>
               <Link
                 href="/macrosChef"
@@ -354,7 +354,7 @@ export default function Header() {
                 onClick={toggleMobileMenu}
               >
                 <Leaf className="h-4 w-4 text-primary" />
-                <span>Nutrition Focus</span>
+                <span>Nutrition AI</span>
               </Link>
               <Link
                 href="/mealPlanChef"
@@ -362,7 +362,7 @@ export default function Header() {
                 onClick={toggleMobileMenu}
               >
                 <Calendar className="h-4 w-4 text-primary" />
-                <span>Meal Planning</span>
+                <span>Meal Planning AI</span>
               </Link>
               <Link
                 href="/pairPerfect"
@@ -370,7 +370,7 @@ export default function Header() {
                 onClick={toggleMobileMenu}
               >
                 <Wine className="h-4 w-4 text-primary" />
-                <span>Food Pairing</span>
+                <span>Food Pairing AI</span>
               </Link>
               <Link
                 href="/mixologyMaestro"
@@ -378,96 +378,16 @@ export default function Header() {
                 onClick={toggleMobileMenu}
               >
                 <Zap className="h-4 w-4 text-primary" />
-                <span>Cocktail Creator</span>
-              </Link>
-            </div>
-
-            <div className="rounded-lg bg-primary/10 p-2 mt-2">
-              <div className="mb-2 px-2 text-sm font-medium">Tools</div>
-              <Link
-                href="/recipe-result"
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-primary/10"
-                onClick={toggleMobileMenu}
-              >
-                <FileDown className="h-4 w-4 text-primary" />
-                <span>Download as PDF</span>
-              </Link>
-              <Link
-                href="/recipe-result"
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-primary/10"
-                onClick={toggleMobileMenu}
-              >
-                <ShoppingBag className="h-4 w-4 text-primary" />
-                <span>Shopping List</span>
-              </Link>
-              <Link
-                href="/recipe-result"
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-primary/10"
-                onClick={toggleMobileMenu}
-              >
-                <Link2 className="h-4 w-4 text-primary" />
-                <span>Share Recipes</span>
-              </Link>
-              <Link
-                href="/recipe-result"
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-primary/10"
-                onClick={toggleMobileMenu}
-              >
-                <MessageSquare className="h-4 w-4 text-primary" />
-                <span>Ask ChefGPT</span>
-              </Link>
-            </div>
-
-            <div className="rounded-lg bg-primary/10 p-2 mt-2">
-              <div className="mb-2 px-2 text-sm font-medium">Meal Types</div>
-              <Link
-                href="/search?type=breakfast"
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-primary/10"
-                onClick={toggleMobileMenu}
-              >
-                <Coffee className="h-4 w-4 text-primary" />
-                <span>Breakfast</span>
-              </Link>
-              <Link
-                href="/search?type=lunch"
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-primary/10"
-                onClick={toggleMobileMenu}
-              >
-                <Utensils className="h-4 w-4 text-primary" />
-                <span>Lunch</span>
-              </Link>
-              <Link
-                href="/search?type=dinner"
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-primary/10"
-                onClick={toggleMobileMenu}
-              >
-                <Soup className="h-4 w-4 text-primary" />
-                <span>Dinner</span>
-              </Link>
-              <Link
-                href="/search?type=dessert"
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-primary/10"
-                onClick={toggleMobileMenu}
-              >
-                <Cake className="h-4 w-4 text-primary" />
-                <span>Dessert</span>
-              </Link>
-              <Link
-                href="/search?type=snack"
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-primary/10"
-                onClick={toggleMobileMenu}
-              >
-                <Apple className="h-4 w-4 text-primary" />
-                <span>Snack</span>
+                <span>Cocktail AI</span>
               </Link>
             </div>
 
             <Link
-              href="/recipes"
+              href="/search"
               className="block rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10"
               onClick={toggleMobileMenu}
             >
-              Recipes
+              Recipe Search
             </Link>
             <Link
               href="/pricing"
