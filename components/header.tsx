@@ -26,9 +26,28 @@ import {
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen)
+  }
+
+  const handleDropdownEnter = (dropdown: string) => {
+    setActiveDropdown(dropdown)
+  }
+
+  const handleDropdownLeave = () => {
+    // Add a small delay before hiding to prevent accidental closes
+    setTimeout(() => {
+      setActiveDropdown(null)
+    }, 150)
+  }
+
+  const handleDropdownStay = () => {
+    // Keep dropdown open when hovering over it
+    if (activeDropdown) {
+      setActiveDropdown(activeDropdown)
+    }
   }
 
   return (
@@ -38,12 +57,27 @@ export default function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <div className="relative group">
+          {/* Generate Dropdown */}
+          <div
+            className="relative"
+            onMouseEnter={() => handleDropdownEnter("generate")}
+            onMouseLeave={handleDropdownLeave}
+          >
             <button className="flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10">
               Generate
-              <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${activeDropdown === "generate" ? "rotate-180" : ""}`}
+              />
             </button>
-            <div className="absolute left-0 top-full mt-2 hidden w-64 rounded-xl border border-primary/20 bg-card p-2 shadow-lg group-hover:block">
+            <div
+              className={`absolute left-0 top-full mt-1 w-64 rounded-xl border border-primary/20 bg-card p-2 shadow-lg transition-all duration-200 ${
+                activeDropdown === "generate"
+                  ? "opacity-100 visible translate-y-0"
+                  : "opacity-0 invisible -translate-y-2 pointer-events-none"
+              }`}
+              onMouseEnter={handleDropdownStay}
+              onMouseLeave={handleDropdownLeave}
+            >
               <div className="grid gap-1">
                 <Link
                   href="/pantryChef"
@@ -109,12 +143,27 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="relative group">
+          {/* Tools Dropdown */}
+          <div
+            className="relative"
+            onMouseEnter={() => handleDropdownEnter("tools")}
+            onMouseLeave={handleDropdownLeave}
+          >
             <button className="flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10">
               Tools
-              <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${activeDropdown === "tools" ? "rotate-180" : ""}`}
+              />
             </button>
-            <div className="absolute left-0 top-full mt-2 hidden w-64 rounded-xl border border-primary/20 bg-card p-2 shadow-lg group-hover:block">
+            <div
+              className={`absolute left-0 top-full mt-1 w-64 rounded-xl border border-primary/20 bg-card p-2 shadow-lg transition-all duration-200 ${
+                activeDropdown === "tools"
+                  ? "opacity-100 visible translate-y-0"
+                  : "opacity-0 invisible -translate-y-2 pointer-events-none"
+              }`}
+              onMouseEnter={handleDropdownStay}
+              onMouseLeave={handleDropdownLeave}
+            >
               <div className="grid gap-1">
                 <Link
                   href="/recipe-result"
@@ -160,12 +209,27 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="relative group">
+          {/* Meal Types Dropdown */}
+          <div
+            className="relative"
+            onMouseEnter={() => handleDropdownEnter("mealtypes")}
+            onMouseLeave={handleDropdownLeave}
+          >
             <button className="flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10">
               Meal Types
-              <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${activeDropdown === "mealtypes" ? "rotate-180" : ""}`}
+              />
             </button>
-            <div className="absolute left-0 top-full mt-2 hidden w-64 rounded-xl border border-primary/20 bg-card p-2 shadow-lg group-hover:block">
+            <div
+              className={`absolute left-0 top-full mt-1 w-64 rounded-xl border border-primary/20 bg-card p-2 shadow-lg transition-all duration-200 ${
+                activeDropdown === "mealtypes"
+                  ? "opacity-100 visible translate-y-0"
+                  : "opacity-0 invisible -translate-y-2 pointer-events-none"
+              }`}
+              onMouseEnter={handleDropdownStay}
+              onMouseLeave={handleDropdownLeave}
+            >
               <div className="grid gap-1">
                 <Link
                   href="/search?type=breakfast"
