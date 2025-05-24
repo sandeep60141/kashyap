@@ -25,8 +25,12 @@ export async function generateRecipe(options: {
     let prompt = ""
 
     if (options.type === "mealPlan") {
-      prompt = `Create a detailed meal plan for ${options.days || 3} days with these EXACT specifications:
+      prompt = `Create a detailed ${options.days || 3}-day meal plan with these EXACT specifications:
+
+MEAL PLAN STRUCTURE:
+- Total days: ${options.days || 3} days
 - Daily calorie target: ${options.calories || 2000} calories
+- Each day MUST include: Breakfast, Lunch, Dinner
 - User preferences: ${options.preferences || "balanced, healthy meals"}
 ${
   options.dietaryRequirements && options.dietaryRequirements.length > 0
@@ -34,9 +38,24 @@ ${
     : ""
 }
 
-CRITICAL: The meal plan MUST match the user's dietary preferences and requirements. If they specified vegetarian, include NO meat. If they specified specific foods, include those foods.
+CRITICAL REQUIREMENTS:
+1. This is a MEAL PLAN request (not a single recipe)
+2. Must include exactly ${options.days || 3} days
+3. Each day must have 3 complete meals with ingredients and instructions
+4. Include daily nutrition totals that add up to target calories
+5. Each meal should be detailed with prep/cook times
 
-This is a meal plan request.`
+EXAMPLE STRUCTURE REQUIRED:
+Day 1:
+- Breakfast: [meal name, ingredients, instructions, nutrition]
+- Lunch: [meal name, ingredients, instructions, nutrition]  
+- Dinner: [meal name, ingredients, instructions, nutrition]
+- Daily Total: [calories, protein, carbs, fat]
+
+Day 2: [same structure]
+Day 3: [same structure] (if 3+ days requested)
+
+This is a ${options.days || 3}-day meal plan request.`
     } else if (options.type === "pairing") {
       prompt = `Suggest the perfect ${options.pairingType || "wine"} pairing for this SPECIFIC dish: ${options.dish || "a general meal"}.
 ${options.preferences ? `Additional preferences: ${options.preferences}` : ""}

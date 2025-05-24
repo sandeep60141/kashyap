@@ -78,32 +78,62 @@ Return ONLY JSON, no markdown.
     prompt.includes("daily calories")
   ) {
     console.log("Detected meal plan request")
-    systemPrompt += `MEAL PLAN JSON:
+    systemPrompt += `MEAL PLAN JSON FORMAT (REQUIRED):
 {
-  "title": "MUST reflect user's exact request",
-  "description": "Match user preferences exactly",
-  "calorieTarget": "User's specified calories",
+  "title": "X-Day Meal Plan",
+  "description": "Complete meal plan description",
+  "totalDays": NUMBER_OF_DAYS,
+  "calorieTarget": "Daily calorie target",
   "days": [
     {
       "dayNumber": 1,
+      "dayTitle": "Day 1",
       "meals": [
         {
-          "name": "Breakfast/Lunch/Dinner",
-          "description": "MUST match user's dietary needs",
-          "prepTime": "Realistic time",
-          "cookTime": "Safe cooking time",
-          "ingredients": [{"name": "Safe ingredient", "amount": "Accurate amount", "allergens": ["All allergens"]}],
-          "instructions": ["Safe cooking steps with temperatures"],
-          "nutritionalInfo": {"calories": "Accurate", "protein": "Accurate", "carbs": "Accurate", "fat": "Accurate"},
-          "foodSafetyTips": ["Essential safety tips"]
+          "mealType": "Breakfast",
+          "name": "Breakfast meal name",
+          "description": "Meal description",
+          "prepTime": "X minutes",
+          "cookTime": "X minutes",
+          "ingredients": [{"name": "ingredient", "amount": "amount", "allergens": []}],
+          "instructions": ["Step 1", "Step 2", "Step 3"],
+          "nutritionalInfo": {"calories": "X", "protein": "Xg", "carbs": "Xg", "fat": "Xg"}
+        },
+        {
+          "mealType": "Lunch", 
+          "name": "Lunch meal name",
+          "description": "Meal description",
+          "prepTime": "X minutes",
+          "cookTime": "X minutes", 
+          "ingredients": [{"name": "ingredient", "amount": "amount", "allergens": []}],
+          "instructions": ["Step 1", "Step 2", "Step 3"],
+          "nutritionalInfo": {"calories": "X", "protein": "Xg", "carbs": "Xg", "fat": "Xg"}
+        },
+        {
+          "mealType": "Dinner",
+          "name": "Dinner meal name", 
+          "description": "Meal description",
+          "prepTime": "X minutes",
+          "cookTime": "X minutes",
+          "ingredients": [{"name": "ingredient", "amount": "amount", "allergens": []}],
+          "instructions": ["Step 1", "Step 2", "Step 3"],
+          "nutritionalInfo": {"calories": "X", "protein": "Xg", "carbs": "Xg", "fat": "Xg"}
         }
       ],
-      "dailyNutritionTotals": {"calories": "Must match target", "protein": "Accurate", "carbs": "Accurate", "fat": "Accurate"}
+      "dailyNutritionTotals": {"calories": "TARGET_CALORIES", "protein": "Xg", "carbs": "Xg", "fat": "Xg"}
     }
   ],
   "allergenWarnings": ["ALL potential allergens"],
-  "tips": ["Safe meal prep tips"]
-}`
+  "dietaryClassifications": ["classifications"],
+  "tips": ["meal prep tips", "shopping tips"],
+  "shoppingList": ["ingredient 1", "ingredient 2"]
+}
+
+CRITICAL: 
+- Include exactly the number of days requested
+- Each day MUST have 3 meals (breakfast, lunch, dinner)
+- Each meal MUST have complete ingredients and instructions
+- Daily calories should add up to target`
   } else if (prompt.includes("pairing") || prompt.includes("drink")) {
     console.log("Detected pairing request")
     systemPrompt += `PAIRING JSON:
@@ -264,9 +294,184 @@ CRITICAL: This MUST be a recipe for "${prompt}" specifically. Do not create a di
   }
 }
 
+// Specific validation for meal plans
+function validateMealPlanStructure(mealPlan: any, originalPrompt: string) {
+  console.log("Validating meal plan structure")
+
+  // Extract number of days from prompt
+  const daysMatch = originalPrompt.match(/(\d+)[\s-]*day/i)
+  const requestedDays = daysMatch ? Number.parseInt(daysMatch[1]) : 3
+
+  // Ensure meal plan structure
+  if (!mealPlan.days || !Array.isArray(mealPlan.days)) {
+    console.log("Creating proper meal plan structure")
+    return createProperMealPlan(requestedDays, originalPrompt)
+  }
+
+  // Check if we have the right number of days
+  if (mealPlan.days.length !== requestedDays) {
+    console.log(`Meal plan has ${mealPlan.days.length} days but ${requestedDays} requested`)
+    return createProperMealPlan(requestedDays, originalPrompt)
+  }
+
+  // Validate each day has 3 meals
+  for (let i = 0; i < mealPlan.days.length; i++) {
+    const day = mealPlan.days[i]
+    if (!day.meals || !Array.isArray(day.meals) || day.meals.length !== 3) {
+      console.log(`Day ${i + 1} doesn't have 3 meals`)
+      return createProperMealPlan(requestedDays, originalPrompt)
+    }
+
+    // Ensure each meal has required fields
+    day.meals.forEach((meal: any, mealIndex: number) => {
+      const mealTypes = ["Breakfast", "Lunch", "Dinner"]
+      if (!meal.mealType) meal.mealType = mealTypes[mealIndex]
+      if (!meal.name) meal.name = `${meal.mealType} Recipe`
+      if (!meal.ingredients || !Array.isArray(meal.ingredients)) meal.ingredients = []
+      if (!meal.instructions || !Array.isArray(meal.instructions))
+        meal.instructions = ["Prepare according to ingredients"]
+      if (!meal.nutritionalInfo) meal.nutritionalInfo = { calories: "300", protein: "15g", carbs: "30g", fat: "10g" }
+    })
+
+    // Ensure day has proper structure
+    if (!day.dayNumber) day.dayNumber = i + 1
+    if (!day.dayTitle) day.dayTitle = `Day ${i + 1}`
+    if (!day.dailyNutritionTotals) {
+      day.dailyNutritionTotals = calculateDailyTotals(day.meals)
+    }
+  }
+
+  // Ensure meal plan has proper title and metadata
+  if (!mealPlan.title) mealPlan.title = `${requestedDays}-Day Meal Plan`
+  if (!mealPlan.totalDays) mealPlan.totalDays = requestedDays
+  if (!mealPlan.description) mealPlan.description = `A comprehensive ${requestedDays}-day meal plan`
+
+  return mealPlan
+}
+
+function createProperMealPlan(days: number, originalPrompt: string) {
+  console.log(`Creating proper ${days}-day meal plan`)
+
+  const mealPlan = {
+    title: `${days}-Day Meal Plan`,
+    description: `A comprehensive ${days}-day meal plan based on your preferences`,
+    totalDays: days,
+    calorieTarget: "2000 calories per day",
+    days: [],
+    allergenWarnings: [],
+    dietaryClassifications: [],
+    tips: ["Plan meals in advance", "Prep ingredients ahead of time", "Stay hydrated"],
+    shoppingList: [],
+  }
+
+  // Create each day
+  for (let dayNum = 1; dayNum <= days; dayNum++) {
+    const day = {
+      dayNumber: dayNum,
+      dayTitle: `Day ${dayNum}`,
+      meals: [
+        {
+          mealType: "Breakfast",
+          name: `Day ${dayNum} Breakfast`,
+          description: "A nutritious breakfast to start your day",
+          prepTime: "10 minutes",
+          cookTime: "10 minutes",
+          ingredients: [
+            { name: "Oats", amount: "1/2 cup", allergens: [] },
+            { name: "Milk", amount: "1 cup", allergens: ["dairy"] },
+            { name: "Banana", amount: "1 medium", allergens: [] },
+            { name: "Honey", amount: "1 tablespoon", allergens: [] },
+          ],
+          instructions: [
+            "Combine oats and milk in a bowl",
+            "Heat in microwave for 2 minutes",
+            "Top with sliced banana and honey",
+            "Serve immediately",
+          ],
+          nutritionalInfo: { calories: "350", protein: "12g", carbs: "65g", fat: "6g" },
+        },
+        {
+          mealType: "Lunch",
+          name: `Day ${dayNum} Lunch`,
+          description: "A balanced lunch meal",
+          prepTime: "15 minutes",
+          cookTime: "15 minutes",
+          ingredients: [
+            { name: "Chicken breast", amount: "4 oz", allergens: [] },
+            { name: "Mixed vegetables", amount: "1 cup", allergens: [] },
+            { name: "Brown rice", amount: "1/2 cup cooked", allergens: [] },
+            { name: "Olive oil", amount: "1 tablespoon", allergens: [] },
+          ],
+          instructions: [
+            "Season chicken breast with salt and pepper",
+            "Cook chicken in olive oil until internal temperature reaches 165°F",
+            "Steam mixed vegetables until tender",
+            "Serve chicken over rice with vegetables",
+          ],
+          nutritionalInfo: { calories: "450", protein: "35g", carbs: "40g", fat: "12g" },
+        },
+        {
+          mealType: "Dinner",
+          name: `Day ${dayNum} Dinner`,
+          description: "A satisfying dinner meal",
+          prepTime: "20 minutes",
+          cookTime: "25 minutes",
+          ingredients: [
+            { name: "Salmon fillet", amount: "5 oz", allergens: ["fish"] },
+            { name: "Sweet potato", amount: "1 medium", allergens: [] },
+            { name: "Asparagus", amount: "1 cup", allergens: [] },
+            { name: "Lemon", amount: "1/2", allergens: [] },
+          ],
+          instructions: [
+            "Preheat oven to 400°F",
+            "Season salmon with salt, pepper, and lemon juice",
+            "Roast sweet potato and asparagus for 20 minutes",
+            "Cook salmon until internal temperature reaches 145°F",
+            "Serve together with lemon wedges",
+          ],
+          nutritionalInfo: { calories: "500", protein: "35g", carbs: "45g", fat: "18g" },
+        },
+      ],
+      dailyNutritionTotals: { calories: "1300", protein: "82g", carbs: "150g", fat: "36g" },
+    }
+
+    mealPlan.days.push(day)
+  }
+
+  return mealPlan
+}
+
+function calculateDailyTotals(meals: any[]) {
+  let totalCalories = 0
+  let totalProtein = 0
+  let totalCarbs = 0
+  let totalFat = 0
+
+  meals.forEach((meal) => {
+    if (meal.nutritionalInfo) {
+      totalCalories += Number.parseInt(meal.nutritionalInfo.calories) || 0
+      totalProtein += Number.parseInt(meal.nutritionalInfo.protein) || 0
+      totalCarbs += Number.parseInt(meal.nutritionalInfo.carbs) || 0
+      totalFat += Number.parseInt(meal.nutritionalInfo.fat) || 0
+    }
+  })
+
+  return {
+    calories: totalCalories.toString(),
+    protein: `${totalProtein}g`,
+    carbs: `${totalCarbs}g`,
+    fat: `${totalFat}g`,
+  }
+}
+
 // CRITICAL: Enhanced validation function for 100% accuracy and safety
 function validateRecipeAccuracyAndSafety(recipe: any, originalPrompt: string) {
   console.log("Validating recipe accuracy and safety for prompt:", originalPrompt)
+
+  // Add this check at the beginning of validateRecipeAccuracyAndSafety function:
+  if (originalPrompt.includes("meal plan") || originalPrompt.includes("day")) {
+    return validateMealPlanStructure(recipe, originalPrompt)
+  }
 
   // 1. ACCURACY VALIDATION - Check if recipe matches user request
   const promptLower = originalPrompt.toLowerCase()
@@ -506,7 +711,7 @@ function generateComprehensiveSafetyTips(ingredients: any[], instructions: any[]
 
   const hasDairy = ingredients.some((ing: any) => {
     const name = (ing.name || "").toLowerCase()
-    return name.includes("milk") || name.includes("cheese") || name.includes("cream")
+    return name.includes("milk") || name.includes("cheese") || name.includes("butter") || name.includes("cream")
   })
   if (hasDairy) {
     tips.push("Keep dairy products refrigerated and check expiration dates before use")

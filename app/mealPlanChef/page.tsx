@@ -26,12 +26,30 @@ export default function MealPlanChef() {
     setError(null)
 
     try {
+      const mealPlanPrompt = `Create a comprehensive ${days}-day meal plan with these exact specifications:
+
+MEAL PLAN REQUIREMENTS:
+- Duration: Exactly ${days} days (Day 1 through Day ${days})
+- Daily calories: ${calories} calories per day
+- Each day must include: Breakfast, Lunch, Dinner
+- User preferences: ${preferences || "balanced, healthy meals"}
+${dietaryRequirements.length > 0 ? `- MUST follow dietary requirements: ${dietaryRequirements.join(", ")}` : ""}
+
+CRITICAL INSTRUCTIONS:
+- This is a MEAL PLAN request, not a single recipe
+- Must include ${days} complete days
+- Each meal should have ingredients and instructions
+- Include daily nutrition totals
+- Format as a structured meal plan
+
+Do not create a single recipe. Create a ${days}-day meal plan.`
+
       const recipe = await generateRecipe({
-        days,
-        calories,
-        preferences,
-        dietaryRequirements,
         type: "mealPlan",
+        days: days,
+        calories: calories,
+        preferences: mealPlanPrompt,
+        dietaryRequirements: dietaryRequirements,
         model: selectedModel,
       })
 

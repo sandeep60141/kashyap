@@ -112,9 +112,18 @@ export default function Home() {
 
     try {
       // Optimized meal plan prompt
-      const mealPlanPrompt = ecoMode
-        ? `${mealPlanDays}-day meal plan, ${mealPlanCalories} calories/day. ${prompt}`
-        : `Create a ${mealPlanDays}-day meal plan for ${mealPlanCalories} calories per day. ${prompt}. Include breakfast, lunch, and dinner for each day with detailed recipes, ingredients, and nutritional information.`
+      const mealPlanPrompt = `Create a complete ${mealPlanDays}-day meal plan with exactly ${mealPlanDays} days.
+
+REQUIREMENTS:
+- MUST include exactly ${mealPlanDays} days (Day 1, Day 2, etc.)
+- Each day MUST have 3 meals: Breakfast, Lunch, Dinner
+- Daily calorie target: ${mealPlanCalories} calories
+- User preferences: ${prompt}
+${dietaryRequirements.length > 0 ? `- Dietary requirements: ${dietaryRequirements.join(", ")}` : ""}
+
+CRITICAL: This is a ${mealPlanDays}-day meal plan request. Do not create a single recipe.
+
+Format as a meal plan with multiple days, not a single recipe.`
 
       const mealPlan = await generateRecipe(mealPlanPrompt, {
         provider: "openai",
