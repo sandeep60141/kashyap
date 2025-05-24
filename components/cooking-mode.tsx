@@ -63,18 +63,25 @@ export default function CookingMode({ title, instructions, onClose }: CookingMod
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl bg-white rounded-xl overflow-hidden">
-        <div className="bg-indigo-600 p-4 text-white">
+      <Card className="w-full max-w-3xl bg-white rounded-xl overflow-hidden border-2 border-primary/20 shadow-2xl">
+        <div className="bg-gradient-to-r from-primary to-accent p-4 sm:p-6 text-white">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold">Cooking Mode: {title}</h2>
-            <Button variant="ghost" className="text-white hover:bg-indigo-700 p-1 h-auto" onClick={onClose}>
+            <h2 className="text-lg sm:text-xl font-bold truncate pr-4">Cooking Mode: {title}</h2>
+            <Button
+              variant="ghost"
+              className="text-white hover:bg-white/20 p-2 h-auto rounded-lg border border-white/30 hover:border-white/50 transition-all"
+              onClick={onClose}
+            >
               <X className="h-5 w-5" />
             </Button>
           </div>
-          <div className="mt-2 bg-indigo-700/50 h-2 rounded-full">
-            <div className="bg-white h-2 rounded-full" style={{ width: `${progress}%` }}></div>
+          <div className="mt-4 bg-primary/30 h-3 rounded-full overflow-hidden border border-white/20">
+            <div
+              className="bg-white h-3 rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${progress}%` }}
+            ></div>
           </div>
-          <div className="flex justify-between text-xs mt-1">
+          <div className="flex justify-between text-xs sm:text-sm mt-2">
             <span>
               Step {currentStep + 1} of {formattedInstructions.length}
             </span>
@@ -82,38 +89,49 @@ export default function CookingMode({ title, instructions, onClose }: CookingMod
           </div>
         </div>
 
-        <div className="p-6">
-          <div className="min-h-[200px]">
-            <div className="flex items-start gap-3 mb-4">
+        <div className="p-4 sm:p-6">
+          <div className="min-h-[250px]">
+            <div className="flex items-start gap-4 mb-6">
               <div
-                className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg font-medium ${
-                  completedSteps.includes(currentStep) ? "bg-green-100 text-green-600" : "bg-indigo-100 text-indigo-600"
+                className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-lg font-medium border-2 transition-all ${
+                  completedSteps.includes(currentStep)
+                    ? "bg-green-100 text-green-600 border-green-300"
+                    : "bg-primary/10 text-primary border-primary/30"
                 }`}
               >
-                {completedSteps.includes(currentStep) ? <Check className="h-5 w-5" /> : currentInstruction.step}
+                {completedSteps.includes(currentStep) ? <Check className="h-6 w-6" /> : currentInstruction.step}
               </div>
-              <div className="pt-1">
-                <p className="text-lg">{currentInstruction.description}</p>
+              <div className="pt-2 flex-1 min-w-0">
+                <p className="text-base sm:text-lg leading-relaxed text-foreground">{currentInstruction.description}</p>
 
                 {currentInstruction.timingTip && (
-                  <p className="mt-3 text-sm text-blue-600 italic flex items-center">
-                    <Clock className="inline-block h-4 w-4 mr-1" />
-                    {currentInstruction.timingTip}
-                  </p>
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-700 flex items-center gap-2">
+                      <Clock className="h-4 w-4 flex-shrink-0" />
+                      <span className="font-medium">Timing Tip:</span>
+                      <span>{currentInstruction.timingTip}</span>
+                    </p>
+                  </div>
                 )}
 
                 {currentInstruction.safetyTip && (
-                  <p className="mt-2 text-sm text-red-600 italic">⚠️ {currentInstruction.safetyTip}</p>
+                  <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                    <p className="text-sm text-red-700 flex items-center gap-2">
+                      <span className="text-red-500">⚠️</span>
+                      <span className="font-medium">Safety:</span>
+                      <span>{currentInstruction.safetyTip}</span>
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
 
             <Button
               variant="outline"
-              className={`mt-4 ${
+              className={`transition-all border-2 ${
                 completedSteps.includes(currentStep)
-                  ? "bg-green-50 text-green-600 border-green-200"
-                  : "border-indigo-200 text-indigo-600"
+                  ? "bg-green-50 text-green-600 border-green-300 hover:bg-green-100"
+                  : "border-primary/30 text-primary hover:bg-primary/10 hover:border-primary"
               }`}
               onClick={() => toggleStepCompletion(currentStep)}
             >
@@ -127,23 +145,30 @@ export default function CookingMode({ title, instructions, onClose }: CookingMod
             </Button>
           </div>
 
-          <div className="flex justify-between mt-8">
+          <div className="flex justify-between items-center mt-8 gap-4">
             <Button
               variant="outline"
               onClick={handlePrevious}
               disabled={currentStep === 0}
-              className="border-indigo-200"
+              className="border-2 border-primary/30 text-primary hover:bg-primary/10 hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
               Previous
             </Button>
+
             {currentStep < formattedInstructions.length - 1 ? (
-              <Button onClick={handleNext}>
+              <Button
+                onClick={handleNext}
+                className="bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90 border-2 border-transparent"
+              >
                 Next
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (
-              <Button onClick={onClose} className="bg-green-600 hover:bg-green-700">
+              <Button
+                onClick={onClose}
+                className="bg-green-600 hover:bg-green-700 text-white border-2 border-green-600 hover:border-green-700"
+              >
                 Finish Cooking
               </Button>
             )}
