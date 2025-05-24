@@ -2,397 +2,373 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* Fresh herb green theme with complementary accents */
-    --background: 0 0% 100%;
-    --foreground: 160 15% 20%;
-
-    --card: 160 30% 98%;
-    --card-foreground: 160 15% 20%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 160 15% 20%;
-
-    --primary: 142 70% 35%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 160 40% 95%;
-    --secondary-foreground: 160 30% 25%;
-
-    --muted: 160 20% 96%;
-    --muted-foreground: 160 10% 40%;
-
-    --accent: 25 95% 55%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 160 20% 90%;
-    --input: 160 20% 90%;
-    --ring: 142 70% 35%;
-
-    --radius: 0.75rem;
-  }
-
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
-
-  html {
-    scroll-behavior: smooth;
-  }
+:root {
+  --background: 0 0% 100%;
+  --foreground: 160 15% 20%;
+  --card: 160 30% 98%;
+  --card-foreground: 160 15% 20%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 160 15% 20%;
+  --primary: 142 70% 35%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 160 40% 95%;
+  --secondary-foreground: 160 30% 25%;
+  --muted: 160 20% 96%;
+  --muted-foreground: 160 10% 40%;
+  --accent: 25 95% 55%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 160 20% 90%;
+  --input: 160 20% 90%;
+  --ring: 142 70% 35%;
+  --radius: 0.75rem;
 }
 
-@layer components {
-  /* Container styles */
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom button styles */
+.btn-primary {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: 9999px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.btn-primary:hover {
+  background-color: hsl(var(--primary) / 0.9);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+.btn-secondary {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  border-radius: 9999px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.btn-secondary:hover {
+  background-color: hsl(var(--secondary) / 0.9);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+.btn-outline {
+  border: 2px solid hsl(var(--primary));
+  color: hsl(var(--primary));
+  border-radius: 9999px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  background-color: transparent;
+}
+
+.btn-outline:hover {
+  background-color: hsl(var(--primary) / 0.1);
+}
+
+.btn-generate {
+  background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
+  color: white;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.btn-generate:hover {
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+/* Container styles */
+.container-custom {
+  width: 85%;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
   .container-custom {
-    @apply w-[85%] max-w-7xl mx-auto px-4 md:px-6;
-  }
-
-  /* Button styles */
-  .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-6 py-3 font-medium transition-all shadow-lg hover:shadow-xl;
-  }
-
-  .btn-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-full px-6 py-3 font-medium transition-all shadow-lg hover:shadow-xl;
-  }
-
-  .btn-outline {
-    @apply border-2 border-primary text-primary hover:bg-primary/10 rounded-full px-6 py-3 font-medium transition-all;
-  }
-
-  .btn-generate {
-    @apply bg-gradient-to-r from-primary to-accent text-white font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center;
-  }
-
-  .cta-button {
-    @apply bg-gradient-to-r from-primary to-accent text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200;
-  }
-
-  /* Card styles */
-  .feature-card {
-    @apply bg-card rounded-xl p-6 shadow-lg border border-primary/20 hover:border-primary/40 hover:shadow-xl transition-all;
-  }
-
-  /* Cuisine button styles */
-  .cuisine-button {
-    @apply flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-all font-medium;
-  }
-
-  .cuisine-button-active {
-    @apply bg-primary text-white border-primary hover:bg-primary/90;
-  }
-
-  /* Tab styling */
-  .tab-active {
-    @apply bg-primary text-white flex items-center justify-center;
-  }
-
-  .tab-inactive {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center justify-center;
-  }
-
-  /* Input styling */
-  .input-primary {
-    @apply bg-secondary/50 border border-primary/30 rounded-lg px-4 py-3 text-foreground placeholder:text-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/50;
-  }
-
-  /* Generator styles */
-  .generator-container {
-    @apply max-w-4xl mx-auto p-6;
-  }
-
-  .generator-header {
-    @apply bg-gradient-to-r from-primary/30 to-primary/10 p-6 rounded-lg mb-6 shadow-md;
-  }
-
-  .generator-title {
-    @apply text-2xl md:text-3xl font-bold text-primary mb-2;
-  }
-
-  .generator-description {
-    @apply text-foreground/80;
-  }
-
-  .generator-form {
-    @apply bg-card rounded-lg shadow-md p-6 border border-primary/20;
-  }
-
-  .generator-section {
-    @apply mb-6;
-  }
-
-  .generator-section-title {
-    @apply text-lg font-semibold mb-3 text-primary;
-  }
-
-  .generator-input {
-    @apply w-full bg-secondary/50 border border-primary/30 rounded-lg px-4 py-3 text-foreground placeholder:text-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/50;
-  }
-
-  .generator-textarea {
-    @apply w-full bg-secondary/50 border border-primary/30 rounded-lg px-4 py-3 text-foreground placeholder:text-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[120px];
-  }
-
-  .generator-button {
-    @apply w-full bg-gradient-to-r from-primary to-accent text-white font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all;
-  }
-
-  .generator-option {
-    @apply flex items-center gap-2 p-3 rounded-lg border border-primary/30 hover:bg-primary/10 cursor-pointer transition-all;
-  }
-
-  .generator-option-active {
-    @apply bg-primary/20 border-primary;
-  }
-
-  .generator-select {
-    @apply w-full bg-secondary/50 border border-primary/30 rounded-lg px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50;
-  }
-
-  .generator-result {
-    @apply bg-card rounded-lg shadow-md p-6 border border-primary/20 mt-6;
-  }
-
-  .generator-result-title {
-    @apply text-xl font-bold text-primary mb-4;
-  }
-
-  .generator-result-content {
-    @apply text-foreground;
-  }
-
-  .generator-loading {
-    @apply flex justify-center items-center py-8;
-  }
-
-  .generator-loading-spinner {
-    @apply animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary;
-  }
-
-  .generator-error {
-    @apply bg-red-100 text-red-700 p-4 rounded-lg mb-6;
-  }
-
-  /* SEO-friendly text styles */
-  .seo-heading {
-    @apply text-3xl md:text-4xl font-bold mb-6 text-foreground;
-  }
-
-  .seo-subheading {
-    @apply text-xl md:text-2xl font-semibold mb-4 text-foreground/90;
-  }
-
-  .seo-text {
-    @apply text-base md:text-lg text-foreground/80 leading-relaxed;
-  }
-
-  .gradient-text {
-    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
-  }
-
-  /* Enhanced mobile touch targets */
-  .touch-target {
-    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
-  }
-
-  /* Improved focus states for accessibility */
-  .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+    padding: 0 1.5rem;
   }
 }
 
-@layer utilities {
-  /* Mobile-first responsive design */
-  @media (max-width: 768px) {
-    .container-custom {
-      @apply w-[90%] px-2;
-    }
-
-    .feature-card {
-      @apply p-4;
-    }
+@media (max-width: 768px) {
+  .container-custom {
+    width: 90%;
+    padding: 0 0.5rem;
   }
+}
 
-  /* Mobile-optimized form inputs */
+/* Card styles */
+.feature-card {
+  background-color: hsl(var(--card));
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  border: 1px solid hsl(var(--primary) / 0.2);
+  transition: all 0.3s;
+}
+
+.feature-card:hover {
+  border-color: hsl(var(--primary) / 0.4);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+@media (max-width: 768px) {
+  .feature-card {
+    padding: 1rem;
+  }
+}
+
+/* Cuisine button styles */
+.cuisine-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--primary) / 0.3);
+  color: hsl(var(--primary));
+  font-weight: 500;
+  transition: all 0.2s;
+  background-color: transparent;
+}
+
+.cuisine-button:hover {
+  background-color: hsl(var(--primary) / 0.1);
+}
+
+.cuisine-button-active {
+  background-color: hsl(var(--primary));
+  color: white;
+  border-color: hsl(var(--primary));
+}
+
+.cuisine-button-active:hover {
+  background-color: hsl(var(--primary) / 0.9);
+}
+
+.cuisine-button span {
+  font-size: 1.125rem;
+}
+
+/* Tab styling */
+.tab-active {
+  background-color: hsl(var(--primary));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-inactive {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-inactive:hover {
+  background-color: hsl(var(--secondary) / 0.8);
+}
+
+/* Input styling */
+.input-primary {
+  background-color: hsl(var(--secondary) / 0.5);
+  border: 1px solid hsl(var(--primary) / 0.3);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: hsl(var(--foreground));
+  width: 100%;
+}
+
+.input-primary:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: hsl(var(--primary) / 0.5);
+}
+
+.input-primary::placeholder {
+  color: hsl(var(--foreground) / 0.6);
+}
+
+/* Generator styles */
+.generator-container {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.generator-header {
+  background: linear-gradient(to right, hsl(var(--primary) / 0.3), hsl(var(--primary) / 0.1));
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.generator-title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: hsl(var(--primary));
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .generator-title {
+    font-size: 2.25rem;
+  }
+}
+
+.generator-description {
+  color: hsl(var(--foreground) / 0.8);
+}
+
+.generator-form {
+  background-color: hsl(var(--card));
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  padding: 1.5rem;
+  border: 1px solid hsl(var(--primary) / 0.2);
+}
+
+.generator-section {
+  margin-bottom: 1.5rem;
+}
+
+.generator-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: hsl(var(--primary));
+}
+
+.generator-input {
+  width: 100%;
+  background-color: hsl(var(--secondary) / 0.5);
+  border: 1px solid hsl(var(--primary) / 0.3);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: hsl(var(--foreground));
+}
+
+.generator-input:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: hsl(var(--primary) / 0.5);
+}
+
+.generator-input::placeholder {
+  color: hsl(var(--foreground) / 0.6);
+}
+
+.generator-textarea {
+  width: 100%;
+  background-color: hsl(var(--secondary) / 0.5);
+  border: 1px solid hsl(var(--primary) / 0.3);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: hsl(var(--foreground));
+  min-height: 120px;
+}
+
+.generator-textarea:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: hsl(var(--primary) / 0.5);
+}
+
+.generator-textarea::placeholder {
+  color: hsl(var(--foreground) / 0.6);
+}
+
+.generator-button {
+  width: 100%;
+  background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
+  color: white;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  transition: all 0.2s;
+}
+
+.generator-button:hover {
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+.generator-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 0;
+}
+
+.generator-loading-spinner {
+  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  height: 3rem;
+  width: 3rem;
+  border-top: 2px solid hsl(var(--primary));
+  border-bottom: 2px solid hsl(var(--primary));
+  border-left: 2px solid transparent;
+  border-right: 2px solid transparent;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile form optimization */
+input,
+textarea,
+select {
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
   input,
   textarea,
   select {
-    @apply text-base;
-  }
-
-  @media (max-width: 768px) {
-    input,
-    textarea,
-    select {
-      font-size: 16px;
-    }
-  }
-
-  /* Custom checkbox styling */
-  .generator-checkbox {
-    @apply h-4 w-4 rounded border-primary/50 text-primary focus:ring-primary/50 accent-primary;
-  }
-
-  .generator-radio {
-    @apply h-4 w-4 border-primary/50 text-primary focus:ring-primary/50 accent-primary;
-  }
-
-  input[type="checkbox"] {
-    @apply accent-primary;
-  }
-
-  input[type="radio"] {
-    @apply accent-primary;
-  }
-
-  /* SEO-friendly image optimization */
-  img {
-    @apply max-w-full h-auto;
-  }
-
-  /* Performance optimizations */
-  .will-change-transform {
-    will-change: transform;
-  }
-
-  .will-change-opacity {
-    will-change: opacity;
-  }
-
-  /* Enhanced loading states */
-  .loading-shimmer {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite;
-  }
-
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
+    font-size: 16px;
   }
 }
 
-/* Nutrition styling */
-.nutrition-tab {
-  @apply bg-card shadow-md rounded-lg overflow-hidden border border-primary/20;
+/* Checkbox and radio styling */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: hsl(var(--primary));
 }
 
-.nutrition-header {
-  @apply bg-gradient-to-r from-primary/20 to-primary/10 px-6 py-4;
-}
-
-.nutrition-title {
-  @apply text-xl font-bold text-primary;
-}
-
-.nutrition-subtitle {
-  @apply text-sm text-primary/80;
-}
-
-.nutrition-content {
-  @apply px-6 py-4;
-}
-
-.nutrition-calories {
-  @apply border-b-2 border-primary py-2 flex justify-between items-center;
-}
-
-.nutrition-item {
-  @apply border-b border-primary/20 py-3 flex justify-between items-center;
-}
-
-.nutrition-item-label {
-  @apply font-medium;
-}
-
-.nutrition-item-sub {
-  @apply pl-4 text-foreground/80;
-}
-
-.nutrition-footer {
-  @apply bg-secondary/30 px-6 py-3;
-}
-
-.nutrition-disclaimer {
-  @apply text-xs text-primary/80;
-}
-
-.nutrition-highlights {
-  @apply mt-6 bg-card p-4 rounded-lg shadow-md border border-primary/20;
-}
-
-.nutrition-highlights-title {
-  @apply text-lg font-semibold mb-2 text-primary;
-}
-
-.nutrition-bullet {
-  @apply w-2 h-2 rounded-full bg-primary mt-2;
-}
-
-/* Generator tabs */
-.generator-tabs {
-  @apply mb-6;
-}
-
-.generator-tab {
-  @apply px-4 py-2 font-medium rounded-t-lg;
-}
-
-.generator-tab-active {
-  @apply bg-primary text-white;
-}
-
-.generator-tab-inactive {
-  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
-}
-
-/* Cuisine button span styling */
-.cuisine-button span {
-  @apply text-lg;
-}
-
-/* Feature card hover effects */
-.feature-card .btn-primary,
-.feature-card .btn-secondary,
-.feature-card button[class*="btn-"],
-.feature-card a[class*="btn-"] {
-  @apply hover:bg-primary hover:text-white transition-colors;
-}
-
-.feature-card [variant="link"],
-.feature-card a[class*="text-primary"] {
-  @apply hover:text-primary/80 hover:underline transition-colors;
-}
-
-.feature-card button,
-.feature-card a {
-  @apply hover:text-primary transition-colors;
-}
-
-/* Print styles for PDF generation */
-@media print {
-  .no-print {
-    display: none !important;
-  }
-
-  .print-break {
-    page-break-before: always;
-  }
-
-  body {
-    font-size: 12pt;
-    line-height: 1.4;
-  }
+/* Image optimization */
+img {
+  max-width: 100%;
+  height: auto;
 }
