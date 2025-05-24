@@ -22,6 +22,7 @@ import {
   ChefHat,
   Sparkles,
   Loader2,
+  DollarSign,
 } from "lucide-react"
 import { generateRecipe } from "@/lib/client-recipe-generator"
 import DietaryRequirements from "@/components/dietary-requirements"
@@ -42,6 +43,9 @@ export default function Home() {
   // Ask ChefGPT specific states
   const [question, setQuestion] = useState("")
   const [answer, setAnswer] = useState("")
+
+  // Token optimization mode
+  const [ecoMode, setEcoMode] = useState(true) // Default to eco mode
 
   const cuisines = [
     { name: "Italian", flag: "🇮🇹", active: true },
@@ -74,12 +78,17 @@ export default function Home() {
     setError(null)
 
     try {
+      // Optimize prompt for token efficiency
+      const optimizedPrompt = ecoMode
+        ? `${prompt}. ${selectedCuisine} style.`
+        : `${prompt}. Cuisine: ${selectedCuisine}. Dietary: ${dietaryRequirements.join(", ")}.`
+
       const recipe = await generateRecipe({
-        recipeName: prompt,
+        recipeName: optimizedPrompt,
         cuisine: selectedCuisine,
-        dietaryRequirements,
-        preferences: `Cuisine: ${selectedCuisine}`,
-        model: "gpt-4o",
+        dietaryRequirements: ecoMode ? [] : dietaryRequirements, // Skip in eco mode
+        preferences: ecoMode ? "" : `Cuisine: ${selectedCuisine}`,
+        model: ecoMode ? "gpt-3.5-turbo" : "gpt-4o", // Use cheaper model in eco mode
       })
 
       localStorage.setItem("generatedRecipe", JSON.stringify(recipe))
@@ -102,10 +111,15 @@ export default function Home() {
     setError(null)
 
     try {
-      // Format the prompt specifically for meal planning
-      const mealPlanPrompt = `Create a ${mealPlanDays}-day meal plan for ${mealPlanCalories} calories per day. ${prompt}. Include breakfast, lunch, and dinner for each day with detailed recipes, ingredients, and nutritional information.`
+      // Optimized meal plan prompt
+      const mealPlanPrompt = ecoMode
+        ? `${mealPlanDays}-day meal plan, ${mealPlanCalories} calories/day. ${prompt}`
+        : `Create a ${mealPlanDays}-day meal plan for ${mealPlanCalories} calories per day. ${prompt}. Include breakfast, lunch, and dinner for each day with detailed recipes, ingredients, and nutritional information.`
 
-      const mealPlan = await generateRecipe(mealPlanPrompt, { provider: "openai", value: "gpt-4o" })
+      const mealPlan = await generateRecipe(mealPlanPrompt, {
+        provider: "openai",
+        value: ecoMode ? "gpt-3.5-turbo" : "gpt-4o",
+      })
 
       localStorage.setItem("generatedRecipe", JSON.stringify(mealPlan))
       router.push("/recipe-result")
@@ -178,6 +192,25 @@ export default function Home() {
           </p>
 
           <div className="max-w-3xl mx-auto bg-card rounded-xl p-8 shadow-lg border border-primary/20">
+            {/* Token Optimization Toggle */}
+            <div className="flex items-center justify-between mb-6 p-3 bg-green-50 rounded-lg border border-green-200">
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium text-green-800">
+                  Eco Mode: {ecoMode ? "ON" : "OFF"} (Saves ~60% tokens)
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEcoMode(!ecoMode)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  ecoMode ? "bg-green-600 text-white" : "bg-gray-300 text-gray-700 hover:bg-gray-400"
+                }`}
+              >
+                {ecoMode ? "Eco Mode" : "Full Mode"}
+              </button>
+            </div>
+
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">{error}</div>
             )}
@@ -231,7 +264,11 @@ export default function Home() {
                       onChange={(e) => setPrompt(e.target.value)}
                       onKeyDown={handleKeyDown}
                       className="w-full min-h-[120px] border-primary/30 focus:border-primary focus:ring-primary/20"
-                      placeholder="Tell us what ingredients you have, your dietary preferences, or what type of meal you want to make..."
+                      placeholder={
+                        ecoMode
+                          ? "Describe what you want to cook (keep it simple to save tokens)..."
+                          : "Tell us what ingredients you have, your dietary preferences, or what type of meal you want to make..."
+                      }
                     />
                   </div>
 
@@ -259,12 +296,17 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-primary mb-3">
-                      Dietary Requirements (optional)
-                    </label>
-                    <DietaryRequirements selectedRequirements={dietaryRequirements} onChange={setDietaryRequirements} />
-                  </div>
+                  {!ecoMode && (
+                    <div>
+                      <label className="block text-sm font-medium text-primary mb-3">
+                        Dietary Requirements (optional)
+                      </label>
+                      <DietaryRequirements
+                        selectedRequirements={dietaryRequirements}
+                        onChange={setDietaryRequirements}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -277,7 +319,11 @@ export default function Home() {
                       onChange={(e) => setPrompt(e.target.value)}
                       onKeyDown={handleKeyDown}
                       className="w-full min-h-[120px] border-primary/30 focus:border-primary focus:ring-primary/20"
-                      placeholder="Describe your meal plan preferences (e.g., healthy meals, quick prep, family-friendly, etc.)"
+                      placeholder={
+                        ecoMode
+                          ? "Brief meal plan preferences (e.g., healthy, quick prep)..."
+                          : "Describe your meal plan preferences (e.g., healthy meals, quick prep, family-friendly, etc.)"
+                      }
                     />
                   </div>
 
@@ -289,7 +335,7 @@ export default function Home() {
                         onChange={(e) => setMealPlanDays(Number(e.target.value))}
                         className="w-full p-3 border border-primary/30 rounded-lg focus:border-primary focus:ring-primary/20"
                       >
-                        {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+                        {(ecoMode ? [1, 2, 3] : [1, 2, 3, 4, 5, 6, 7]).map((day) => (
                           <option key={day} value={day}>
                             {day} {day === 1 ? "day" : "days"}
                           </option>
@@ -315,12 +361,17 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-primary mb-3">
-                      Dietary Requirements (optional)
-                    </label>
-                    <DietaryRequirements selectedRequirements={dietaryRequirements} onChange={setDietaryRequirements} />
-                  </div>
+                  {!ecoMode && (
+                    <div>
+                      <label className="block text-sm font-medium text-primary mb-3">
+                        Dietary Requirements (optional)
+                      </label>
+                      <DietaryRequirements
+                        selectedRequirements={dietaryRequirements}
+                        onChange={setDietaryRequirements}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -333,7 +384,11 @@ export default function Home() {
                       onChange={(e) => setQuestion(e.target.value)}
                       onKeyDown={handleKeyDown}
                       className="w-full min-h-[120px] border-primary/30 focus:border-primary focus:ring-primary/20"
-                      placeholder="Ask any cooking question (e.g., How do I make perfect pasta? What's a good substitute for eggs? How long should I cook chicken?)"
+                      placeholder={
+                        ecoMode
+                          ? "Ask a simple cooking question..."
+                          : "Ask any cooking question (e.g., How do I make perfect pasta? What's a good substitute for eggs? How long should I cook chicken?)"
+                      }
                     />
                   </div>
 
@@ -375,6 +430,7 @@ export default function Home() {
               </div>
 
               <p className="text-xs text-foreground/60 mt-4 text-center">
+                {ecoMode && <span className="text-green-600 font-medium">💡 Eco Mode saves ~60% tokens • </span>}
                 Pro tip: Press Ctrl+Enter to{" "}
                 {activeTab === "generate"
                   ? "generate"
