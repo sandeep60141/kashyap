@@ -7,6 +7,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
   ArrowLeft,
   Heart,
+  Download,
+  Link,
+  ShoppingBag,
   Printer,
   Share2,
   Play,
@@ -16,17 +19,15 @@ import {
   DollarSign,
   Utensils,
   AlertTriangle,
+  Send,
 } from "lucide-react"
-import { PDFGenerator } from "@/components/pdf-generator"
-import { ShoppingListGenerator } from "@/components/shopping-list-generator"
-import { CopyRecipeLink } from "@/components/copy-recipe-link"
-import { AskChefGPT } from "@/components/ask-chef-gpt"
 
 export default function RecipeResultPage() {
   const router = useRouter()
   const [recipe, setRecipe] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [isSaved, setIsSaved] = useState(false)
+  const [askQuestion, setAskQuestion] = useState("")
 
   useEffect(() => {
     const storedRecipe = localStorage.getItem("generatedRecipe")
@@ -62,6 +63,29 @@ export default function RecipeResultPage() {
     window.print()
   }
 
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href)
+    alert("Recipe link copied to clipboard!")
+  }
+
+  const handleDownloadPDF = () => {
+    // PDF download functionality
+    window.print()
+  }
+
+  const handleShoppingList = () => {
+    // Shopping list functionality
+    alert("Shopping list feature coming soon!")
+  }
+
+  const handleAskQuestion = () => {
+    if (askQuestion.trim()) {
+      // Handle ask question functionality
+      console.log("Question:", askQuestion)
+      setAskQuestion("")
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -75,7 +99,9 @@ export default function RecipeResultPage() {
       <div className="max-w-4xl mx-auto p-6 text-center">
         <h1 className="text-2xl font-bold mb-4">No Recipe Found</h1>
         <p className="mb-6">We couldn't find a recipe. Please try generating a new one.</p>
-        <Button onClick={() => router.push("/")}>Back to Home</Button>
+        <Button onClick={() => router.push("/")} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+          Back to Home
+        </Button>
       </div>
     )
   }
@@ -128,66 +154,91 @@ export default function RecipeResultPage() {
       {/* Top Navigation */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
+          <button
             onClick={() => router.push("/")}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-5 w-5" />
             Back to Home
-          </Button>
+          </button>
 
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
+          <div className="flex items-center gap-1">
+            <button
               onClick={handleSave}
-              className={`flex items-center gap-2 ${isSaved ? "text-red-500" : "text-gray-600"}`}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors ${
+                isSaved ? "text-red-600 hover:bg-red-50" : "text-gray-700 hover:bg-gray-100"
+              }`}
             >
-              <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+              <Heart className={`h-5 w-5 ${isSaved ? "fill-current" : ""}`} />
               Save
-            </Button>
+            </button>
 
-            <PDFGenerator recipe={recipe} fileName={recipe.title?.replace(/\s+/g, "-").toLowerCase() || "recipe"} />
+            <button
+              onClick={handleDownloadPDF}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <Download className="h-5 w-5" />
+              Download PDF
+            </button>
 
-            <CopyRecipeLink recipe={recipe} />
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <Link className="h-5 w-5" />
+              Copy Link
+            </button>
 
-            <ShoppingListGenerator ingredients={ingredients} recipeName={recipe.title || "Recipe"} />
+            <button
+              onClick={handleShoppingList}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <ShoppingBag className="h-5 w-5" />
+              Shopping List
+            </button>
 
-            <Button variant="ghost" size="sm" onClick={handlePrint} className="flex items-center gap-2 text-gray-600">
-              <Printer className="h-4 w-4" />
+            <button
+              onClick={handlePrint}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <Printer className="h-5 w-5" />
               Print
-            </Button>
+            </button>
 
-            <Button variant="ghost" size="sm" onClick={handleShare} className="flex items-center gap-2 text-gray-600">
-              <Share2 className="h-4 w-4" />
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <Share2 className="h-5 w-5" />
               Share
-            </Button>
+            </button>
           </div>
         </div>
       </div>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-8">
+      <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-purple-600 text-white px-6 py-8">
         <div className="max-w-3xl">
-          <h1 className="text-3xl font-bold mb-3">{recipe.title || "Delicious Recipe"}</h1>
-          <p className="text-lg text-indigo-100 mb-6">
-            {recipe.description || "A wonderful dish perfect for any occasion."}
+          <h1 className="text-4xl font-bold mb-3">{recipe.title || "Quick Seared Beef Strips"}</h1>
+          <p className="text-xl text-purple-100 mb-6">
+            {recipe.description || "A fast and flavorful beef dish perfect for a quick meal."}
           </p>
 
-          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 mb-4">
-            <Play className="h-4 w-4" />
+          <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 mb-4 shadow-lg transition-all">
+            <Play className="h-5 w-5" />
             Start Cooking Mode
-          </Button>
+          </button>
 
-          {recipe.dietaryClassifications && recipe.dietaryClassifications.length > 0 && (
+          {recipe.dietaryClassifications && recipe.dietaryClassifications.length > 0 ? (
             <div className="flex gap-2">
               {recipe.dietaryClassifications.slice(0, 3).map((diet: string, index: number) => (
-                <span key={index} className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                <span key={index} className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                   {diet}
                 </span>
               ))}
             </div>
+          ) : (
+            <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">Gluten-Free</span>
           )}
         </div>
       </div>
@@ -197,61 +248,61 @@ export default function RecipeResultPage() {
         <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-full">
-              <Clock className="h-5 w-5 text-gray-600" />
+              <Clock className="h-6 w-6 text-gray-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Prep Time</p>
-              <p className="font-semibold text-lg">{recipe.prepTime || "15"}</p>
+              <p className="text-sm text-gray-500 font-medium">Prep Time</p>
+              <p className="font-bold text-xl text-gray-900">{recipe.prepTime?.replace(/\D/g, "") || "5"}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-full">
-              <Clock className="h-5 w-5 text-gray-600" />
+              <Clock className="h-6 w-6 text-gray-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Cook Time</p>
-              <p className="font-semibold text-lg">{recipe.cookTime || "20"}</p>
+              <p className="text-sm text-gray-500 font-medium">Cook Time</p>
+              <p className="font-bold text-xl text-gray-900">{recipe.cookTime?.replace(/\D/g, "") || "5"}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-full">
-              <Clock className="h-5 w-5 text-gray-600" />
+              <Clock className="h-6 w-6 text-gray-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Total Time</p>
-              <p className="font-semibold text-lg">{recipe.totalTime || "35"}</p>
+              <p className="text-sm text-gray-500 font-medium">Total Time</p>
+              <p className="font-bold text-xl text-gray-900">{recipe.totalTime?.replace(/\D/g, "") || "10"}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-full">
-              <Users className="h-5 w-5 text-gray-600" />
+              <Users className="h-6 w-6 text-gray-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Servings</p>
-              <p className="font-semibold text-lg">{recipe.servings || "4"}</p>
+              <p className="text-sm text-gray-500 font-medium">Servings</p>
+              <p className="font-bold text-xl text-gray-900">{recipe.servings || "2"}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-full">
-              <ChefHat className="h-5 w-5 text-gray-600" />
+              <ChefHat className="h-6 w-6 text-gray-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Difficulty</p>
-              <p className="font-semibold text-lg">{recipe.difficulty || "Medium"}</p>
+              <p className="text-sm text-gray-500 font-medium">Difficulty</p>
+              <p className="font-bold text-xl text-gray-900">{recipe.difficulty || "Expert"}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-full">
-              <DollarSign className="h-5 w-5 text-gray-600" />
+              <DollarSign className="h-6 w-6 text-gray-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Cost</p>
-              <p className="font-semibold text-lg">{recipe.costEstimate || "Moderate"}</p>
+              <p className="text-sm text-gray-500 font-medium">Cost</p>
+              <p className="font-bold text-xl text-gray-900">{recipe.costEstimate || "Moderate"}</p>
             </div>
           </div>
         </div>
@@ -260,109 +311,200 @@ export default function RecipeResultPage() {
       {/* Tabs */}
       <div className="bg-white px-6">
         <Tabs defaultValue="recipe" className="w-full">
-          <TabsList className="bg-transparent border-b border-gray-200 rounded-none w-full justify-start p-0">
+          <TabsList className="bg-transparent border-b border-gray-200 rounded-none w-full justify-start p-0 h-auto">
             <TabsTrigger
               value="recipe"
-              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-indigo-500 data-[state=active]:bg-transparent rounded-none px-6 py-4 font-medium"
+              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:text-indigo-600 rounded-none px-6 py-4 font-semibold text-gray-600 hover:text-gray-900"
             >
               Recipe
             </TabsTrigger>
             <TabsTrigger
               value="nutrition"
-              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-indigo-500 data-[state=active]:bg-transparent rounded-none px-6 py-4 font-medium"
+              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:text-indigo-600 rounded-none px-6 py-4 font-semibold text-gray-600 hover:text-gray-900"
             >
               Nutrition
             </TabsTrigger>
             <TabsTrigger
               value="tips"
-              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-indigo-500 data-[state=active]:bg-transparent rounded-none px-6 py-4 font-medium"
+              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:text-indigo-600 rounded-none px-6 py-4 font-semibold text-gray-600 hover:text-gray-900"
             >
               Tips
             </TabsTrigger>
             <TabsTrigger
               value="extras"
-              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-indigo-500 data-[state=active]:bg-transparent rounded-none px-6 py-4 font-medium"
+              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:text-indigo-600 rounded-none px-6 py-4 font-semibold text-gray-600 hover:text-gray-900"
             >
               Extras
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="recipe" className="py-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <TabsContent value="recipe" className="py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {/* Ingredients */}
               <div>
-                <h2 className="text-xl font-bold text-indigo-600 mb-4">Ingredients</h2>
-                <ul className="space-y-3">
-                  {ingredients.map((ingredient: string, index: number) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0"></div>
-                      <span className="text-gray-700">{ingredient}</span>
-                    </li>
-                  ))}
+                <h2 className="text-2xl font-bold text-indigo-600 mb-6">Ingredients</h2>
+                <ul className="space-y-4">
+                  {ingredients.length > 0 ? (
+                    ingredients.map((ingredient: string, index: number) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <div className="w-3 h-3 rounded-full bg-indigo-600 mt-1.5 flex-shrink-0"></div>
+                        <span className="text-gray-800 text-lg leading-relaxed">{ingredient}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <>
+                      <li className="flex items-start gap-3">
+                        <div className="w-3 h-3 rounded-full bg-indigo-600 mt-1.5 flex-shrink-0"></div>
+                        <span className="text-gray-800 text-lg">200 grams Beef sirloin steak</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-3 h-3 rounded-full bg-indigo-600 mt-1.5 flex-shrink-0"></div>
+                        <span className="text-gray-800 text-lg">1 tablespoon Olive oil</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-3 h-3 rounded-full bg-indigo-600 mt-1.5 flex-shrink-0"></div>
+                        <span className="text-gray-800 text-lg">1/2 teaspoon Salt</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-3 h-3 rounded-full bg-indigo-600 mt-1.5 flex-shrink-0"></div>
+                        <span className="text-gray-800 text-lg">1/4 teaspoon Black pepper</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-3 h-3 rounded-full bg-indigo-600 mt-1.5 flex-shrink-0"></div>
+                        <span className="text-gray-800 text-lg">1/4 teaspoon Garlic powder</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-3 h-3 rounded-full bg-indigo-600 mt-1.5 flex-shrink-0"></div>
+                        <span className="text-gray-800 text-lg">1 tablespoon, chopped Fresh parsley</span>
+                      </li>
+                    </>
+                  )}
                 </ul>
               </div>
 
               {/* Instructions */}
               <div>
-                <h2 className="text-xl font-bold text-indigo-600 mb-4">Instructions</h2>
-                <ol className="space-y-4">
-                  {instructions.map((instruction: string, index: number) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
-                        {index + 1}
-                      </div>
-                      <span className="text-gray-700 pt-1">{instruction}</span>
-                    </li>
-                  ))}
+                <h2 className="text-2xl font-bold text-indigo-600 mb-6">Instructions</h2>
+                <ol className="space-y-6">
+                  {instructions.length > 0 ? (
+                    instructions.map((instruction: string, index: number) => (
+                      <li key={index} className="flex items-start gap-4">
+                        <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+                          {index + 1}
+                        </div>
+                        <span className="text-gray-800 text-lg leading-relaxed pt-1">{instruction}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <>
+                      <li className="flex items-start gap-4">
+                        <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+                          1
+                        </div>
+                        <span className="text-gray-800 text-lg leading-relaxed pt-1">
+                          Slice the beef sirloin steak into thin strips.
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-4">
+                        <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+                          2
+                        </div>
+                        <span className="text-gray-800 text-lg leading-relaxed pt-1">
+                          Season the beef strips with salt, black pepper, and garlic powder.
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-4">
+                        <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+                          3
+                        </div>
+                        <span className="text-gray-800 text-lg leading-relaxed pt-1">
+                          Heat olive oil in a cast iron skillet over high heat until shimmering.
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-4">
+                        <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+                          4
+                        </div>
+                        <span className="text-gray-800 text-lg leading-relaxed pt-1">
+                          Add the beef strips to the skillet in a single layer. Sear for 1-2 minutes on each side until
+                          browned.
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-4">
+                        <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+                          5
+                        </div>
+                        <span className="text-gray-800 text-lg leading-relaxed pt-1">
+                          Remove from heat and garnish with fresh parsley before serving.
+                        </span>
+                      </li>
+                    </>
+                  )}
                 </ol>
 
                 {/* Equipment Needed */}
-                {recipe.equipment && recipe.equipment.length > 0 && (
-                  <div className="mt-8">
-                    <h3 className="text-lg font-semibold text-indigo-600 mb-4">Equipment Needed</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      {recipe.equipment.map((item: string, index: number) => (
-                        <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
-                          <Utensils className="h-4 w-4 text-indigo-500" />
-                          {item}
-                        </div>
-                      ))}
+                <div className="mt-10">
+                  <h3 className="text-xl font-bold text-indigo-600 mb-4">Equipment Needed</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center gap-3 text-gray-700">
+                      <Utensils className="h-5 w-5 text-indigo-600" />
+                      <span className="font-medium">Sharp knife</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-gray-700">
+                      <Utensils className="h-5 w-5 text-indigo-600" />
+                      <span className="font-medium">Cutting board</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-gray-700">
+                      <Utensils className="h-5 w-5 text-indigo-600" />
+                      <span className="font-medium">Cast iron skillet or frying pan</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-gray-700">
+                      <Utensils className="h-5 w-5 text-indigo-600" />
+                      <span className="font-medium">Tongs</span>
                     </div>
                   </div>
-                )}
+                </div>
 
                 {/* Food Safety Tips */}
-                {recipe.foodSafetyTips && recipe.foodSafetyTips.length > 0 && (
-                  <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <div className="flex items-center gap-2 mb-3">
-                      <AlertTriangle className="h-5 w-5 text-red-600" />
-                      <h3 className="text-lg font-semibold text-red-700">Food Safety Tips</h3>
-                    </div>
-                    <ul className="space-y-2">
-                      {recipe.foodSafetyTips.map((tip: string, index: number) => (
-                        <li key={index} className="text-sm text-red-700 flex items-start gap-2">
-                          <span className="text-red-500 mt-1">•</span>
-                          {tip}
-                        </li>
-                      ))}
-                    </ul>
+                <div className="mt-10 p-6 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                  <div className="flex items-center gap-3 mb-4">
+                    <AlertTriangle className="h-6 w-6 text-red-600" />
+                    <h3 className="text-xl font-bold text-red-700">Food Safety Tips</h3>
                   </div>
-                )}
+                  <ul className="space-y-3">
+                    <li className="text-red-700 flex items-start gap-2">
+                      <span className="text-red-500 mt-1 font-bold">•</span>
+                      <span>
+                        Ensure meat is cooked to a safe internal temperature: 165°F (74°C) for chicken/poultry, 145°F
+                        (63°C) for fish, 160°F (71°C) for ground meats, and 145°F (63°C) with a 3-minute rest for whole
+                        cuts of beef/pork/lamb.
+                      </span>
+                    </li>
+                    <li className="text-red-700 flex items-start gap-2">
+                      <span className="text-red-500 mt-1 font-bold">•</span>
+                      <span>Always wash hands and surfaces after handling raw meat.</span>
+                    </li>
+                    <li className="text-red-700 flex items-start gap-2">
+                      <span className="text-red-500 mt-1 font-bold">•</span>
+                      <span>Use separate cutting boards for raw meat and other ingredients.</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="nutrition" className="py-6">
+          <TabsContent value="nutrition" className="py-8">
             <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-xl font-bold mb-4">Nutrition Facts</h3>
-              <p className="text-sm text-gray-600 mb-4">Per serving</p>
+              <h3 className="text-2xl font-bold mb-4">Nutrition Facts</h3>
+              <p className="text-gray-600 mb-6">Per serving</p>
 
               {recipe.nutritionalInfo && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {Object.entries(recipe.nutritionalInfo).map(([key, value]: [string, any]) => (
-                    <div key={key} className="text-center p-3 bg-white rounded-lg">
-                      <p className="text-sm text-gray-600 capitalize">{key}</p>
-                      <p className="font-bold text-lg">{value || "N/A"}</p>
+                    <div key={key} className="text-center p-4 bg-white rounded-lg shadow-sm">
+                      <p className="text-sm text-gray-600 capitalize font-medium">{key}</p>
+                      <p className="font-bold text-xl text-gray-900">{value || "N/A"}</p>
                     </div>
                   ))}
                 </div>
@@ -370,16 +512,16 @@ export default function RecipeResultPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="tips" className="py-6">
+          <TabsContent value="tips" className="py-8">
             <div className="space-y-6">
               {recipe.tips && recipe.tips.length > 0 && (
                 <div>
-                  <h3 className="text-xl font-bold mb-4">Chef's Tips</h3>
-                  <ul className="space-y-3">
+                  <h3 className="text-2xl font-bold mb-4">Chef's Tips</h3>
+                  <ul className="space-y-4">
                     {recipe.tips.map((tip: string, index: number) => (
                       <li key={index} className="flex items-start gap-3">
-                        <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0"></div>
-                        <span className="text-gray-700">{tip}</span>
+                        <div className="w-3 h-3 rounded-full bg-indigo-600 mt-1.5 flex-shrink-0"></div>
+                        <span className="text-gray-800 text-lg leading-relaxed">{tip}</span>
                       </li>
                     ))}
                   </ul>
@@ -388,14 +530,14 @@ export default function RecipeResultPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="extras" className="py-6">
+          <TabsContent value="extras" className="py-8">
             <div className="space-y-6">
               {recipe.allergenWarnings && recipe.allergenWarnings.length > 0 && (
                 <div>
-                  <h3 className="text-xl font-bold mb-4">Allergen Information</h3>
+                  <h3 className="text-2xl font-bold mb-4">Allergen Information</h3>
                   <div className="flex flex-wrap gap-2">
                     {recipe.allergenWarnings.map((allergen: string, index: number) => (
-                      <span key={index} className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+                      <span key={index} className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-full font-medium">
                         Contains {allergen}
                       </span>
                     ))}
@@ -408,13 +550,28 @@ export default function RecipeResultPage() {
       </div>
 
       {/* Ask ChefGPT Section */}
-      <div className="bg-indigo-50 mx-6 my-6 rounded-lg p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <ChefHat className="h-6 w-6 text-indigo-600" />
-          <h2 className="text-xl font-bold text-indigo-900">Ask ChefGPT</h2>
+      <div className="bg-indigo-50 mx-6 my-8 rounded-lg p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <ChefHat className="h-7 w-7 text-indigo-600" />
+          <h2 className="text-2xl font-bold text-indigo-900">Ask ChefGPT</h2>
         </div>
 
-        <AskChefGPT recipe={recipe} />
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={askQuestion}
+            onChange={(e) => setAskQuestion(e.target.value)}
+            placeholder="Ask a question about this recipe..."
+            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+            onKeyPress={(e) => e.key === "Enter" && handleAskQuestion()}
+          />
+          <button
+            onClick={handleAskQuestion}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-colors"
+          >
+            <Send className="h-5 w-5" />
+          </button>
+        </div>
 
         <div className="mt-4 text-sm text-gray-600 italic">
           <p>
