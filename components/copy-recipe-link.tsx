@@ -41,16 +41,16 @@ export function CopyRecipeLink({ recipe }: CopyRecipeLinkProps) {
       size="sm"
       onClick={handleCopy}
       disabled={isLoading}
-      className="flex items-center gap-1 text-primary hover:bg-primary/10"
+      className="flex items-center gap-1 text-primary hover:bg-primary/10 px-3 py-2 rounded-lg font-medium transition-all border border-primary/30 hover:border-primary text-xs sm:text-sm"
     >
       {isLoading ? (
-        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+        <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
       ) : copied ? (
-        <Check className="h-4 w-4 mr-1" />
+        <Check className="h-3 w-3 sm:h-4 sm:w-4" />
       ) : (
-        <Link className="h-4 w-4 mr-1" />
+        <Link className="h-3 w-3 sm:h-4 sm:w-4" />
       )}
-      {copied ? "Link Copied!" : "Copy Link"}
+      <span className="hidden sm:inline">{copied ? "Copied!" : "Link"}</span>
     </Button>
   )
 }

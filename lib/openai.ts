@@ -306,7 +306,7 @@ export async function generateRecipe(prompt: string, modelInfo = { provider: "op
   }
 }
 
-// Function to validate recipe data for safety and accuracy
+// Add enhanced validation function at the end of the file
 function validateRecipeData(recipe: any) {
   // Check for missing essential fields
   if (!recipe.title) {
@@ -314,96 +314,254 @@ function validateRecipeData(recipe: any) {
   }
 
   if (!recipe.description) {
-    recipe.description = "No description provided."
+    recipe.description = "A delicious recipe created with care."
   }
 
-  // Ensure ingredients array exists
+  // Ensure ingredients array exists and is properly formatted
   if (!recipe.ingredients || !Array.isArray(recipe.ingredients)) {
     recipe.ingredients = []
   }
 
-  // Ensure instructions array exists
+  // Validate and enhance ingredients
+  recipe.ingredients = recipe.ingredients.map((ingredient: any) => {
+    if (typeof ingredient === "string") {
+      return {
+        name: ingredient,
+        amount: "as needed",
+        allergens: [],
+        substitutes: "",
+      }
+    }
+
+    // Ensure ingredient object has required fields
+    return {
+      name: ingredient.name || "Unknown ingredient",
+      amount: ingredient.amount || "as needed",
+      allergens: Array.isArray(ingredient.allergens) ? ingredient.allergens : [],
+      substitutes: ingredient.substitutes || "",
+    }
+  })
+
+  // Ensure instructions array exists and is properly formatted
   if (!recipe.instructions || !Array.isArray(recipe.instructions)) {
     recipe.instructions = []
   }
 
-  // Add allergen warnings if not present
-  if (!recipe.allergenWarnings && recipe.ingredients) {
-    const allergens = new Set<string>()
-    const commonAllergens = [
-      "nuts",
-      "peanuts",
-      "almonds",
-      "walnuts",
-      "cashews",
-      "dairy",
-      "milk",
-      "cheese",
-      "butter",
-      "cream",
-      "eggs",
-      "wheat",
-      "gluten",
-      "soy",
-      "fish",
-      "shellfish",
-      "sesame",
-      "mustard",
-      "celery",
-      "lupin",
-      "molluscs",
-      "sulphites",
-    ]
-
-    recipe.ingredients.forEach((ingredient: any) => {
-      if (ingredient.name) {
-        const lowerName = ingredient.name.toLowerCase()
-        commonAllergens.forEach((allergen) => {
-          if (lowerName.includes(allergen)) {
-            allergens.add(allergen)
-          }
-        })
+  // Validate and enhance instructions
+  recipe.instructions = recipe.instructions.map((instruction: any, index: number) => {
+    if (typeof instruction === "string") {
+      return {
+        step: index + 1,
+        description: instruction,
+        timingTip: "",
+        safetyTip: "",
       }
+    }
 
-      if (ingredient.allergens && Array.isArray(ingredient.allergens)) {
-        ingredient.allergens.forEach((allergen: string) => allergens.add(allergen))
-      }
-    })
-
-    recipe.allergenWarnings = Array.from(allergens)
-  }
+    return {
+      step: instruction.step || index + 1,
+      description: instruction.description || `Step ${index + 1}`,
+      timingTip: instruction.timingTip || "",
+      safetyTip: instruction.safetyTip || "",
+    }
+  })
 
   // Ensure nutritional info exists
   if (!recipe.nutritionalInfo) {
     recipe.nutritionalInfo = {
-      calories: "Not available",
-      protein: "Not available",
-      carbs: "Not available",
-      fat: "Not available",
+      calories: "Not calculated",
+      protein: "Not calculated",
+      carbs: "Not calculated",
+      fat: "Not calculated",
+      fiber: "Not calculated",
+      sodium: "Not calculated",
     }
   }
 
-  // Add food safety tips if not present
-  if (!recipe.foodSafetyTips && recipe.ingredients) {
-    const hasMeat = recipe.ingredients.some((ingredient: any) => {
-      const name = ingredient.name ? ingredient.name.toLowerCase() : ""
+  // Enhanced food safety tips with more comprehensive coverage
+  if (!recipe.foodSafetyTips || !Array.isArray(recipe.foodSafetyTips) || recipe.foodSafetyTips.length === 0) {
+    recipe.foodSafetyTips = [
+      "Always wash hands thoroughly with soap and warm water for at least 20 seconds before handling food",
+      "Cook proteins to safe internal temperatures: 165°F (74°C) for poultry, 160°F (71°C) for ground meat, 145°F (63°C) for whole cuts of beef/pork/lamb",
+      "Store leftovers in refrigerator within 2 hours of cooking (1 hour if temperature is above 90°F)",
+      "Use separate cutting boards for raw meat and vegetables to prevent cross-contamination",
+      "Keep hot foods hot (above 140°F/60°C) and cold foods cold (below 40°F/4°C)",
+      "When in doubt, throw it out - don't risk foodborne illness with questionable ingredients",
+    ]
+  }
+
+  // Add ingredient-specific safety tips
+  const hasRawMeat = recipe.ingredients.some((ing: any) => {
+    const name = (ing.name || "").toLowerCase()
+    return (
+      name.includes("chicken") ||
+      name.includes("beef") ||
+      name.includes("pork") ||
+      name.includes("turkey") ||
+      name.includes("fish") ||
+      name.includes("seafood")
+    )
+  })
+
+  const hasEggs = recipe.ingredients.some((ing: any) => {
+    const name = (ing.name || "").toLowerCase()
+    return name.includes("egg")
+  })
+
+  const hasDairy = recipe.ingredients.some((ing: any) => {
+    const name = (ing.name || "").toLowerCase()
+    return name.includes("milk") || name.includes("cream") || name.includes("cheese") || name.includes("yogurt")
+  })
+
+  // Add specific safety tips based on ingredients
+  if (hasRawMeat) {
+    recipe.foodSafetyTips.push(
+      "Thaw frozen meat safely in the refrigerator, never at room temperature",
+      "Use a food thermometer to ensure meat reaches safe internal temperatures",
+      "Marinate meat in the refrigerator, not on the counter",
+    )
+  }
+
+  if (hasEggs) {
+    recipe.foodSafetyTips.push(
+      "Use pasteurized eggs for recipes that call for raw or undercooked eggs",
+      "Cook eggs until both yolk and white are firm",
+    )
+  }
+
+  if (hasDairy) {
+    recipe.foodSafetyTips.push(
+      "Check expiration dates on dairy products before use",
+      "Keep dairy products refrigerated at all times when not in use",
+    )
+  }
+
+  // Ensure allergen warnings exist and are comprehensive
+  if (!recipe.allergenWarnings) {
+    recipe.allergenWarnings = []
+  }
+
+  // Auto-detect common allergens from ingredients
+  const commonAllergens = {
+    nuts: ["nuts", "peanuts", "almonds", "walnuts", "cashews", "pecans", "hazelnuts", "pistachios"],
+    dairy: ["milk", "cheese", "butter", "cream", "yogurt", "whey", "casein"],
+    eggs: ["egg", "eggs"],
+    wheat: ["wheat", "flour", "bread", "pasta"],
+    soy: ["soy", "tofu", "tempeh", "soy sauce"],
+    fish: ["fish", "salmon", "tuna", "cod", "halibut"],
+    shellfish: ["shrimp", "crab", "lobster", "clams", "mussels", "oysters"],
+    sesame: ["sesame", "tahini"],
+  }
+
+  Object.entries(commonAllergens).forEach(([allergen, keywords]) => {
+    const hasAllergen = recipe.ingredients.some((ing: any) => {
+      const name = (ing.name || "").toLowerCase()
+      return keywords.some((keyword) => name.includes(keyword))
+    })
+
+    if (hasAllergen && !recipe.allergenWarnings.includes(allergen)) {
+      recipe.allergenWarnings.push(allergen)
+    }
+  })
+
+  // Ensure dietary classifications exist
+  if (!recipe.dietaryClassifications) {
+    recipe.dietaryClassifications = []
+  }
+
+  // Auto-detect dietary classifications
+  const hasAnimalProducts = recipe.ingredients.some((ing: any) => {
+    const name = (ing.name || "").toLowerCase()
+    return (
+      name.includes("meat") ||
+      name.includes("chicken") ||
+      name.includes("beef") ||
+      name.includes("pork") ||
+      name.includes("fish") ||
+      name.includes("seafood") ||
+      name.includes("milk") ||
+      name.includes("cheese") ||
+      name.includes("butter") ||
+      name.includes("cream") ||
+      name.includes("egg")
+    )
+  })
+
+  const hasGluten = recipe.ingredients.some((ing: any) => {
+    const name = (ing.name || "").toLowerCase()
+    return (
+      name.includes("wheat") ||
+      name.includes("flour") ||
+      name.includes("bread") ||
+      name.includes("pasta") ||
+      name.includes("soy sauce")
+    )
+  })
+
+  if (!hasAnimalProducts) {
+    if (!recipe.dietaryClassifications.includes("Vegetarian")) {
+      recipe.dietaryClassifications.push("Vegetarian")
+    }
+
+    const hasDairy = recipe.ingredients.some((ing: any) => {
+      const name = (ing.name || "").toLowerCase()
       return (
-        name.includes("chicken") ||
-        name.includes("beef") ||
-        name.includes("pork") ||
-        name.includes("fish") ||
-        name.includes("meat") ||
-        name.includes("turkey")
+        name.includes("milk") ||
+        name.includes("cheese") ||
+        name.includes("butter") ||
+        name.includes("cream") ||
+        name.includes("yogurt")
       )
     })
 
-    if (hasMeat && !recipe.foodSafetyTips) {
-      recipe.foodSafetyTips = [
-        "Ensure meat is cooked to a safe internal temperature: 165°F (74°C) for chicken/poultry, 145°F (63°C) for fish, 160°F (71°C) for ground meats, and 145°F (63°C) with a 3-minute rest for whole cuts of beef/pork/lamb.",
-        "Always wash hands and surfaces after handling raw meat.",
-        "Use separate cutting boards for raw meat and other ingredients.",
-      ]
+    const hasEggs = recipe.ingredients.some((ing: any) => {
+      const name = (ing.name || "").toLowerCase()
+      return name.includes("egg")
+    })
+
+    if (!hasDairy && !hasEggs && !recipe.dietaryClassifications.includes("Vegan")) {
+      recipe.dietaryClassifications.push("Vegan")
     }
+  }
+
+  if (!hasGluten && !recipe.dietaryClassifications.includes("Gluten-Free")) {
+    recipe.dietaryClassifications.push("Gluten-Free")
+  }
+
+  // Ensure cooking times are realistic
+  if (!recipe.prepTime || recipe.prepTime === "N/A") {
+    recipe.prepTime = "15 minutes"
+  }
+
+  if (!recipe.cookTime || recipe.cookTime === "N/A") {
+    recipe.cookTime = "20 minutes"
+  }
+
+  if (!recipe.totalTime || recipe.totalTime === "N/A") {
+    // Calculate total time from prep and cook time
+    const prepMinutes = Number.parseInt(recipe.prepTime) || 15
+    const cookMinutes = Number.parseInt(recipe.cookTime) || 20
+    recipe.totalTime = `${prepMinutes + cookMinutes} minutes`
+  }
+
+  // Ensure servings is realistic
+  if (!recipe.servings || recipe.servings === "N/A") {
+    recipe.servings = "4"
+  }
+
+  // Ensure difficulty is set
+  if (!recipe.difficulty) {
+    recipe.difficulty = "Medium"
+  }
+
+  // Add storage and reheating instructions if missing
+  if (!recipe.storage) {
+    recipe.storage = "Store leftovers in an airtight container in the refrigerator for up to 3-4 days"
+  }
+
+  if (!recipe.reheating) {
+    recipe.reheating =
+      "Reheat thoroughly to 165°F (74°C) before serving. Microwave in 30-second intervals, stirring between, or reheat in oven at 350°F until heated through"
   }
 
   return recipe

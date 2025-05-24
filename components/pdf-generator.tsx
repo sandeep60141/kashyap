@@ -237,17 +237,17 @@ export function PDFGenerator({ fileName, recipe }: PdfGeneratorProps) {
       size="sm"
       onClick={generatePdf}
       disabled={isGenerating}
-      className="flex items-center gap-1 text-primary hover:bg-primary/10"
+      className="flex items-center gap-1 text-primary hover:bg-primary/10 px-3 py-2 rounded-lg font-medium transition-all border border-primary/30 hover:border-primary text-xs sm:text-sm"
     >
       {isGenerating ? (
         <>
-          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-          Generating...
+          <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+          <span className="hidden sm:inline">Generating...</span>
         </>
       ) : (
         <>
-          <FileDown className="h-4 w-4" />
-          Download PDF
+          <FileDown className="h-3 w-3 sm:h-4 sm:w-4" />
+          <span className="hidden sm:inline">PDF</span>
         </>
       )}
     </Button>

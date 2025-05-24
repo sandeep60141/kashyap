@@ -85,9 +85,14 @@ export function ShoppingListGenerator({ ingredients = [], recipeName = "Recipe" 
   // Don't render if no ingredients
   if (!shoppingList || shoppingList.length === 0) {
     return (
-      <Button variant="ghost" size="sm" disabled className="flex items-center gap-1 text-gray-400 cursor-not-allowed">
-        <ShoppingBag className="h-4 w-4" />
-        No Ingredients
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled
+        className="flex items-center gap-1 text-gray-400 cursor-not-allowed px-3 py-2 rounded-lg font-medium border border-gray-300 text-xs sm:text-sm"
+      >
+        <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4" />
+        <span className="hidden sm:inline">No Items</span>
       </Button>
     )
   }
@@ -98,10 +103,10 @@ export function ShoppingListGenerator({ ingredients = [], recipeName = "Recipe" 
         variant="ghost"
         size="sm"
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-1 text-primary hover:bg-primary/10"
+        className="flex items-center gap-1 text-primary hover:bg-primary/10 px-3 py-2 rounded-lg font-medium transition-all border border-primary/30 hover:border-primary text-xs sm:text-sm"
       >
-        <ShoppingBag className="h-4 w-4" />
-        Shopping List
+        <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4" />
+        <span className="hidden sm:inline">List</span>
       </Button>
 
       {isOpen && (

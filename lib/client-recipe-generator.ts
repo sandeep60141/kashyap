@@ -143,8 +143,6 @@ export async function generateRecipeClient(prompt: string, modelInfo = { provide
           : "",
         prompt,
         modelInfo,
-        // Pass the full prompt for better context
-        fullPrompt: prompt,
       }),
       signal: controller.signal,
     })
@@ -162,7 +160,7 @@ export async function generateRecipeClient(prompt: string, modelInfo = { provide
     console.error("Error in generateRecipeClient:", error)
 
     if (error.name === "AbortError") {
-      throw new Error("Request timed out. The request may be too complex. Try simplifying your input.")
+      throw new Error("Request timed out. The meal plan may be too complex. Try reducing the number of days.")
     }
 
     throw error

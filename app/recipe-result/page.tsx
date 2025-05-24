@@ -134,32 +134,33 @@ export default function RecipeResultPage() {
   const instructions = extractInstructions()
 
   return (
-    <div className="max-w-4xl mx-auto bg-gray-50 min-h-screen border-2 border-primary/20 rounded-lg shadow-lg">
-      {/* Top Navigation */}
-      <div className="bg-white border-b-2 border-primary/20 px-6 py-4 shadow-sm rounded-t-lg">
-        <div className="flex items-center justify-between">
+    <div className="max-w-6xl mx-auto bg-gray-50 min-h-screen border border-primary/20 rounded-lg shadow-lg">
+      {/* Top Navigation - Improved Layout */}
+      <div className="bg-white border-b border-primary/20 px-4 sm:px-6 py-4 shadow-sm rounded-t-lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <Button
             variant="outline"
             onClick={() => router.push("/")}
-            className="flex items-center gap-2 text-primary hover:bg-primary/10 hover:text-primary font-medium px-4 py-2 border-2 border-primary/30 hover:border-primary rounded-lg transition-all"
+            className="flex items-center gap-2 text-primary hover:bg-primary/10 hover:text-primary font-medium px-4 py-2 border border-primary/30 hover:border-primary rounded-lg transition-all"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Button>
 
-          <div className="flex items-center gap-3">
+          {/* Action Buttons - Better Responsive Layout */}
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
               onClick={handleSave}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all border-2 ${
+              className={`flex items-center gap-1 px-3 py-2 rounded-lg font-medium transition-all border text-xs sm:text-sm ${
                 isSaved
                   ? "text-red-500 hover:bg-red-50 hover:text-red-600 border-red-300 hover:border-red-400"
                   : "text-primary hover:bg-primary/10 hover:text-primary border-primary/30 hover:border-primary"
               }`}
             >
-              <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
-              Save
+              <Heart className={`h-3 w-3 sm:h-4 sm:w-4 ${isSaved ? "fill-current" : ""}`} />
+              <span className="hidden sm:inline">Save</span>
             </Button>
 
             <PDFGenerator recipe={recipe} fileName={recipe.title?.replace(/\s+/g, "-").toLowerCase() || "recipe"} />
@@ -172,47 +173,47 @@ export default function RecipeResultPage() {
               variant="outline"
               size="sm"
               onClick={handlePrint}
-              className="flex items-center gap-2 text-primary hover:bg-primary/10 hover:text-primary px-4 py-2 rounded-lg font-medium transition-all border-2 border-primary/30 hover:border-primary"
+              className="flex items-center gap-1 text-primary hover:bg-primary/10 hover:text-primary px-3 py-2 rounded-lg font-medium transition-all border border-primary/30 hover:border-primary text-xs sm:text-sm"
             >
-              <Printer className="h-4 w-4" />
-              Print
+              <Printer className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Print</span>
             </Button>
 
             <Button
               variant="outline"
               size="sm"
               onClick={handleShare}
-              className="flex items-center gap-2 text-primary hover:bg-primary/10 hover:text-primary px-4 py-2 rounded-lg font-medium transition-all border-2 border-primary/30 hover:border-primary"
+              className="flex items-center gap-1 text-primary hover:bg-primary/10 hover:text-primary px-3 py-2 rounded-lg font-medium transition-all border border-primary/30 hover:border-primary text-xs sm:text-sm"
             >
-              <Share2 className="h-4 w-4" />
-              Share
+              <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Share</span>
             </Button>
           </div>
         </div>
       </div>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary to-accent text-white px-6 py-8 shadow-lg border-b-2 border-primary/20">
-        <div className="max-w-3xl">
-          <h1 className="text-3xl font-bold mb-3">{recipe.title || "Delicious Recipe"}</h1>
-          <p className="text-lg text-white/90 mb-6">
+      <div className="bg-gradient-to-r from-primary to-accent text-white px-4 sm:px-6 py-6 sm:py-8 shadow-lg border-b border-primary/20">
+        <div className="max-w-4xl">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-3 leading-tight">{recipe.title || "Delicious Recipe"}</h1>
+          <p className="text-base sm:text-lg text-white/90 mb-6 leading-relaxed">
             {recipe.description || "A wonderful dish perfect for any occasion."}
           </p>
 
           <Button
             onClick={() => setShowCookingMode(true)}
-            className="bg-white text-primary hover:bg-white/90 hover:text-primary/90 px-6 py-3 rounded-lg font-medium flex items-center gap-2 mb-4 shadow-md transition-all border-2 border-white hover:border-white/90"
+            className="bg-white text-primary hover:bg-white/90 hover:text-primary/90 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium flex items-center gap-2 mb-4 shadow-md transition-all border border-white hover:border-white/90"
           >
             <Play className="h-4 w-4" />
             Start Cooking Mode
           </Button>
 
           {recipe.dietaryClassifications && recipe.dietaryClassifications.length > 0 && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {recipe.dietaryClassifications.slice(0, 3).map((diet: string, index: number) => (
                 <span
                   key={index}
-                  className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm border border-green-400"
+                  className="bg-green-500 text-white px-3 py-1 rounded-full text-xs sm:text-sm font-medium shadow-sm border border-green-400"
                 >
                   {diet}
                 </span>
@@ -222,106 +223,116 @@ export default function RecipeResultPage() {
         </div>
       </div>
 
-      {/* Recipe Stats */}
-      <div className="bg-white border-b-2 border-primary/20 px-6 py-6 shadow-sm">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
-          <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
-            <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
-              <Clock className="h-5 w-5 text-primary" />
+      {/* Recipe Stats - Improved Grid */}
+      <div className="bg-white border-b border-primary/20 px-4 sm:px-6 py-6 shadow-sm">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="flex items-center gap-3 p-3 rounded-lg border border-primary/20 hover:border-primary/40 transition-all bg-primary/5">
+            <div className="p-2 bg-primary/10 rounded-full border border-primary/20">
+              <Clock className="h-4 w-4 text-primary" />
             </div>
-            <div>
-              <p className="text-sm text-foreground/60">Prep Time</p>
-              <p className="font-semibold text-lg text-foreground">{recipe.prepTime || "15 min"}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
-            <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
-              <Clock className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-foreground/60">Cook Time</p>
-              <p className="font-semibold text-lg text-foreground">{recipe.cookTime || "20 min"}</p>
+            <div className="min-w-0">
+              <p className="text-xs text-foreground/60 truncate">Prep Time</p>
+              <p className="font-semibold text-sm sm:text-base text-foreground truncate">
+                {recipe.prepTime || "15 min"}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
-            <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
-              <Clock className="h-5 w-5 text-primary" />
+          <div className="flex items-center gap-3 p-3 rounded-lg border border-primary/20 hover:border-primary/40 transition-all bg-primary/5">
+            <div className="p-2 bg-primary/10 rounded-full border border-primary/20">
+              <Clock className="h-4 w-4 text-primary" />
             </div>
-            <div>
-              <p className="text-sm text-foreground/60">Total Time</p>
-              <p className="font-semibold text-lg text-foreground">{recipe.totalTime || "35 min"}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
-            <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
-              <Users className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-foreground/60">Servings</p>
-              <p className="font-semibold text-lg text-foreground">{recipe.servings || "4"}</p>
+            <div className="min-w-0">
+              <p className="text-xs text-foreground/60 truncate">Cook Time</p>
+              <p className="font-semibold text-sm sm:text-base text-foreground truncate">
+                {recipe.cookTime || "20 min"}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
-            <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
-              <ChefHat className="h-5 w-5 text-primary" />
+          <div className="flex items-center gap-3 p-3 rounded-lg border border-primary/20 hover:border-primary/40 transition-all bg-primary/5">
+            <div className="p-2 bg-primary/10 rounded-full border border-primary/20">
+              <Clock className="h-4 w-4 text-primary" />
             </div>
-            <div>
-              <p className="text-sm text-foreground/60">Difficulty</p>
-              <p className="font-semibold text-lg text-foreground">{recipe.difficulty || "Medium"}</p>
+            <div className="min-w-0">
+              <p className="text-xs text-foreground/60 truncate">Total Time</p>
+              <p className="font-semibold text-sm sm:text-base text-foreground truncate">
+                {recipe.totalTime || "35 min"}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
-            <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
-              <DollarSign className="h-5 w-5 text-primary" />
+          <div className="flex items-center gap-3 p-3 rounded-lg border border-primary/20 hover:border-primary/40 transition-all bg-primary/5">
+            <div className="p-2 bg-primary/10 rounded-full border border-primary/20">
+              <Users className="h-4 w-4 text-primary" />
             </div>
-            <div>
-              <p className="text-sm text-foreground/60">Cost</p>
-              <p className="font-semibold text-lg text-foreground">{recipe.costEstimate || "Moderate"}</p>
+            <div className="min-w-0">
+              <p className="text-xs text-foreground/60 truncate">Servings</p>
+              <p className="font-semibold text-sm sm:text-base text-foreground truncate">{recipe.servings || "4"}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 rounded-lg border border-primary/20 hover:border-primary/40 transition-all bg-primary/5">
+            <div className="p-2 bg-primary/10 rounded-full border border-primary/20">
+              <ChefHat className="h-4 w-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-foreground/60 truncate">Difficulty</p>
+              <p className="font-semibold text-sm sm:text-base text-foreground truncate">
+                {recipe.difficulty || "Medium"}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 rounded-lg border border-primary/20 hover:border-primary/40 transition-all bg-primary/5">
+            <div className="p-2 bg-primary/10 rounded-full border border-primary/20">
+              <DollarSign className="h-4 w-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-foreground/60 truncate">Cost</p>
+              <p className="font-semibold text-sm sm:text-base text-foreground truncate">
+                {recipe.costEstimate || "Moderate"}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white px-6 shadow-sm border-b-2 border-primary/20">
+      {/* Enhanced Tabs */}
+      <div className="bg-white px-4 sm:px-6 shadow-sm border-b border-primary/20">
         <Tabs defaultValue="recipe" className="w-full">
-          <TabsList className="bg-white border-b-2 border-primary/20 rounded-none w-full justify-start p-0 h-auto">
+          <TabsList className="bg-transparent border-b border-primary/20 rounded-none w-full justify-start p-0 h-auto overflow-x-auto">
             <TabsTrigger
               value="recipe"
-              className="bg-white border-b-3 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary rounded-none px-6 py-4 font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 transition-all border-2 border-transparent data-[state=active]:border-primary/30 mr-2"
+              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-none px-4 sm:px-6 py-3 sm:py-4 font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 transition-all whitespace-nowrap"
             >
               Recipe
             </TabsTrigger>
             <TabsTrigger
               value="nutrition"
-              className="bg-white border-b-3 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary rounded-none px-6 py-4 font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 transition-all border-2 border-transparent data-[state=active]:border-primary/30 mr-2"
+              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-none px-4 sm:px-6 py-3 sm:py-4 font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 transition-all whitespace-nowrap"
             >
               Nutrition
             </TabsTrigger>
             <TabsTrigger
               value="tips"
-              className="bg-white border-b-3 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary rounded-none px-6 py-4 font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 transition-all border-2 border-transparent data-[state=active]:border-primary/30 mr-2"
+              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-none px-4 sm:px-6 py-3 sm:py-4 font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 transition-all whitespace-nowrap"
             >
               Tips
             </TabsTrigger>
             <TabsTrigger
               value="extras"
-              className="bg-white border-b-3 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary rounded-none px-6 py-4 font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 transition-all border-2 border-transparent data-[state=active]:border-primary/30"
+              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-none px-4 sm:px-6 py-3 sm:py-4 font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 transition-all whitespace-nowrap"
             >
               Extras
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="recipe" className="py-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
               {/* Ingredients */}
-              <div className="border-2 border-primary/20 rounded-lg p-6 bg-white shadow-sm">
-                <h2 className="text-xl font-bold text-primary mb-4 flex items-center gap-2">
+              <div className="border border-primary/20 rounded-lg p-4 sm:p-6 bg-white shadow-sm">
+                <h2 className="text-lg sm:text-xl font-bold text-primary mb-4 flex items-center gap-2">
                   <span className="w-1 h-6 bg-primary rounded-full"></span>
                   Ingredients
                 </h2>
@@ -332,15 +343,15 @@ export default function RecipeResultPage() {
                       className="flex items-start gap-3 p-3 hover:bg-primary/5 rounded-lg transition-colors border border-transparent hover:border-primary/20"
                     >
                       <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-                      <span className="text-foreground">{ingredient}</span>
+                      <span className="text-foreground text-sm sm:text-base leading-relaxed">{ingredient}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               {/* Instructions */}
-              <div className="border-2 border-primary/20 rounded-lg p-6 bg-white shadow-sm">
-                <h2 className="text-xl font-bold text-primary mb-4 flex items-center gap-2">
+              <div className="border border-primary/20 rounded-lg p-4 sm:p-6 bg-white shadow-sm">
+                <h2 className="text-lg sm:text-xl font-bold text-primary mb-4 flex items-center gap-2">
                   <span className="w-1 h-6 bg-primary rounded-full"></span>
                   Instructions
                 </h2>
@@ -350,29 +361,29 @@ export default function RecipeResultPage() {
                       key={index}
                       className="flex items-start gap-3 p-3 hover:bg-primary/5 rounded-lg transition-colors border border-transparent hover:border-primary/20"
                     >
-                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0 shadow-sm border border-primary/20">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs sm:text-sm font-medium flex-shrink-0 shadow-sm border border-primary/20">
                         {index + 1}
                       </div>
-                      <span className="text-foreground pt-1">{instruction}</span>
+                      <span className="text-foreground pt-1 text-sm sm:text-base leading-relaxed">{instruction}</span>
                     </li>
                   ))}
                 </ol>
 
                 {/* Equipment Needed */}
                 {recipe.equipment && recipe.equipment.length > 0 && (
-                  <div className="mt-8 p-4 bg-secondary/20 rounded-lg border-2 border-primary/10">
-                    <h3 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
-                      <Utensils className="h-5 w-5" />
+                  <div className="mt-8 p-4 bg-secondary/20 rounded-lg border border-primary/10">
+                    <h3 className="text-base sm:text-lg font-semibold text-primary mb-4 flex items-center gap-2">
+                      <Utensils className="h-4 w-4 sm:h-5 sm:w-5" />
                       Equipment Needed
                     </h3>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {recipe.equipment.map((item: string, index: number) => (
                         <div
                           key={index}
-                          className="flex items-center gap-2 text-sm text-foreground p-2 bg-white rounded-md shadow-sm border border-primary/10"
+                          className="flex items-center gap-2 text-xs sm:text-sm text-foreground p-2 bg-white rounded-md shadow-sm border border-primary/10"
                         >
-                          <Utensils className="h-4 w-4 text-primary" />
-                          {item}
+                          <Utensils className="h-3 w-3 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
+                          <span className="truncate">{item}</span>
                         </div>
                       ))}
                     </div>
@@ -381,16 +392,16 @@ export default function RecipeResultPage() {
 
                 {/* Food Safety Tips */}
                 {recipe.foodSafetyTips && recipe.foodSafetyTips.length > 0 && (
-                  <div className="mt-8 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+                  <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
-                      <AlertTriangle className="h-5 w-5 text-red-600" />
-                      <h3 className="text-lg font-semibold text-red-700">Food Safety Tips</h3>
+                      <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 flex-shrink-0" />
+                      <h3 className="text-base sm:text-lg font-semibold text-red-700">Food Safety Tips</h3>
                     </div>
                     <ul className="space-y-2">
                       {recipe.foodSafetyTips.map((tip: string, index: number) => (
-                        <li key={index} className="text-sm text-red-700 flex items-start gap-2">
-                          <span className="text-red-500 mt-1">•</span>
-                          {tip}
+                        <li key={index} className="text-xs sm:text-sm text-red-700 flex items-start gap-2">
+                          <span className="text-red-500 mt-1 flex-shrink-0">•</span>
+                          <span className="leading-relaxed">{tip}</span>
                         </li>
                       ))}
                     </ul>
@@ -401,19 +412,19 @@ export default function RecipeResultPage() {
           </TabsContent>
 
           <TabsContent value="nutrition" className="py-6">
-            <div className="bg-card rounded-lg p-6 border-2 border-primary/20 shadow-sm">
-              <h3 className="text-xl font-bold text-primary mb-4">Nutrition Facts</h3>
+            <div className="bg-card rounded-lg p-4 sm:p-6 border border-primary/20 shadow-sm">
+              <h3 className="text-lg sm:text-xl font-bold text-primary mb-4">Nutrition Facts</h3>
               <p className="text-sm text-foreground/60 mb-4">Per serving</p>
 
               {recipe.nutritionalInfo && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {Object.entries(recipe.nutritionalInfo).map(([key, value]: [string, any]) => (
                     <div
                       key={key}
-                      className="text-center p-3 bg-secondary/30 rounded-lg border-2 border-primary/10 hover:border-primary/30 transition-all"
+                      className="text-center p-3 sm:p-4 bg-secondary/30 rounded-lg border border-primary/10 hover:border-primary/30 transition-all"
                     >
-                      <p className="text-sm text-foreground/70 capitalize">{key}</p>
-                      <p className="font-bold text-lg text-primary">{value || "N/A"}</p>
+                      <p className="text-xs sm:text-sm text-foreground/70 capitalize mb-1">{key}</p>
+                      <p className="font-bold text-base sm:text-lg text-primary truncate">{value || "N/A"}</p>
                     </div>
                   ))}
                 </div>
@@ -424,8 +435,8 @@ export default function RecipeResultPage() {
           <TabsContent value="tips" className="py-6">
             <div className="space-y-6">
               {recipe.tips && recipe.tips.length > 0 && (
-                <div className="bg-card rounded-lg p-6 border-2 border-primary/20 shadow-sm">
-                  <h3 className="text-xl font-bold text-primary mb-4 flex items-center gap-2">
+                <div className="bg-card rounded-lg p-4 sm:p-6 border border-primary/20 shadow-sm">
+                  <h3 className="text-lg sm:text-xl font-bold text-primary mb-4 flex items-center gap-2">
                     <span className="w-1 h-5 bg-primary rounded-full"></span>
                     Chef's Tips
                   </h3>
@@ -436,7 +447,7 @@ export default function RecipeResultPage() {
                         className="flex items-start gap-3 p-3 hover:bg-primary/5 rounded-lg transition-colors border border-transparent hover:border-primary/20"
                       >
                         <div className="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0"></div>
-                        <span className="text-foreground">{tip}</span>
+                        <span className="text-foreground text-sm sm:text-base leading-relaxed">{tip}</span>
                       </li>
                     ))}
                   </ul>
@@ -448,8 +459,8 @@ export default function RecipeResultPage() {
           <TabsContent value="extras" className="py-6">
             <div className="space-y-6">
               {recipe.allergenWarnings && recipe.allergenWarnings.length > 0 && (
-                <div className="bg-card rounded-lg p-6 border-2 border-primary/20 shadow-sm">
-                  <h3 className="text-xl font-bold text-primary mb-4 flex items-center gap-2">
+                <div className="bg-card rounded-lg p-4 sm:p-6 border border-primary/20 shadow-sm">
+                  <h3 className="text-lg sm:text-xl font-bold text-primary mb-4 flex items-center gap-2">
                     <span className="w-1 h-5 bg-primary rounded-full"></span>
                     Allergen Information
                   </h3>
@@ -457,7 +468,7 @@ export default function RecipeResultPage() {
                     {recipe.allergenWarnings.map((allergen: string, index: number) => (
                       <span
                         key={index}
-                        className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium border-2 border-yellow-200 shadow-sm"
+                        className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs sm:text-sm font-medium border border-yellow-200 shadow-sm"
                       >
                         Contains {allergen}
                       </span>
@@ -471,15 +482,15 @@ export default function RecipeResultPage() {
       </div>
 
       {/* Ask ChefGPT Section */}
-      <div className="bg-gradient-to-r from-primary/5 to-accent/5 mx-6 my-6 rounded-lg p-6 border-2 border-primary/20 shadow-sm">
+      <div className="bg-gradient-to-r from-primary/5 to-accent/5 mx-4 sm:mx-6 my-6 rounded-lg p-4 sm:p-6 border border-primary/20 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
-          <ChefHat className="h-6 w-6 text-primary" />
-          <h2 className="text-xl font-bold text-primary">Ask ChefGPT</h2>
+          <ChefHat className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+          <h2 className="text-lg sm:text-xl font-bold text-primary">Ask ChefGPT</h2>
         </div>
 
         <AskChefGPT recipe={recipe} />
 
-        <div className="mt-4 text-sm text-foreground/60 italic">
+        <div className="mt-4 text-xs sm:text-sm text-foreground/60 italic">
           <p>
             💡 Example questions: "How can I make this recipe spicier?", "What can I substitute for butter?", "How do I
             know when it's properly cooked?"
