@@ -102,14 +102,10 @@ export default function Home() {
     setError(null)
 
     try {
-      const mealPlan = await generateRecipe({
-        days: mealPlanDays,
-        calories: mealPlanCalories,
-        preferences: prompt,
-        dietaryRequirements,
-        type: "mealPlan",
-        model: "gpt-4o",
-      })
+      // Format the prompt specifically for meal planning
+      const mealPlanPrompt = `Create a ${mealPlanDays}-day meal plan for ${mealPlanCalories} calories per day. ${prompt}. Include breakfast, lunch, and dinner for each day with detailed recipes, ingredients, and nutritional information.`
+
+      const mealPlan = await generateRecipe(mealPlanPrompt, { provider: "openai", value: "gpt-4o" })
 
       localStorage.setItem("generatedRecipe", JSON.stringify(mealPlan))
       router.push("/recipe-result")
@@ -137,7 +133,11 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({
+          prompt: question,
+          recipeName: "General Cooking Question",
+          recipeData: null,
+        }),
       })
 
       if (!response.ok) {
@@ -146,6 +146,7 @@ export default function Home() {
 
       const data = await response.json()
       setAnswer(data.answer)
+      setQuestion("") // Clear the input after successful response
     } catch (err) {
       console.error("Error getting answer:", err)
       setError(`Failed to get answer: ${err instanceof Error ? err.message : String(err)}`)

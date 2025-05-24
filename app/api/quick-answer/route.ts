@@ -9,52 +9,53 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
     }
 
-    // Log the received data for debugging
     console.log("Received prompt:", prompt)
-    console.log("Recipe name:", recipeName)
-    console.log("Recipe data sample:", JSON.stringify(recipeData).substring(0, 200) + "...")
+    console.log("Recipe name:", recipeName || "General Question")
 
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY || "",
     })
 
-    // Format ingredients for better readability
-    let ingredientsList = "Not available"
-    if (recipeData && recipeData.ingredients) {
-      if (Array.isArray(recipeData.ingredients)) {
-        ingredientsList = recipeData.ingredients
-          .map((ing: any) => {
-            if (typeof ing === "string") return ing
-            return `${ing.amount || ""} ${ing.name || ""}${ing.substitutes ? ` (substitute: ${ing.substitutes})` : ""}`
-          })
-          .join("\n- ")
-        if (ingredientsList) ingredientsList = "- " + ingredientsList
-      }
-    }
+    // Create different system prompts based on whether this is about a specific recipe or general cooking
+    let systemPrompt = ""
 
-    // Format instructions for better readability
-    let instructionsList = "Not available"
-    if (recipeData && recipeData.instructions) {
-      if (Array.isArray(recipeData.instructions)) {
-        instructionsList = recipeData.instructions
-          .map((inst: any, i: number) => {
-            if (typeof inst === "string") return `${i + 1}. ${inst}`
-            if (typeof inst === "object" && inst.description) return `${i + 1}. ${inst.description}`
-            return null
-          })
-          .filter(Boolean)
-          .join("\n")
-      } else if (typeof recipeData.instructions === "string") {
-        instructionsList = recipeData.instructions
+    if (recipeData && recipeName && recipeName !== "General Cooking Question") {
+      // Format ingredients for better readability
+      let ingredientsList = "Not available"
+      if (recipeData && recipeData.ingredients) {
+        if (Array.isArray(recipeData.ingredients)) {
+          ingredientsList = recipeData.ingredients
+            .map((ing: any) => {
+              if (typeof ing === "string") return ing
+              return `${ing.amount || ""} ${ing.name || ""}${ing.substitutes ? ` (substitute: ${ing.substitutes})` : ""}`
+            })
+            .join("\n- ")
+          if (ingredientsList) ingredientsList = "- " + ingredientsList
+        }
       }
-    }
 
-    // Create a detailed system prompt with recipe information
-    const systemPrompt = `You are ChefGPT, a helpful cooking assistant specializing in answering questions about recipes.
-    
+      // Format instructions for better readability
+      let instructionsList = "Not available"
+      if (recipeData && recipeData.instructions) {
+        if (Array.isArray(recipeData.instructions)) {
+          instructionsList = recipeData.instructions
+            .map((inst: any, i: number) => {
+              if (typeof inst === "string") return `${i + 1}. ${inst}`
+              if (typeof inst === "object" && inst.description) return `${i + 1}. ${inst.description}`
+              return null
+            })
+            .filter(Boolean)
+            .join("\n")
+        } else if (typeof recipeData.instructions === "string") {
+          instructionsList = recipeData.instructions
+        }
+      }
+
+      systemPrompt = `You are ChefGPT, a helpful cooking assistant specializing in answering questions about recipes.
+      
 The user is asking about this specific recipe:
 
-RECIPE: ${recipeName || "Unknown Recipe"}
+RECIPE: ${recipeName}
 
 INGREDIENTS:
 ${ingredientsList}
@@ -91,14 +92,34 @@ IMPORTANT INSTRUCTIONS:
 7. Do NOT ask if they need more help at the end.
 8. Just answer their specific question directly.
 9. If they ask about substitutions, suggest options that would work well in THIS specific recipe.
-10. If they ask about cooking techniques, explain how to apply them to THIS specific recipe.
+10. If they ask about cooking techniques, explain how to apply them to THIS specific recipe.`
+    } else {
+      // General cooking question
+      systemPrompt = `You are ChefGPT, a helpful cooking assistant and culinary expert.
+
+IMPORTANT INSTRUCTIONS:
+1. Answer the user's cooking question with accurate, helpful information.
+2. Provide practical cooking advice based on culinary best practices.
+3. Include food safety tips when relevant.
+4. Keep your answer concise but informative (2-4 sentences).
+5. Do NOT start with "I'm glad you asked" or similar phrases.
+6. Do NOT ask if they need more help at the end.
+7. Just answer their question directly and helpfully.
+8. If they ask about techniques, explain them clearly.
+9. If they ask about ingredients, provide useful substitutions or tips.
+10. If they ask about cooking times/temperatures, provide safe and accurate guidance.
+
+Examples of good responses:
+- "To make pasta al dente, cook it for 1-2 minutes less than the package directions suggest, then taste test."
+- "Substitute eggs in baking with 1/4 cup applesauce, 1 mashed banana, or 1 tbsp ground flaxseed mixed with 1 tbsp water per egg."
+- "Cook chicken to an internal temperature of 165°F (74°C) to ensure it's safe to eat."
 `
+    }
 
-    console.log("Sending system prompt to OpenAI")
+    console.log("Sending request to OpenAI")
 
-    // Use a more efficient model with lower max tokens for faster responses
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // Using a more capable model for better answers
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
@@ -110,7 +131,7 @@ IMPORTANT INSTRUCTIONS:
         },
       ],
       temperature: 0.7,
-      max_tokens: 300, // Increased token count for more detailed responses
+      max_tokens: 300,
     })
 
     const answer = response.choices[0].message.content || "I'm sorry, I couldn't generate an answer."

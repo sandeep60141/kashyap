@@ -64,53 +64,99 @@ ACCURACY GUIDELINES:
 
 Return ONLY the JSON without any markdown formatting, code blocks, or additional text.`
 
-  if (prompt.includes("meal plan")) {
+  // Check for meal plan requests more comprehensively
+  if (
+    prompt.includes("meal plan") ||
+    prompt.includes("day meal") ||
+    prompt.includes("days") ||
+    prompt.includes("breakfast, lunch") ||
+    prompt.includes("daily calories")
+  ) {
     console.log("Detected meal plan request")
     systemPrompt += `
-    
-    Create a meal plan that includes the types of foods the user specifically requested.
-    
-    Format your response as JSON with the following structure:
-    {
-      "title": "Meal Plan Title (must reflect user's dietary preferences)",
-      "description": "Brief description that matches user's request",
-      "calorieTarget": "Daily calorie target based on provided information",
-      "nutritionNotes": "Important notes about the nutritional balance of this plan",
-      "allergenWarning": "List any potential allergens in this meal plan",
-      "days": [
-        {
-          "dayNumber": 1,
-          "meals": [
-            {
-              "name": "Breakfast/Lunch/Dinner",
-              "description": "Detailed meal description that matches user preferences",
-              "prepTime": "Preparation time in minutes",
-              "cookTime": "Cooking time in minutes",
-              "ingredients": [
-                { "name": "Ingredient name", "amount": "Amount with unit", "allergens": ["List allergens if any"] }
-              ],
-              "instructions": ["Step 1", "Step 2"],
-              "nutritionalInfo": {
-                "calories": "Calories per serving",
-                "protein": "Protein in grams",
-                "carbs": "Carbohydrates in grams",
-                "fat": "Fat in grams",
-                "fiber": "Fiber in grams",
-                "sugar": "Sugar in grams"
-              },
-              "foodSafetyTips": ["Any relevant food safety tips"]
-            }
-          ],
-          "dailyNutritionTotals": {
-            "calories": "Total calories for the day",
-            "protein": "Total protein in grams",
-            "carbs": "Total carbs in grams",
-            "fat": "Total fat in grams"
+  
+  Create a comprehensive meal plan that includes the types of foods the user specifically requested.
+  
+  Format your response as JSON with the following structure:
+  {
+    "title": "Meal Plan Title (must reflect user's dietary preferences and duration)",
+    "description": "Brief description that matches user's request",
+    "calorieTarget": "Daily calorie target based on provided information",
+    "nutritionNotes": "Important notes about the nutritional balance of this plan",
+    "allergenWarning": "List any potential allergens in this meal plan",
+    "days": [
+      {
+        "dayNumber": 1,
+        "meals": [
+          {
+            "name": "Breakfast",
+            "description": "Detailed meal description that matches user preferences",
+            "prepTime": "Preparation time in minutes",
+            "cookTime": "Cooking time in minutes",
+            "ingredients": [
+              { "name": "Ingredient name", "amount": "Amount with unit", "allergens": ["List allergens if any"] }
+            ],
+            "instructions": ["Step 1", "Step 2"],
+            "nutritionalInfo": {
+              "calories": "Calories per serving",
+              "protein": "Protein in grams",
+              "carbs": "Carbohydrates in grams",
+              "fat": "Fat in grams",
+              "fiber": "Fiber in grams",
+              "sugar": "Sugar in grams"
+            },
+            "foodSafetyTips": ["Any relevant food safety tips"]
+          },
+          {
+            "name": "Lunch",
+            "description": "Detailed meal description that matches user preferences",
+            "prepTime": "Preparation time in minutes",
+            "cookTime": "Cooking time in minutes",
+            "ingredients": [
+              { "name": "Ingredient name", "amount": "Amount with unit", "allergens": ["List allergens if any"] }
+            ],
+            "instructions": ["Step 1", "Step 2"],
+            "nutritionalInfo": {
+              "calories": "Calories per serving",
+              "protein": "Protein in grams",
+              "carbs": "Carbohydrates in grams",
+              "fat": "Fat in grams",
+              "fiber": "Fiber in grams",
+              "sugar": "Sugar in grams"
+            },
+            "foodSafetyTips": ["Any relevant food safety tips"]
+          },
+          {
+            "name": "Dinner",
+            "description": "Detailed meal description that matches user preferences",
+            "prepTime": "Preparation time in minutes",
+            "cookTime": "Cooking time in minutes",
+            "ingredients": [
+              { "name": "Ingredient name", "amount": "Amount with unit", "allergens": ["List allergens if any"] }
+            ],
+            "instructions": ["Step 1", "Step 2"],
+            "nutritionalInfo": {
+              "calories": "Calories per serving",
+              "protein": "Protein in grams",
+              "carbs": "Carbohydrates in grams",
+              "fat": "Fat in grams",
+              "fiber": "Fiber in grams",
+              "sugar": "Sugar in grams"
+            },
+            "foodSafetyTips": ["Any relevant food safety tips"]
           }
+        ],
+        "dailyNutritionTotals": {
+          "calories": "Total calories for the day",
+          "protein": "Total protein in grams",
+          "carbs": "Total carbs in grams",
+          "fat": "Total fat in grams"
         }
-      ],
-      "tips": ["Meal prep tips", "Storage recommendations", "Substitution suggestions"]
-    }`
+      }
+    ],
+    "tips": ["Meal prep tips", "Storage recommendations", "Substitution suggestions"],
+    "shoppingList": ["Consolidated ingredient list for all days"]
+  }`
   } else if (prompt.includes("pairing") || prompt.includes("drink")) {
     console.log("Detected pairing request")
     systemPrompt += `
