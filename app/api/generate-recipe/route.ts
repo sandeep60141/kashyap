@@ -12,8 +12,10 @@ export async function POST(request: NextRequest) {
       cookingTime,
       servings,
       difficulty,
-      tool = "pantryChef", // Default tool
+      tool = "pantryChef",
       modelInfo = { provider: "openai", value: "gpt-4o" },
+      prompt,
+      fullPrompt,
     } = body
 
     console.log("Recipe generation request:", {
@@ -25,11 +27,28 @@ export async function POST(request: NextRequest) {
       difficulty,
       tool,
       modelInfo,
+      hasPrompt: !!prompt,
+      hasFullPrompt: !!fullPrompt,
     })
 
-    // Enhanced prompt that ensures food safety tips are always included
-    const getPromptForTool = (tool: string) => {
-      const basePrompt = `You are ChefGPT, an expert culinary AI assistant. Create a detailed recipe based on the following requirements:
+    // Use the full prompt if provided (from homepage), otherwise construct one
+    let finalPrompt = ""
+
+    if (fullPrompt) {
+      // This is from the homepage form - use the enhanced prompt directly
+      finalPrompt = `You are ChefGPT, an expert culinary AI assistant. ${fullPrompt}
+
+IMPORTANT: You MUST include food safety tips for every recipe. Always consider:
+- Proper cooking temperatures for proteins
+- Safe food handling practices
+- Storage guidelines
+- Cross-contamination prevention
+- Allergen warnings
+
+Return ONLY a valid JSON object with this exact structure (no markdown, no code blocks, just the JSON):`
+    } else {
+      // This is from the individual tool pages - use the original logic
+      finalPrompt = `You are ChefGPT, an expert culinary AI assistant. Create a detailed recipe based on the following requirements:
 
 Ingredients: ${ingredients || "common pantry ingredients"}
 Cuisine: ${cuisine || "Any"}
@@ -46,8 +65,69 @@ IMPORTANT: You MUST include food safety tips for every recipe. Always consider:
 - Allergen warnings
 
 Return ONLY a valid JSON object with this exact structure (no markdown, no code blocks, just the JSON):`
+    }
 
-      const commonStructure = `{
+    // Determine the response structure based on the prompt content
+    let responseStructure = ""
+
+    if (fullPrompt && fullPrompt.includes("meal plan")) {
+      responseStructure = `{
+  "title": "Meal Plan Title",
+  "description": "Brief description of the meal plan",
+  "calorieTarget": "Daily calorie target based on provided information",
+  "nutritionNotes": "Important notes about the nutritional balance of this plan",
+  "allergenWarning": "List any potential allergens in this meal plan",
+  "days": [
+    {
+      "dayNumber": 1,
+      "meals": [
+        {
+          "name": "Breakfast/Lunch/Dinner",
+          "description": "Detailed meal description",
+          "prepTime": "Preparation time in minutes",
+          "cookTime": "Cooking time in minutes",
+          "ingredients": [
+            { "name": "Ingredient name", "amount": "Amount with unit", "allergens": ["List allergens if any"] }
+          ],
+          "instructions": ["Step 1", "Step 2"],
+          "nutritionalInfo": {
+            "calories": "Calories per serving",
+            "protein": "Protein in grams",
+            "carbs": "Carbohydrates in grams",
+            "fat": "Fat in grams",
+            "fiber": "Fiber in grams",
+            "sugar": "Sugar in grams"
+          },
+          "foodSafetyTips": ["Any relevant food safety tips"]
+        }
+      ],
+      "dailyNutritionTotals": {
+        "calories": "Total calories for the day",
+        "protein": "Total protein in grams",
+        "carbs": "Total carbs in grams",
+        "fat": "Total fat in grams"
+      }
+    }
+  ],
+  "tips": ["Meal prep tips", "Storage recommendations", "Substitution suggestions"]
+}`
+    } else if (fullPrompt && fullPrompt.includes("cooking question")) {
+      responseStructure = `{
+  "title": "Cooking Advice",
+  "description": "Brief summary of the advice",
+  "answer": "Detailed answer to the cooking question",
+  "tips": ["Additional helpful tips"],
+  "techniques": ["Specific cooking techniques mentioned"],
+  "ingredients": [
+    { "name": "Ingredient mentioned", "purpose": "Why it's used", "alternatives": "Possible substitutes" }
+  ],
+  "equipment": ["Any kitchen tools mentioned"],
+  "foodSafetyTips": ["Relevant safety advice"],
+  "difficulty": "Easy/Medium/Hard",
+  "estimatedTime": "Time needed if applicable"
+}`
+    } else {
+      responseStructure = `{
   "title": "Recipe Name",
   "description": "Brief description",
   "ingredients": [
@@ -90,95 +170,16 @@ Return ONLY a valid JSON object with this exact structure (no markdown, no code 
   "allergenWarnings": ["common", "allergens", "present"],
   "dietaryClassifications": ["vegetarian", "gluten-free", "etc"],
   "tips": ["helpful", "cooking", "tips"],
-  "storage": "How to store leftovers",
-  "reheating": "How to reheat safely",
+  "storage": "Storage instructions and shelf life",
+  "reheating": "Reheating instructions if applicable",
   "pairingRecommendations": "What goes well with this dish",
   "costEstimate": "Low/Medium/High"
 }`
-
-      switch (tool) {
-        case "masterChef":
-          return `${basePrompt}
-          
-Focus on creating an authentic, restaurant-quality ${cuisine || "international"} recipe with professional techniques and presentation tips.
-
-${commonStructure}`
-
-        case "pantryChef":
-          return `${basePrompt}
-          
-Focus on using common pantry ingredients and creating a practical, home-friendly recipe.
-
-${commonStructure}`
-
-        case "macrosChef":
-          return `${basePrompt}
-          
-Focus on nutritional balance and macro tracking. Include detailed nutritional information and portion control guidance.
-
-${commonStructure}`
-
-        case "mealPlanChef":
-          return `${basePrompt}
-          
-Create a recipe that's perfect for meal planning with make-ahead tips and batch cooking guidance.
-
-${commonStructure}`
-
-        case "pairPerfect":
-          return `${basePrompt}
-          
-Focus on flavor pairing and complementary dishes. Include detailed pairing recommendations.
-
-${commonStructure}`
-
-        case "mixologyMaestro":
-          return `${basePrompt}
-          
-Create a beverage recipe with proper mixing techniques and garnish suggestions. Include responsible serving guidelines.
-
-{
-  "title": "Drink Name",
-  "description": "Brief description",
-  "ingredients": [
-    {
-      "name": "ingredient name",
-      "amount": "quantity and unit",
-      "type": "spirit/mixer/garnish"
-    }
-  ],
-  "instructions": [
-    {
-      "step": 1,
-      "description": "detailed instruction",
-      "technique": "mixing technique"
-    }
-  ],
-  "prepTime": "5 minutes",
-  "servings": "1",
-  "difficulty": "Easy",
-  "glassware": "recommended glass",
-  "garnish": "garnish suggestions",
-  "alcoholContent": "approximate ABV",
-  "foodSafetyTips": [
-    "Always use fresh ingredients",
-    "Keep perishable mixers refrigerated",
-    "Serve responsibly and check IDs",
-    "Clean bar tools between uses"
-  ],
-  "tips": ["mixing", "tips"],
-  "variations": "recipe variations"
-}`
-
-        default:
-          return `${basePrompt}
-
-${commonStructure}`
-      }
     }
 
-    const prompt = getPromptForTool(tool)
-    console.log("Using prompt:", prompt.substring(0, 200) + "...")
+    const completePrompt = finalPrompt + "\n\n" + responseStructure
+
+    console.log("Using prompt:", completePrompt.substring(0, 300) + "...")
 
     // Use the appropriate model based on the provider
     let model
@@ -211,9 +212,9 @@ ${commonStructure}`
     // Generate the recipe using the AI SDK
     const { text } = await generateText({
       model,
-      prompt,
+      prompt: completePrompt,
       temperature: 0.7,
-      maxTokens: 2000,
+      maxTokens: 3000, // Increased for meal plans and detailed responses
     })
 
     console.log("AI response received, length:", text.length)
@@ -252,8 +253,9 @@ ${commonStructure}`
 
         // Create a fallback recipe
         recipe = {
-          title: "Simple Recipe",
-          description: "We couldn't generate a detailed recipe, but here's a simple one based on your ingredients.",
+          title: "Generated Response",
+          description: "Here's the response to your request.",
+          answer: text, // For cooking questions
           ingredients: ingredients
             ? ingredients.split(",").map((item) => ({
                 name: item.trim(),
@@ -264,11 +266,7 @@ ${commonStructure}`
           instructions: [
             {
               step: 1,
-              description: "Combine all ingredients in a suitable cooking vessel.",
-            },
-            {
-              step: 2,
-              description: "Cook until done to your preference.",
+              description: "Follow the guidance provided in the response.",
             },
           ],
           prepTime: "15 minutes",
@@ -305,30 +303,6 @@ ${commonStructure}`
       ]
     }
 
-    // Add tool-specific food safety tips
-    const toolSpecificSafetyTips = {
-      masterChef: [
-        "When using advanced techniques, ensure proper temperature control",
-        "Taste dishes safely using clean utensils",
-      ],
-      pantryChef: ["Check expiration dates on pantry items", "Store opened canned goods in refrigerator"],
-      macrosChef: ["Weigh portions accurately for food safety", "Monitor caloric density of ingredients"],
-      mealPlanChef: ["Label and date meal prep containers", "Reheat foods to 165°F before consuming"],
-      pairPerfect: [
-        "Consider food allergies when pairing dishes",
-        "Serve complementary foods at appropriate temperatures",
-      ],
-      mixologyMaestro: [
-        "Use fresh citrus and mixers",
-        "Keep alcoholic beverages away from minors",
-        "Serve responsibly",
-      ],
-    }
-
-    if (toolSpecificSafetyTips[tool]) {
-      recipe.foodSafetyTips = [...recipe.foodSafetyTips, ...toolSpecificSafetyTips[tool]]
-    }
-
     // Ensure ingredients is an array
     if (!recipe.ingredients || !Array.isArray(recipe.ingredients) || recipe.ingredients.length === 0) {
       recipe.ingredients = ingredients
@@ -345,11 +319,7 @@ ${commonStructure}`
       recipe.instructions = [
         {
           step: 1,
-          description: "Combine all ingredients in a suitable cooking vessel.",
-        },
-        {
-          step: 2,
-          description: "Cook until done to your preference.",
+          description: "Follow the provided guidance or recipe steps.",
         },
       ]
     }
