@@ -61,8 +61,8 @@ export function AskChefGPT({ recipe }: AskChefGPTProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 border border-primary/20">
-      <h3 className="text-lg font-semibold mb-3 flex items-center">
+    <div className="bg-white rounded-lg shadow-md p-4 border-2 border-primary/20">
+      <h3 className="text-lg font-semibold mb-3 flex items-center text-primary">
         <span className="w-1.5 h-5 bg-primary rounded-full mr-2"></span>
         Ask Chef About This Recipe
       </h3>
@@ -73,7 +73,7 @@ export function AskChefGPT({ recipe }: AskChefGPTProps) {
             placeholder="Ask a question about this recipe..."
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            className="min-h-[80px] bg-secondary/50 border border-primary/30 rounded-lg px-4 py-3 pr-12 text-foreground placeholder:text-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="min-h-[80px] bg-secondary/50 border-2 border-primary/30 rounded-lg px-4 py-3 pr-12 text-foreground placeholder:text-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
           />
           {question && (
             <Button
@@ -81,7 +81,7 @@ export function AskChefGPT({ recipe }: AskChefGPTProps) {
               variant="ghost"
               size="sm"
               onClick={clearInput}
-              className="absolute top-2 right-2 h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
+              className="absolute top-2 right-2 h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600 border border-red-200 rounded-full"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -91,7 +91,7 @@ export function AskChefGPT({ recipe }: AskChefGPTProps) {
         <Button
           type="submit"
           disabled={isLoading || !question.trim()}
-          className="w-full bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90 transition-all duration-200"
+          className="w-full bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90 transition-all duration-200 border-2 border-primary hover:border-primary/90"
         >
           {isLoading ? (
             <>
@@ -108,13 +108,13 @@ export function AskChefGPT({ recipe }: AskChefGPTProps) {
       </form>
 
       {error && (
-        <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
+        <div className="mt-4 p-4 bg-red-50 rounded-lg border-2 border-red-200">
           <p className="text-sm text-red-600">{error}</p>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setError(null)}
-            className="mt-2 text-red-600 hover:bg-red-100"
+            className="mt-2 text-red-600 hover:bg-red-100 border border-red-200"
           >
             Dismiss
           </Button>
@@ -122,19 +122,19 @@ export function AskChefGPT({ recipe }: AskChefGPTProps) {
       )}
 
       {answer && (
-        <div className="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
+        <div className="mt-4 p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
           <div className="flex justify-between items-start mb-2">
             <h4 className="font-medium text-primary">Chef's Answer:</h4>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setAnswer(null)}
-              className="h-6 w-6 p-0 hover:bg-primary/10"
+              className="h-6 w-6 p-0 hover:bg-primary/10 border border-primary/20 rounded-full"
             >
               ×
             </Button>
           </div>
-          <p className="text-sm">{answer}</p>
+          <p className="text-sm text-foreground leading-relaxed">{answer}</p>
         </div>
       )}
 

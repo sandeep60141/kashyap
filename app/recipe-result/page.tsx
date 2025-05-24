@@ -16,17 +16,19 @@ import {
   DollarSign,
   Utensils,
   AlertTriangle,
-  Download,
-  Link,
-  ShoppingBag,
 } from "lucide-react"
 import { AskChefGPT } from "@/components/ask-chef-gpt"
+import { PDFGenerator } from "@/components/pdf-generator"
+import { ShoppingListGenerator } from "@/components/shopping-list-generator"
+import { CopyRecipeLink } from "@/components/copy-recipe-link"
+import CookingMode from "@/components/cooking-mode"
 
 export default function RecipeResultPage() {
   const router = useRouter()
   const [recipe, setRecipe] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [isSaved, setIsSaved] = useState(false)
+  const [showCookingMode, setShowCookingMode] = useState(false)
 
   useEffect(() => {
     const storedRecipe = localStorage.getItem("generatedRecipe")
@@ -43,6 +45,9 @@ export default function RecipeResultPage() {
 
   const handleSave = () => {
     setIsSaved(!isSaved)
+    // In a real app, this would save to a database
+    const message = isSaved ? "Recipe removed from favorites!" : "Recipe saved to favorites!"
+    alert(message)
   }
 
   const handleShare = () => {
@@ -54,7 +59,7 @@ export default function RecipeResultPage() {
       })
     } else {
       navigator.clipboard.writeText(window.location.href)
-      alert("Link copied to clipboard!")
+      alert("Recipe link copied to clipboard!")
     }
   }
 
@@ -75,7 +80,10 @@ export default function RecipeResultPage() {
       <div className="max-w-4xl mx-auto p-6 text-center">
         <h1 className="text-2xl font-bold mb-4">No Recipe Found</h1>
         <p className="mb-6">We couldn't find a recipe. Please try generating a new one.</p>
-        <Button onClick={() => router.push("/")} className="bg-primary hover:bg-primary/90 text-white">
+        <Button
+          onClick={() => router.push("/")}
+          className="bg-primary hover:bg-primary/90 text-white border-2 border-primary hover:border-primary/90"
+        >
           Back to Home
         </Button>
       </div>
@@ -126,14 +134,14 @@ export default function RecipeResultPage() {
   const instructions = extractInstructions()
 
   return (
-    <div className="max-w-4xl mx-auto bg-gray-50 min-h-screen">
+    <div className="max-w-4xl mx-auto bg-gray-50 min-h-screen border-2 border-primary/20 rounded-lg shadow-lg">
       {/* Top Navigation */}
-      <div className="bg-white border-b border-primary/20 px-6 py-4 shadow-sm">
+      <div className="bg-white border-b-2 border-primary/20 px-6 py-4 shadow-sm rounded-t-lg">
         <div className="flex items-center justify-between">
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={() => router.push("/")}
-            className="flex items-center gap-2 text-primary hover:bg-primary/10 hover:text-primary font-medium px-4 py-2 rounded-lg transition-all"
+            className="flex items-center gap-2 text-primary hover:bg-primary/10 hover:text-primary font-medium px-4 py-2 border-2 border-primary/30 hover:border-primary rounded-lg transition-all"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Home
@@ -141,61 +149,40 @@ export default function RecipeResultPage() {
 
           <div className="flex items-center gap-3">
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={handleSave}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all border-2 ${
                 isSaved
-                  ? "text-red-500 hover:bg-red-50 hover:text-red-600"
-                  : "text-primary hover:bg-primary/10 hover:text-primary"
+                  ? "text-red-500 hover:bg-red-50 hover:text-red-600 border-red-300 hover:border-red-400"
+                  : "text-primary hover:bg-primary/10 hover:text-primary border-primary/30 hover:border-primary"
               }`}
             >
               <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
               Save
             </Button>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-2 text-primary hover:bg-primary/10 hover:text-primary px-4 py-2 rounded-lg font-medium transition-all"
-            >
-              <Download className="h-4 w-4" />
-              Download PDF
-            </Button>
+            <PDFGenerator recipe={recipe} fileName={recipe.title?.replace(/\s+/g, "-").toLowerCase() || "recipe"} />
+
+            <CopyRecipeLink recipe={recipe} />
+
+            <ShoppingListGenerator ingredients={ingredients} recipeName={recipe.title || "Recipe"} />
 
             <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-2 text-primary hover:bg-primary/10 hover:text-primary px-4 py-2 rounded-lg font-medium transition-all"
-            >
-              <Link className="h-4 w-4" />
-              Copy Link
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-2 text-primary hover:bg-primary/10 hover:text-primary px-4 py-2 rounded-lg font-medium transition-all"
-            >
-              <ShoppingBag className="h-4 w-4" />
-              Shopping List
-            </Button>
-
-            <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={handlePrint}
-              className="flex items-center gap-2 text-primary hover:bg-primary/10 hover:text-primary px-4 py-2 rounded-lg font-medium transition-all"
+              className="flex items-center gap-2 text-primary hover:bg-primary/10 hover:text-primary px-4 py-2 rounded-lg font-medium transition-all border-2 border-primary/30 hover:border-primary"
             >
               <Printer className="h-4 w-4" />
               Print
             </Button>
 
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={handleShare}
-              className="flex items-center gap-2 text-primary hover:bg-primary/10 hover:text-primary px-4 py-2 rounded-lg font-medium transition-all"
+              className="flex items-center gap-2 text-primary hover:bg-primary/10 hover:text-primary px-4 py-2 rounded-lg font-medium transition-all border-2 border-primary/30 hover:border-primary"
             >
               <Share2 className="h-4 w-4" />
               Share
@@ -205,14 +192,17 @@ export default function RecipeResultPage() {
       </div>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary to-accent text-white px-6 py-8 shadow-lg">
+      <div className="bg-gradient-to-r from-primary to-accent text-white px-6 py-8 shadow-lg border-b-2 border-primary/20">
         <div className="max-w-3xl">
           <h1 className="text-3xl font-bold mb-3">{recipe.title || "Delicious Recipe"}</h1>
           <p className="text-lg text-white/90 mb-6">
             {recipe.description || "A wonderful dish perfect for any occasion."}
           </p>
 
-          <Button className="bg-white text-primary hover:bg-white/90 hover:text-primary/90 px-6 py-3 rounded-lg font-medium flex items-center gap-2 mb-4 shadow-md transition-all">
+          <Button
+            onClick={() => setShowCookingMode(true)}
+            className="bg-white text-primary hover:bg-white/90 hover:text-primary/90 px-6 py-3 rounded-lg font-medium flex items-center gap-2 mb-4 shadow-md transition-all border-2 border-white hover:border-white/90"
+          >
             <Play className="h-4 w-4" />
             Start Cooking Mode
           </Button>
@@ -222,7 +212,7 @@ export default function RecipeResultPage() {
               {recipe.dietaryClassifications.slice(0, 3).map((diet: string, index: number) => (
                 <span
                   key={index}
-                  className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm"
+                  className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm border border-green-400"
                 >
                   {diet}
                 </span>
@@ -233,40 +223,40 @@ export default function RecipeResultPage() {
       </div>
 
       {/* Recipe Stats */}
-      <div className="bg-white border-b border-primary/20 px-6 py-6 shadow-sm">
+      <div className="bg-white border-b-2 border-primary/20 px-6 py-6 shadow-sm">
         <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-full">
+          <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
+            <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
               <Clock className="h-5 w-5 text-primary" />
             </div>
             <div>
               <p className="text-sm text-foreground/60">Prep Time</p>
-              <p className="font-semibold text-lg text-foreground">{recipe.prepTime || "15"}</p>
+              <p className="font-semibold text-lg text-foreground">{recipe.prepTime || "15 min"}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-full">
+          <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
+            <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
               <Clock className="h-5 w-5 text-primary" />
             </div>
             <div>
               <p className="text-sm text-foreground/60">Cook Time</p>
-              <p className="font-semibold text-lg text-foreground">{recipe.cookTime || "20"}</p>
+              <p className="font-semibold text-lg text-foreground">{recipe.cookTime || "20 min"}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-full">
+          <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
+            <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
               <Clock className="h-5 w-5 text-primary" />
             </div>
             <div>
               <p className="text-sm text-foreground/60">Total Time</p>
-              <p className="font-semibold text-lg text-foreground">{recipe.totalTime || "35"}</p>
+              <p className="font-semibold text-lg text-foreground">{recipe.totalTime || "35 min"}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-full">
+          <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
+            <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
               <Users className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -275,8 +265,8 @@ export default function RecipeResultPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-full">
+          <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
+            <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
               <ChefHat className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -285,8 +275,8 @@ export default function RecipeResultPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-full">
+          <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
+            <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
               <DollarSign className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -298,30 +288,30 @@ export default function RecipeResultPage() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white px-6 shadow-sm">
+      <div className="bg-white px-6 shadow-sm border-b-2 border-primary/20">
         <Tabs defaultValue="recipe" className="w-full">
-          <TabsList className="bg-transparent border-b border-primary/20 rounded-none w-full justify-start p-0">
+          <TabsList className="bg-white border-b-2 border-primary/20 rounded-none w-full justify-start p-0 h-auto">
             <TabsTrigger
               value="recipe"
-              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary rounded-none px-6 py-4 font-medium text-foreground/70 hover:text-primary transition-colors"
+              className="bg-white border-b-3 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary rounded-none px-6 py-4 font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 transition-all border-2 border-transparent data-[state=active]:border-primary/30 mr-2"
             >
               Recipe
             </TabsTrigger>
             <TabsTrigger
               value="nutrition"
-              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary rounded-none px-6 py-4 font-medium text-foreground/70 hover:text-primary transition-colors"
+              className="bg-white border-b-3 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary rounded-none px-6 py-4 font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 transition-all border-2 border-transparent data-[state=active]:border-primary/30 mr-2"
             >
               Nutrition
             </TabsTrigger>
             <TabsTrigger
               value="tips"
-              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary rounded-none px-6 py-4 font-medium text-foreground/70 hover:text-primary transition-colors"
+              className="bg-white border-b-3 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary rounded-none px-6 py-4 font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 transition-all border-2 border-transparent data-[state=active]:border-primary/30 mr-2"
             >
               Tips
             </TabsTrigger>
             <TabsTrigger
               value="extras"
-              className="bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary rounded-none px-6 py-4 font-medium text-foreground/70 hover:text-primary transition-colors"
+              className="bg-white border-b-3 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary rounded-none px-6 py-4 font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 transition-all border-2 border-transparent data-[state=active]:border-primary/30"
             >
               Extras
             </TabsTrigger>
@@ -330,7 +320,7 @@ export default function RecipeResultPage() {
           <TabsContent value="recipe" className="py-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Ingredients */}
-              <div>
+              <div className="border-2 border-primary/20 rounded-lg p-6 bg-white shadow-sm">
                 <h2 className="text-xl font-bold text-primary mb-4 flex items-center gap-2">
                   <span className="w-1 h-6 bg-primary rounded-full"></span>
                   Ingredients
@@ -339,7 +329,7 @@ export default function RecipeResultPage() {
                   {ingredients.map((ingredient: string, index: number) => (
                     <li
                       key={index}
-                      className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
+                      className="flex items-start gap-3 p-3 hover:bg-primary/5 rounded-lg transition-colors border border-transparent hover:border-primary/20"
                     >
                       <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
                       <span className="text-foreground">{ingredient}</span>
@@ -349,7 +339,7 @@ export default function RecipeResultPage() {
               </div>
 
               {/* Instructions */}
-              <div>
+              <div className="border-2 border-primary/20 rounded-lg p-6 bg-white shadow-sm">
                 <h2 className="text-xl font-bold text-primary mb-4 flex items-center gap-2">
                   <span className="w-1 h-6 bg-primary rounded-full"></span>
                   Instructions
@@ -358,9 +348,9 @@ export default function RecipeResultPage() {
                   {instructions.map((instruction: string, index: number) => (
                     <li
                       key={index}
-                      className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
+                      className="flex items-start gap-3 p-3 hover:bg-primary/5 rounded-lg transition-colors border border-transparent hover:border-primary/20"
                     >
-                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0 shadow-sm">
+                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0 shadow-sm border border-primary/20">
                         {index + 1}
                       </div>
                       <span className="text-foreground pt-1">{instruction}</span>
@@ -370,7 +360,7 @@ export default function RecipeResultPage() {
 
                 {/* Equipment Needed */}
                 {recipe.equipment && recipe.equipment.length > 0 && (
-                  <div className="mt-8 p-4 bg-secondary/20 rounded-lg border border-primary/10">
+                  <div className="mt-8 p-4 bg-secondary/20 rounded-lg border-2 border-primary/10">
                     <h3 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
                       <Utensils className="h-5 w-5" />
                       Equipment Needed
@@ -379,7 +369,7 @@ export default function RecipeResultPage() {
                       {recipe.equipment.map((item: string, index: number) => (
                         <div
                           key={index}
-                          className="flex items-center gap-2 text-sm text-foreground p-2 bg-white rounded-md shadow-sm"
+                          className="flex items-center gap-2 text-sm text-foreground p-2 bg-white rounded-md shadow-sm border border-primary/10"
                         >
                           <Utensils className="h-4 w-4 text-primary" />
                           {item}
@@ -391,7 +381,7 @@ export default function RecipeResultPage() {
 
                 {/* Food Safety Tips */}
                 {recipe.foodSafetyTips && recipe.foodSafetyTips.length > 0 && (
-                  <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="mt-8 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
                       <AlertTriangle className="h-5 w-5 text-red-600" />
                       <h3 className="text-lg font-semibold text-red-700">Food Safety Tips</h3>
@@ -411,14 +401,17 @@ export default function RecipeResultPage() {
           </TabsContent>
 
           <TabsContent value="nutrition" className="py-6">
-            <div className="bg-card rounded-lg p-6 border border-primary/20 shadow-sm">
+            <div className="bg-card rounded-lg p-6 border-2 border-primary/20 shadow-sm">
               <h3 className="text-xl font-bold text-primary mb-4">Nutrition Facts</h3>
               <p className="text-sm text-foreground/60 mb-4">Per serving</p>
 
               {recipe.nutritionalInfo && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {Object.entries(recipe.nutritionalInfo).map(([key, value]: [string, any]) => (
-                    <div key={key} className="text-center p-3 bg-secondary/30 rounded-lg border border-primary/10">
+                    <div
+                      key={key}
+                      className="text-center p-3 bg-secondary/30 rounded-lg border-2 border-primary/10 hover:border-primary/30 transition-all"
+                    >
                       <p className="text-sm text-foreground/70 capitalize">{key}</p>
                       <p className="font-bold text-lg text-primary">{value || "N/A"}</p>
                     </div>
@@ -431,7 +424,7 @@ export default function RecipeResultPage() {
           <TabsContent value="tips" className="py-6">
             <div className="space-y-6">
               {recipe.tips && recipe.tips.length > 0 && (
-                <div className="bg-card rounded-lg p-6 border border-primary/20 shadow-sm">
+                <div className="bg-card rounded-lg p-6 border-2 border-primary/20 shadow-sm">
                   <h3 className="text-xl font-bold text-primary mb-4 flex items-center gap-2">
                     <span className="w-1 h-5 bg-primary rounded-full"></span>
                     Chef's Tips
@@ -440,7 +433,7 @@ export default function RecipeResultPage() {
                     {recipe.tips.map((tip: string, index: number) => (
                       <li
                         key={index}
-                        className="flex items-start gap-3 p-2 hover:bg-primary/5 rounded-lg transition-colors"
+                        className="flex items-start gap-3 p-3 hover:bg-primary/5 rounded-lg transition-colors border border-transparent hover:border-primary/20"
                       >
                         <div className="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0"></div>
                         <span className="text-foreground">{tip}</span>
@@ -455,7 +448,7 @@ export default function RecipeResultPage() {
           <TabsContent value="extras" className="py-6">
             <div className="space-y-6">
               {recipe.allergenWarnings && recipe.allergenWarnings.length > 0 && (
-                <div className="bg-card rounded-lg p-6 border border-primary/20 shadow-sm">
+                <div className="bg-card rounded-lg p-6 border-2 border-primary/20 shadow-sm">
                   <h3 className="text-xl font-bold text-primary mb-4 flex items-center gap-2">
                     <span className="w-1 h-5 bg-primary rounded-full"></span>
                     Allergen Information
@@ -464,7 +457,7 @@ export default function RecipeResultPage() {
                     {recipe.allergenWarnings.map((allergen: string, index: number) => (
                       <span
                         key={index}
-                        className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium border border-yellow-200 shadow-sm"
+                        className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium border-2 border-yellow-200 shadow-sm"
                       >
                         Contains {allergen}
                       </span>
@@ -478,7 +471,7 @@ export default function RecipeResultPage() {
       </div>
 
       {/* Ask ChefGPT Section */}
-      <div className="bg-gradient-to-r from-primary/5 to-accent/5 mx-6 my-6 rounded-lg p-6 border border-primary/20 shadow-sm">
+      <div className="bg-gradient-to-r from-primary/5 to-accent/5 mx-6 my-6 rounded-lg p-6 border-2 border-primary/20 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
           <ChefHat className="h-6 w-6 text-primary" />
           <h2 className="text-xl font-bold text-primary">Ask ChefGPT</h2>
@@ -488,11 +481,16 @@ export default function RecipeResultPage() {
 
         <div className="mt-4 text-sm text-foreground/60 italic">
           <p>
-            Example questions: "How can I make this recipe spicier?", "What can I substitute for butter?", "How do I
+            💡 Example questions: "How can I make this recipe spicier?", "What can I substitute for butter?", "How do I
             know when it's properly cooked?"
           </p>
         </div>
       </div>
+
+      {/* Cooking Mode Modal */}
+      {showCookingMode && (
+        <CookingMode title={recipe.title} instructions={instructions} onClose={() => setShowCookingMode(false)} />
+      )}
     </div>
   )
 }
