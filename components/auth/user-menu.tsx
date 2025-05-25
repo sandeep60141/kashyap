@@ -77,7 +77,7 @@ export function UserMenu() {
 
   const handleProfileClick = () => {
     console.log("🔗 Navigating to profile page...")
-    // Use window.location for direct navigation
+    // Force navigation to profile page
     window.location.href = "/profile"
   }
 
@@ -115,12 +115,12 @@ export function UserMenu() {
     return (
       <div className="flex items-center gap-2">
         <Link href="/auth-test">
-          <Button variant="outline" size="sm" className="border-primary/50 text-primary hover:bg-primary/10">
+          <Button variant="outline" size="sm" className="border-primary/50 text-primary hover:bg-primary/10 border-2">
             Log in
           </Button>
         </Link>
         <Link href="/auth-test">
-          <Button size="sm" className="bg-primary text-white hover:bg-primary/90">
+          <Button size="sm" className="bg-primary text-white hover:bg-primary/90 border-2 border-primary">
             Sign up
           </Button>
         </Link>
@@ -131,29 +131,32 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+        <Button
+          variant="ghost"
+          className="relative h-10 w-10 rounded-full border-2 border-transparent hover:border-primary/20"
+        >
           <Avatar className="h-10 w-10 border-2 border-primary/20">
             <AvatarImage src={profile.avatar_url || "/placeholder.svg"} alt={profile.full_name} />
             <AvatarFallback className="bg-primary text-white text-sm">{getInitials(profile.full_name)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80" align="end" forceMount>
+      <DropdownMenuContent className="w-80 border-2" align="end" forceMount>
         {/* User Info Header */}
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-2 p-2">
             <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12">
+              <Avatar className="h-12 w-12 border-2 border-primary/20">
                 <AvatarImage src={profile.avatar_url || "/placeholder.svg"} alt={profile.full_name} />
                 <AvatarFallback className="bg-primary text-white">{getInitials(profile.full_name)}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <p className="text-sm font-medium leading-none">{profile.full_name}</p>
-                <p className="text-xs leading-none text-muted-foreground mt-1">{profile.email}</p>
+                <p className="text-xs leading-none text-muted-foreground mt-1 break-all">{profile.email}</p>
                 <Badge
                   variant={profile.subscription_tier === "premium" ? "default" : "secondary"}
                   className={`mt-1 text-xs ${
-                    profile.subscription_tier === "premium" ? "bg-yellow-100 text-yellow-800" : ""
+                    profile.subscription_tier === "premium" ? "bg-yellow-100 text-yellow-800 border-yellow-300" : ""
                   }`}
                 >
                   {profile.subscription_tier === "premium" ? (
@@ -219,25 +222,25 @@ export function UserMenu() {
         )}
 
         {/* Menu Items */}
-        <DropdownMenuItem onClick={handleDashboardClick} className="cursor-pointer">
+        <DropdownMenuItem onClick={handleDashboardClick} className="cursor-pointer hover:bg-gray-50">
           <User className="mr-2 h-4 w-4" />
           <span>Dashboard</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer">
+        <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer hover:bg-gray-50">
           <Settings className="mr-2 h-4 w-4" />
           <span>Profile Settings</span>
         </DropdownMenuItem>
 
         {profile.subscription_tier === "free" && (
-          <DropdownMenuItem onClick={() => router.push("/pricing")} className="cursor-pointer">
+          <DropdownMenuItem onClick={() => router.push("/pricing")} className="cursor-pointer hover:bg-gray-50">
             <Crown className="mr-2 h-4 w-4" />
             <span>Upgrade to Premium</span>
           </DropdownMenuItem>
         )}
 
         {profile.subscription_tier === "premium" && (
-          <DropdownMenuItem onClick={() => router.push("/billing")} className="cursor-pointer">
+          <DropdownMenuItem onClick={() => router.push("/billing")} className="cursor-pointer hover:bg-gray-50">
             <CreditCard className="mr-2 h-4 w-4" />
             <span>Billing</span>
           </DropdownMenuItem>
@@ -245,7 +248,11 @@ export function UserMenu() {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600" disabled={isSigningOut}>
+        <DropdownMenuItem
+          onClick={handleSignOut}
+          className="cursor-pointer text-red-600 hover:bg-red-50"
+          disabled={isSigningOut}
+        >
           {isSigningOut ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

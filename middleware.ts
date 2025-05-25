@@ -6,37 +6,70 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  console.log("🔍 Middleware checking:", req.nextUrl.pathname)
 
-  // Protected routes that require authentication
-  const protectedRoutes = ["/dashboard", "/profile"]
-  const isProtectedRoute = protectedRoutes.some((route) => req.nextUrl.pathname.startsWith(route))
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-  // If accessing protected route without session, redirect to home with auth modal
-  if (isProtectedRoute && !session) {
-    const redirectUrl = new URL("/", req.url)
-    redirectUrl.searchParams.set("auth", "signin")
-    redirectUrl.searchParams.set("redirect", req.nextUrl.pathname)
-    return NextResponse.redirect(redirectUrl)
-  }
+    console.log("👤 Session status:", session ? "authenticated" : "not authenticated")
 
-  // If accessing onboarding but already has session, check if profile exists
-  if (req.nextUrl.pathname === "/onboarding" && session) {
-    try {
-      const { data: profile } = await supabase.from("profiles").select("id").eq("id", session.user.id).single()
+    // Protected routes that require authentication
+    const protectedRoutes = ["/dashboard", "/profile"]
+    const isProtectedRoute = protectedRoutes.some((route) => req.nextUrl.pathname.startsWith(route))
 
-      // If profile exists and user is trying to access onboarding directly, redirect to dashboard
-      if (profile && !req.nextUrl.searchParams.get("force")) {
-        return NextResponse.redirect(new URL("/dashboard", req.url))
-      }
-    } catch (error) {
-      // Profile doesn't exist, allow access to onboarding
+    // If accessing protected route without session, redirect to home with auth modal
+    if (isProtectedRoute && !session) {
+      console.log("🚫 Protected route without session, redirecting to auth")
+      const redirectUrl = new URL("/", req.url)
+      redirectUrl.searchParams.set("auth", "signin")
+      redirectUrl.searchParams.set("redirect", req.nextUrl.pathname)
+      return NextResponse.redirect(redirectUrl)
     }
-  }
 
-  return res
+    // If accessing profile with session, check if profile exists
+    if (req.nextUrl.pathname === "/profile" && session) {
+      try {
+        console.log("🔍 Checking profile exists for user:", session.user.id)
+        const { data: profile, error } = await supabase.from("profiles").select("id").eq("id", session.user.id).single()
+
+        if (error && error.code === "PGRST116") {
+          console.log("❌ No profile found, redirecting to onboarding")
+          return NextResponse.redirect(new URL("/onboarding", req.url))
+        }
+
+        if (profile) {
+          console.log("✅ Profile exists, allowing access to profile page")
+        }
+      } catch (error) {
+        console.error("❌ Error checking profile:", error)
+        // Allow access anyway, let the page handle it
+      }
+    }
+
+    // If accessing onboarding but already has session, check if profile exists
+    if (req.nextUrl.pathname === "/onboarding" && session) {
+      try {
+        const { data: profile } = await supabase.from("profiles").select("id").eq("id", session.user.id).single()
+
+        // If profile exists and user is trying to access onboarding directly, redirect to dashboard
+        if (profile && !req.nextUrl.searchParams.get("force")) {
+          console.log("✅ Profile exists, redirecting from onboarding to dashboard")
+          return NextResponse.redirect(new URL("/dashboard", req.url))
+        }
+      } catch (error) {
+        // Profile doesn't exist, allow access to onboarding
+        console.log("📝 No profile found, allowing onboarding access")
+      }
+    }
+
+    console.log("✅ Middleware allowing request to:", req.nextUrl.pathname)
+    return res
+  } catch (error) {
+    console.error("❌ Middleware error:", error)
+    return res
+  }
 }
 
 export const config = {
