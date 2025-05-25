@@ -6,80 +6,91 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Mail, Lock, User, Eye, EyeOff } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Loader2, Mail, Lock, User, AlertCircle, CheckCircle } from "lucide-react"
 import { signUp, signIn, resetPassword } from "@/lib/auth"
-import { useRouter } from "next/navigation"
 
 interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
-  defaultTab?: "signin" | "signup"
 }
 
-export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalProps) {
-  const router = useRouter()
-  const [activeTab, setActiveTab] = useState(defaultTab)
+export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const [activeTab, setActiveTab] = useState("signin")
 
-  // Form states
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [fullName, setFullName] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
+  // Sign In Form
+  const [signInData, setSignInData] = useState({
+    email: "",
+    password: "",
+  })
 
-  const resetForm = () => {
-    setEmail("")
-    setPassword("")
-    setFullName("")
-    setConfirmPassword("")
-    setError(null)
-    setSuccess(null)
-    setShowPassword(false)
-  }
+  // Sign Up Form
+  const [signUpData, setSignUpData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    fullName: "",
+  })
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  // Reset Password Form
+  const [resetEmail, setResetEmail] = useState("")
+
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      return
-    }
-
     setIsLoading(true)
-    setError(null)
+    setMessage(null)
 
     try {
-      await signUp(email, password, fullName)
-      setSuccess("Account created successfully! Please check your email to verify your account.")
-      resetForm()
+      await signIn(signInData.email, signInData.password)
+      setMessage({ type: "success", text: "Successfully signed in! Redirecting..." })
       setTimeout(() => {
         onClose()
-        router.refresh()
-      }, 2000)
-    } catch (err: any) {
-      setError(err.message || "Failed to create account")
+        window.location.reload() // Refresh to update auth state
+      }, 1500)
+    } catch (error: any) {
+      setMessage({ type: "error", text: error.message || "Failed to sign in" })
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError(null)
+    setMessage(null)
+
+    if (signUpData.password !== signUpData.confirmPassword) {
+      setMessage({ type: "error", text: "Passwords do not match" })
+      setIsLoading(false)
+      return
+    }
+
+    if (signUpData.password.length < 6) {
+      setMessage({ type: "error", text: "Password must be at least 6 characters" })
+      setIsLoading(false)
+      return
+    }
 
     try {
-      await signIn(email, password)
-      setSuccess("Signed in successfully!")
-      resetForm()
-      onClose()
-      router.refresh()
-    } catch (err: any) {
-      setError(err.message || "Failed to sign in")
+      const result = await signUp(signUpData.email, signUpData.password, signUpData.fullName)
+
+      if (result.user?.email_confirmed_at) {
+        setMessage({ type: "success", text: "Account created successfully! Signing you in..." })
+        setTimeout(() => {
+          onClose()
+          window.location.reload()
+        }, 1500)
+      } else {
+        setMessage({
+          type: "success",
+          text: "Account created! Please check your email to verify your account.",
+        })
+      }
+    } catch (error: any) {
+      setMessage({ type: "error", text: error.message || "Failed to create account" })
     } finally {
       setIsLoading(false)
     }
@@ -87,19 +98,14 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email) {
-      setError("Please enter your email address")
-      return
-    }
-
     setIsLoading(true)
-    setError(null)
+    setMessage(null)
 
     try {
-      await resetPassword(email)
-      setSuccess("Password reset email sent! Check your inbox.")
-    } catch (err: any) {
-      setError(err.message || "Failed to send reset email")
+      await resetPassword(resetEmail)
+      setMessage({ type: "success", text: "Password reset email sent! Check your inbox." })
+    } catch (error: any) {
+      setMessage({ type: "error", text: error.message || "Failed to send reset email" })
     } finally {
       setIsLoading(false)
     }
@@ -109,22 +115,36 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold text-primary">Welcome to Food AI</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Welcome to Food AI
+          </DialogTitle>
+          <DialogDescription>Sign in to your account or create a new one to get started</DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "signin" | "signup")}>
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="reset">Reset</TabsTrigger>
           </TabsList>
 
-          {error && <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">{error}</div>}
-
-          {success && (
-            <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg">{success}</div>
+          {/* Message Display */}
+          {message && (
+            <div
+              className={`flex items-center gap-2 p-3 rounded-lg ${
+                message.type === "success"
+                  ? "bg-green-50 text-green-800 border border-green-200"
+                  : "bg-red-50 text-red-800 border border-red-200"
+              }`}
+            >
+              {message.type === "success" ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+              <span className="text-sm">{message.text}</span>
+            </div>
           )}
 
-          <TabsContent value="signin" className="space-y-4">
+          {/* Sign In Tab */}
+          <TabsContent value="signin">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="signin-email">Email</Label>
@@ -134,60 +154,43 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                     id="signin-email"
                     type="email"
                     placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
+                    value={signInData.email}
+                    onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
                     required
                   />
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="signin-password">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="signin-password"
-                    type={showPassword ? "text" : "password"}
+                    type="password"
                     placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10"
+                    className="pl-10"
+                    value={signInData.password}
+                    onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
                     required
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
                 </div>
               </div>
-
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
+                    Signing In...
                   </>
                 ) : (
                   "Sign In"
                 )}
               </Button>
-
-              <Button
-                type="button"
-                variant="link"
-                className="w-full text-sm text-primary"
-                onClick={() => setActiveTab("reset")}
-              >
-                Forgot your password?
-              </Button>
             </form>
           </TabsContent>
 
-          <TabsContent value="signup" className="space-y-4">
+          {/* Sign Up Tab */}
+          <TabsContent value="signup">
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="signup-name">Full Name</Label>
@@ -197,14 +200,13 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                     id="signup-name"
                     type="text"
                     placeholder="Enter your full name"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
                     className="pl-10"
+                    value={signUpData.fullName}
+                    onChange={(e) => setSignUpData({ ...signUpData, fullName: e.target.value })}
                     required
                   />
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="signup-email">Email</Label>
                 <div className="relative">
@@ -213,73 +215,62 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                     id="signup-email"
                     type="email"
                     placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
+                    value={signUpData.email}
+                    onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
                     required
                   />
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="signup-password">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="signup-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10"
+                    type="password"
+                    placeholder="Create a password (min 6 chars)"
+                    className="pl-10"
+                    value={signUpData.password}
+                    onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
                     required
-                    minLength={6}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
                 </div>
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Label htmlFor="signup-confirm">Confirm Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
-                    id="confirm-password"
-                    type={showPassword ? "text" : "password"}
+                    id="signup-confirm"
+                    type="password"
                     placeholder="Confirm your password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
                     className="pl-10"
+                    value={signUpData.confirmPassword}
+                    onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
                     required
                   />
                 </div>
               </div>
-
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
+                    Creating Account...
                   </>
                 ) : (
                   "Create Account"
                 )}
               </Button>
-
-              <p className="text-xs text-gray-600 text-center">
-                By signing up, you agree to our Terms of Service and Privacy Policy. You'll start with a free plan (10
-                recipes/month).
+              <p className="text-xs text-gray-500 text-center">
+                By signing up, you agree to our Terms of Service and Privacy Policy. New accounts start with a free
+                plan.
               </p>
             </form>
           </TabsContent>
 
-          <TabsContent value="reset" className="space-y-4">
+          {/* Reset Password Tab */}
+          <TabsContent value="reset">
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="reset-email">Email</Label>
@@ -289,33 +280,24 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                     id="reset-email"
                     type="email"
                     placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
                     required
                   />
                 </div>
               </div>
-
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
+                    Sending Reset Email...
                   </>
                 ) : (
                   "Send Reset Email"
                 )}
               </Button>
-
-              <Button
-                type="button"
-                variant="link"
-                className="w-full text-sm text-primary"
-                onClick={() => setActiveTab("signin")}
-              >
-                Back to Sign In
-              </Button>
+              <p className="text-xs text-gray-500 text-center">We'll send you a link to reset your password.</p>
             </form>
           </TabsContent>
         </Tabs>
