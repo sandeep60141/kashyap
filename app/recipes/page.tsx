@@ -4,7 +4,19 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Clock, ChevronLeft, Star, Utensils, ExternalLink, Filter, X } from "lucide-react"
+import {
+  Clock,
+  ChevronLeft,
+  Star,
+  Utensils,
+  ExternalLink,
+  Filter,
+  X,
+  Sparkles,
+  Wand2,
+  Leaf,
+  Calendar,
+} from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import RecipeSearch from "@/components/recipe-search"
@@ -82,11 +94,11 @@ const transformMealDBRecipe = (meal: MealDBRecipe) => {
   }
 }
 
-export default function SearchResults() {
+export default function AllRecipes() {
   const searchParams = useSearchParams()
   const query = searchParams.get("q") || ""
   const [results, setResults] = useState<any[]>([])
-  const [allResults, setAllResults] = useState<any[]>([]) // Store unfiltered results
+  const [allResults, setAllResults] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null)
@@ -205,7 +217,6 @@ export default function SearchResults() {
       const data: MealDBResponse = await response.json()
 
       if (data.meals) {
-        // Get full details for each meal
         const detailedRecipes = await Promise.all(
           data.meals.slice(0, 12).map(async (meal) => {
             const detailResponse = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`)
@@ -292,13 +303,58 @@ export default function SearchResults() {
           <ChevronLeft className="h-4 w-4 mr-1" />
           Back to Home
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          {query ? `Search Results for "${query}"` : "Discover Recipes"}
-        </h1>
-        <p className="text-gray-600">
-          {results.length} {results.length === 1 ? "recipe" : "recipes"} found
-          {!query && " • Powered by TheMealDB"}
-        </p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              {query ? `Search Results for "${query}"` : "Our Recipe Collection"}
+            </h1>
+            <p className="text-gray-600">
+              {results.length} {results.length === 1 ? "recipe" : "recipes"} found
+              {!query && " • Powered by TheMealDB"}
+            </p>
+          </div>
+
+          {/* AI Recipe Generator CTA */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Link href="/pantryChef">
+              <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Generate with AI
+              </Button>
+            </Link>
+            <Link href="/masterChef">
+              <Button variant="outline" className="border-indigo-200 text-indigo-600 hover:bg-indigo-50">
+                <Wand2 className="h-4 w-4 mr-2" />
+                Custom Recipe
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* AI Recipe Generator Banner */}
+        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h3 className="font-semibold text-indigo-900 mb-1">Can't find what you're looking for?</h3>
+              <p className="text-indigo-700 text-sm">
+                Use our AI-powered recipe generators to create personalized recipes based on your ingredients,
+                preferences, and dietary needs.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Link href="/pantryChef">
+                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700">
+                  Pantry Chef AI
+                </Button>
+              </Link>
+              <Link href="/masterChef">
+                <Button size="sm" variant="outline" className="border-indigo-300 text-indigo-600 hover:bg-indigo-50">
+                  Cuisine Explorer
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="mb-8">
@@ -346,6 +402,37 @@ export default function SearchResults() {
             </div>
 
             <div className="space-y-6">
+              {/* AI Recipe Generators */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">AI Recipe Generators</h3>
+                <div className="space-y-2">
+                  <Link href="/pantryChef">
+                    <Button variant="outline" size="sm" className="w-full justify-start text-left">
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Pantry Chef AI
+                    </Button>
+                  </Link>
+                  <Link href="/masterChef">
+                    <Button variant="outline" size="sm" className="w-full justify-start text-left">
+                      <Wand2 className="h-4 w-4 mr-2" />
+                      Cuisine Explorer
+                    </Button>
+                  </Link>
+                  <Link href="/macrosChef">
+                    <Button variant="outline" size="sm" className="w-full justify-start text-left">
+                      <Leaf className="h-4 w-4 mr-2" />
+                      Nutrition AI
+                    </Button>
+                  </Link>
+                  <Link href="/mealPlanChef">
+                    <Button variant="outline" size="sm" className="w-full justify-start text-left">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Meal Planner
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
               {/* Categories */}
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Categories</h3>
@@ -640,14 +727,19 @@ export default function SearchResults() {
               <h3 className="text-xl font-semibold text-gray-700 mb-2">No recipes found</h3>
               <p className="text-gray-600 mb-4">
                 {query
-                  ? `We couldn't find any recipes matching "${query}". Try different keywords.`
+                  ? `We couldn't find any recipes matching "${query}". Try different keywords or use our AI generators.`
                   : "Unable to load recipes at the moment."}
               </p>
               <div className="flex gap-2 justify-center">
                 <Button variant="outline" onClick={() => window.history.back()}>
                   Go Back
                 </Button>
-                <Button onClick={() => fetchRecipes("")}>Load Random Recipes</Button>
+                <Link href="/pantryChef">
+                  <Button className="bg-indigo-600 hover:bg-indigo-700">
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Generate with AI
+                  </Button>
+                </Link>
               </div>
             </div>
           )}

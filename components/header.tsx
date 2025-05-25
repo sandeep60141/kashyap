@@ -17,11 +17,6 @@ import {
   FileDown,
   MessageSquare,
   Link2,
-  Coffee,
-  Utensils,
-  Soup,
-  Cake,
-  Apple,
 } from "lucide-react"
 
 export default function Header() {
@@ -221,87 +216,11 @@ export default function Header() {
             )}
           </div>
 
-          {/* Meal Types Dropdown */}
-          <div className="relative" ref={(el) => (dropdownRefs.current["mealtypes"] = el)}>
-            <button
-              onClick={() => toggleDropdown("mealtypes")}
-              className="flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              Meal Types
-              <ChevronDown
-                className={`h-4 w-4 transition-transform duration-200 ${
-                  activeDropdown === "mealtypes" ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-            {activeDropdown === "mealtypes" && (
-              <div className="absolute left-0 top-full mt-2 w-64 rounded-xl border border-primary/20 bg-card p-2 shadow-lg animate-in fade-in-0 zoom-in-95 duration-200">
-                <div className="grid gap-1">
-                  <Link
-                    href="/search?type=breakfast"
-                    onClick={closeDropdown}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-primary/10"
-                  >
-                    <Coffee className="h-4 w-4 text-primary" />
-                    <div>
-                      <div className="font-medium">Breakfast AI</div>
-                      <div className="text-xs text-foreground/50">Morning meals</div>
-                    </div>
-                  </Link>
-                  <Link
-                    href="/search?type=lunch"
-                    onClick={closeDropdown}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-primary/10"
-                  >
-                    <Utensils className="h-4 w-4 text-primary" />
-                    <div>
-                      <div className="font-medium">Lunch AI</div>
-                      <div className="text-xs text-foreground/50">Midday meals</div>
-                    </div>
-                  </Link>
-                  <Link
-                    href="/search?type=dinner"
-                    onClick={closeDropdown}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-primary/10"
-                  >
-                    <Soup className="h-4 w-4 text-primary" />
-                    <div>
-                      <div className="font-medium">Dinner AI</div>
-                      <div className="text-xs text-foreground/50">Evening meals</div>
-                    </div>
-                  </Link>
-                  <Link
-                    href="/search?type=dessert"
-                    onClick={closeDropdown}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-primary/10"
-                  >
-                    <Cake className="h-4 w-4 text-primary" />
-                    <div>
-                      <div className="font-medium">Dessert AI</div>
-                      <div className="text-xs text-foreground/50">Sweet treats</div>
-                    </div>
-                  </Link>
-                  <Link
-                    href="/search?type=snack"
-                    onClick={closeDropdown}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-primary/10"
-                  >
-                    <Apple className="h-4 w-4 text-primary" />
-                    <div>
-                      <div className="font-medium">Snack AI</div>
-                      <div className="text-xs text-foreground/50">Light bites</div>
-                    </div>
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-
           <Link
-            href="/search"
+            href="/recipes"
             className="rounded-full px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10"
           >
-            Recipe Search
+            All Recipes
           </Link>
           <Link
             href="/pricing"
@@ -383,11 +302,11 @@ export default function Header() {
             </div>
 
             <Link
-              href="/search"
+              href="/recipes"
               className="block rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10"
               onClick={toggleMobileMenu}
             >
-              Recipe Search
+              All Recipes
             </Link>
             <Link
               href="/pricing"
