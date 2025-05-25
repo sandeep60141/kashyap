@@ -4,20 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
-import {
-  ChevronDown,
-  Menu,
-  X,
-  ShoppingBag,
-  Globe,
-  Leaf,
-  Calendar,
-  Wine,
-  Zap,
-  FileDown,
-  MessageSquare,
-  Link2,
-} from "lucide-react"
+import { ChevronDown, Menu, X, ShoppingBag, Globe, Leaf, Calendar, Wine, Zap } from "lucide-react"
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -144,71 +131,6 @@ export default function Header() {
                     <div>
                       <div className="font-medium">Cocktail AI</div>
                       <div className="text-xs text-foreground/50">Custom drinks</div>
-                    </div>
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Tools Dropdown */}
-          <div className="relative" ref={(el) => (dropdownRefs.current["tools"] = el)}>
-            <button
-              onClick={() => toggleDropdown("tools")}
-              className="flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              Recipe Tools
-              <ChevronDown
-                className={`h-4 w-4 transition-transform duration-200 ${
-                  activeDropdown === "tools" ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-            {activeDropdown === "tools" && (
-              <div className="absolute left-0 top-full mt-2 w-64 rounded-xl border border-primary/20 bg-card p-2 shadow-lg animate-in fade-in-0 zoom-in-95 duration-200">
-                <div className="grid gap-1">
-                  <Link
-                    href="/recipe-result"
-                    onClick={closeDropdown}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-primary/10"
-                  >
-                    <FileDown className="h-4 w-4 text-primary" />
-                    <div>
-                      <div className="font-medium">PDF Export</div>
-                      <div className="text-xs text-foreground/50">Save recipes offline</div>
-                    </div>
-                  </Link>
-                  <Link
-                    href="/recipe-result"
-                    onClick={closeDropdown}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-primary/10"
-                  >
-                    <ShoppingBag className="h-4 w-4 text-primary" />
-                    <div>
-                      <div className="font-medium">Shopping Lists</div>
-                      <div className="text-xs text-foreground/50">Auto-generate lists</div>
-                    </div>
-                  </Link>
-                  <Link
-                    href="/recipe-result"
-                    onClick={closeDropdown}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-primary/10"
-                  >
-                    <Link2 className="h-4 w-4 text-primary" />
-                    <div>
-                      <div className="font-medium">Share Recipes</div>
-                      <div className="text-xs text-foreground/50">Copy shareable links</div>
-                    </div>
-                  </Link>
-                  <Link
-                    href="/recipe-result"
-                    onClick={closeDropdown}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-primary/10"
-                  >
-                    <MessageSquare className="h-4 w-4 text-primary" />
-                    <div>
-                      <div className="font-medium">Ask Food AI</div>
-                      <div className="text-xs text-foreground/50">Cooking questions</div>
                     </div>
                   </Link>
                 </div>
