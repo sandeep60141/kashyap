@@ -6,7 +6,7 @@ interface ModelSelectorProps {
   onSelectModel: (model: string) => void
 }
 
-export default function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorProps) {
+export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorProps) {
   const models = [
     {
       id: "gpt-3.5-turbo",
@@ -53,3 +53,5 @@ export default function ModelSelector({ selectedModel, onSelectModel }: ModelSel
     </div>
   )
 }
+
+export default ModelSelector

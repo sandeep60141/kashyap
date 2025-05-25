@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { AlertCircle, X } from "lucide-react"
 import Link from "next/link"
 
-export default function FreeTierBanner() {
+export function FreeTierBanner() {
   const [dismissed, setDismissed] = useState(false)
 
   if (dismissed) {
@@ -41,3 +41,5 @@ export default function FreeTierBanner() {
     </div>
   )
 }
+
+export default FreeTierBanner

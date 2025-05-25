@@ -9,7 +9,7 @@ interface FormStepProps {
   children: React.ReactNode
 }
 
-export default function FormStep({ number, title, subtitle, children }: FormStepProps) {
+export function FormStep({ number, title, subtitle, children }: FormStepProps) {
   return (
     <div className="bg-card rounded-lg border border-primary/20 shadow-sm p-6">
       <div className="flex items-start gap-4 mb-6">
@@ -25,3 +25,5 @@ export default function FormStep({ number, title, subtitle, children }: FormStep
     </div>
   )
 }
+
+export default FormStep

@@ -9,7 +9,7 @@ interface PopularIngredientsProps {
   type?: "pantry" | "cocktail" | "general"
 }
 
-export default function PopularIngredients({
+export function PopularIngredients({
   onIngredientClick,
   selectedIngredients = [],
   type = "general",
@@ -103,3 +103,5 @@ export default function PopularIngredients({
     </div>
   )
 }
+
+export default PopularIngredients
