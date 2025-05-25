@@ -50,7 +50,6 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
   // Reset Password Form
   const [resetEmail, setResetEmail] = useState("")
 
-  // Check if user exists when email is entered
   const handleEmailBlur = async (email: string) => {
     if (!email || activeTab !== "signup") return
 
@@ -62,7 +61,6 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
           type: "info",
           text: "An account with this email already exists. Please sign in instead.",
         })
-        // Auto-switch to sign in tab and populate email
         setTimeout(() => {
           setActiveTab("signin")
           setSignInData({ email, password: "" })
@@ -84,30 +82,39 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
     setMessage(null)
 
     try {
+      console.log("🔄 Attempting sign in...")
       const result = await signIn(signInData.email, signInData.password)
 
-      if (result.user) {
+      if (result.user && result.session) {
+        console.log("✅ Sign in successful, checking onboarding status...")
         setMessage({ type: "success", text: "Successfully signed in! Redirecting..." })
 
         // Check if user has completed onboarding
         const completedOnboarding = await hasCompletedOnboarding(result.user.id)
+        console.log("📋 Onboarding completed:", completedOnboarding)
 
+        // Close modal first
+        onClose()
+
+        // Small delay to ensure modal closes
         setTimeout(() => {
-          onClose()
-
           if (completedOnboarding) {
             // Existing user - redirect to last path or dashboard
             const lastPath = getLastPath()
+            console.log("🎯 Redirecting to:", lastPath)
             clearLastPath()
-            router.push(lastPath)
+
+            // Force page refresh to update auth state
+            window.location.href = lastPath
           } else {
             // User exists but no profile - redirect to onboarding
-            router.push("/onboarding")
+            console.log("🎯 Redirecting to onboarding")
+            window.location.href = "/onboarding"
           }
-        }, 1500)
+        }, 500)
       }
     } catch (error: any) {
-      console.error("Sign in error:", error)
+      console.error("❌ Sign in error:", error)
       setMessage({ type: "error", text: error.message || "Failed to sign in" })
     } finally {
       setIsLoading(false)
@@ -139,23 +146,26 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
     }
 
     try {
+      console.log("🔄 Attempting sign up...")
       const result = await signUp(signUpData.email, signUpData.password, signUpData.fullName)
 
       if (result.user) {
+        console.log("✅ Sign up successful, redirecting to onboarding...")
         setMessage({ type: "success", text: "Account created successfully! Redirecting to onboarding..." })
 
-        // Immediate redirect to onboarding (no email confirmation needed)
+        // Close modal first
+        onClose()
+
+        // Immediate redirect to onboarding
         setTimeout(() => {
-          onClose()
-          router.push("/onboarding")
-        }, 1500)
+          window.location.href = "/onboarding"
+        }, 500)
       }
     } catch (error: any) {
-      console.error("Sign up error:", error)
+      console.error("❌ Sign up error:", error)
 
       if (error.message.includes("already exists")) {
         setMessage({ type: "error", text: "An account with this email already exists. Please sign in instead." })
-        // Auto-switch to sign in tab
         setTimeout(() => {
           setActiveTab("signin")
           setSignInData({ email: signUpData.email, password: "" })

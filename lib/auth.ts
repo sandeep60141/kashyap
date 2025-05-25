@@ -22,29 +22,23 @@ export async function checkUserExists(email: string): Promise<boolean> {
   const supabase = getSupabaseClient()
 
   try {
-    // Check if user exists in auth.users table by attempting to sign in with a dummy password
-    // This is a workaround since Supabase doesn't provide a direct way to check user existence
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password: "dummy-password-check-12345",
     })
 
-    // If we get an "Invalid login credentials" error, user exists but password is wrong
-    // If we get "User not found" or similar, user doesn't exist
     if (error) {
       if (
         error.message.includes("Invalid login credentials") ||
         error.message.includes("Email not confirmed") ||
         error.message.includes("Invalid email or password")
       ) {
-        return true // User exists
+        return true
       }
-      return false // User doesn't exist
+      return false
     }
 
-    // If somehow login succeeds, user definitely exists
     if (data.user) {
-      // Sign out immediately since this was just a check
       await supabase.auth.signOut()
       return true
     }
@@ -61,13 +55,11 @@ export async function signUp(email: string, password: string, fullName: string) 
 
   console.log("🔄 Starting signup process for:", email)
 
-  // First check if user already exists
   const userExists = await checkUserExists(email)
   if (userExists) {
     throw new Error("An account with this email already exists. Please sign in instead.")
   }
 
-  // Sign up the user with email confirmation disabled
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -75,7 +67,6 @@ export async function signUp(email: string, password: string, fullName: string) 
       data: {
         full_name: fullName,
       },
-      // This should allow immediate signup without email confirmation
       emailRedirectTo: undefined,
     },
   })
@@ -84,16 +75,12 @@ export async function signUp(email: string, password: string, fullName: string) 
 
   if (error) {
     console.error("❌ Signup error:", error)
-
-    // Handle specific error cases
     if (error.message.includes("already registered")) {
       throw new Error("An account with this email already exists. Please sign in instead.")
     }
-
     throw error
   }
 
-  // If user is created, create profile immediately
   if (data.user) {
     console.log("👤 User created, creating profile...")
 
@@ -119,7 +106,6 @@ export async function signUp(email: string, password: string, fullName: string) 
 
       if (profileError) {
         console.error("❌ Profile creation error:", profileError)
-        // Don't throw here as the user is already created
       } else {
         console.log("✅ Profile created successfully:", profileResult)
       }
@@ -146,7 +132,6 @@ export async function signIn(email: string, password: string) {
   if (error) {
     console.error("❌ Signin error:", error)
 
-    // Provide user-friendly error messages
     if (error.message.includes("Invalid login credentials")) {
       throw new Error("Invalid email or password. Please check your credentials and try again.")
     }
@@ -155,6 +140,15 @@ export async function signIn(email: string, password: string) {
     }
 
     throw error
+  }
+
+  // Ensure we have a valid session
+  if (data.user && data.session) {
+    console.log("✅ Sign in successful, user:", data.user.email)
+
+    // Force a session refresh to ensure it's properly set
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+    console.log("📱 Session check:", { sessionData, sessionError })
   }
 
   return data
@@ -171,6 +165,9 @@ export async function signOut() {
   }
 
   console.log("✅ Signed out successfully")
+
+  // Clear any stored paths
+  clearLastPath()
 }
 
 export async function getCurrentUser(): Promise<User | null> {
@@ -206,7 +203,6 @@ export async function getUserProfile(userId: string): Promise<Profile | null> {
     if (error) {
       console.error("❌ Get profile error:", error)
 
-      // If profile doesn't exist, try to create it
       if (error.code === "PGRST116") {
         console.log("📝 Profile not found, attempting to create...")
         const user = await getCurrentUser()
@@ -225,7 +221,6 @@ export async function getUserProfile(userId: string): Promise<Profile | null> {
   }
 }
 
-// Helper function to create missing profile
 async function createMissingProfile(user: User): Promise<Profile | null> {
   const supabase = getSupabaseClient()
 
@@ -283,26 +278,26 @@ export async function resetPassword(email: string) {
   if (error) throw error
 }
 
-// Check if user has completed onboarding
 export async function hasCompletedOnboarding(userId: string): Promise<boolean> {
   const profile = await getUserProfile(userId)
   return profile !== null
 }
 
-// Store last visited path for redirect after login
 export function setLastPath(path: string) {
   if (typeof window !== "undefined") {
-    // Don't store auth-related paths
     const authPaths = ["/auth-test", "/onboarding", "/login", "/signup"]
     if (!authPaths.some((authPath) => path.startsWith(authPath))) {
       localStorage.setItem("lastPath", path)
+      console.log("📍 Stored last path:", path)
     }
   }
 }
 
 export function getLastPath(): string {
   if (typeof window !== "undefined") {
-    return localStorage.getItem("lastPath") || "/dashboard"
+    const lastPath = localStorage.getItem("lastPath") || "/dashboard"
+    console.log("📍 Retrieved last path:", lastPath)
+    return lastPath
   }
   return "/dashboard"
 }
@@ -310,5 +305,6 @@ export function getLastPath(): string {
 export function clearLastPath() {
   if (typeof window !== "undefined") {
     localStorage.removeItem("lastPath")
+    console.log("📍 Cleared last path")
   }
 }
