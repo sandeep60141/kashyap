@@ -11,16 +11,13 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getSession()
 
   // Protected routes that require authentication
-  const protectedRoutes = ["/dashboard", "/profile", "/onboarding"]
+  const protectedRoutes = ["/dashboard", "/profile"]
   const isProtectedRoute = protectedRoutes.some((route) => req.nextUrl.pathname.startsWith(route))
 
-  // Public routes that should redirect if already authenticated
-  const authRoutes = ["/auth-test"]
-  const isAuthRoute = authRoutes.some((route) => req.nextUrl.pathname.startsWith(route))
-
-  // If accessing protected route without session, redirect to home
+  // If accessing protected route without session, redirect to home with auth modal
   if (isProtectedRoute && !session) {
     const redirectUrl = new URL("/", req.url)
+    redirectUrl.searchParams.set("auth", "signin")
     redirectUrl.searchParams.set("redirect", req.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
   }
@@ -43,5 +40,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*", "/onboarding/:path*", "/auth-test/:path*"],
+  matcher: ["/dashboard/:path*", "/profile/:path*", "/onboarding/:path*"],
 }
