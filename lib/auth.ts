@@ -83,35 +83,7 @@ export async function signUp(email: string, password: string, fullName: string) 
 
   if (data.user) {
     console.log("👤 User created, creating profile...")
-
-    try {
-      const profileData = {
-        id: data.user.id,
-        email: data.user.email!,
-        full_name: fullName,
-        subscription_tier: "free" as const,
-        subscription_status: "active" as const,
-        recipes_generated_this_month: 0,
-        ask_chef_used_this_month: 0,
-        last_recipe_reset: new Date().toISOString().split("T")[0],
-      }
-
-      console.log("📊 Creating profile with data:", profileData)
-
-      const { data: profileResult, error: profileError } = await supabase
-        .from("profiles")
-        .insert(profileData)
-        .select()
-        .single()
-
-      if (profileError) {
-        console.error("❌ Profile creation error:", profileError)
-      } else {
-        console.log("✅ Profile created successfully:", profileResult)
-      }
-    } catch (profileError) {
-      console.error("❌ Profile creation failed:", profileError)
-    }
+    await createUserProfile(data.user, fullName)
   }
 
   return data
@@ -131,27 +103,86 @@ export async function signIn(email: string, password: string) {
 
   if (error) {
     console.error("❌ Signin error:", error)
-
     if (error.message.includes("Invalid login credentials")) {
       throw new Error("Invalid email or password. Please check your credentials and try again.")
     }
     if (error.message.includes("Email not confirmed")) {
       throw new Error("Please check your email and click the confirmation link before signing in.")
     }
-
     throw error
   }
 
-  // Ensure we have a valid session
-  if (data.user && data.session) {
-    console.log("✅ Sign in successful, user:", data.user.email)
-
-    // Force a session refresh to ensure it's properly set
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
-    console.log("📱 Session check:", { sessionData, sessionError })
+  // Check if profile exists, create if missing
+  if (data.user) {
+    console.log("✅ Sign in successful, checking profile...")
+    await ensureProfileExists(data.user)
   }
 
   return data
+}
+
+// Helper function to create user profile
+async function createUserProfile(user: User, fullName?: string): Promise<Profile | null> {
+  const supabase = getSupabaseClient()
+
+  try {
+    const profileData = {
+      id: user.id,
+      email: user.email!,
+      full_name: fullName || user.user_metadata?.full_name || user.email!.split("@")[0],
+      subscription_tier: "free" as const,
+      subscription_status: "active" as const,
+      recipes_generated_this_month: 0,
+      ask_chef_used_this_month: 0,
+      last_recipe_reset: new Date().toISOString().split("T")[0],
+    }
+
+    console.log("📊 Creating profile with data:", profileData)
+
+    const { data, error } = await supabase.from("profiles").insert(profileData).select().single()
+
+    if (error) {
+      console.error("❌ Profile creation error:", error)
+      throw error
+    }
+
+    console.log("✅ Profile created successfully:", data)
+    return data
+  } catch (error) {
+    console.error("❌ Profile creation failed:", error)
+    throw error
+  }
+}
+
+// Helper function to ensure profile exists
+async function ensureProfileExists(user: User): Promise<Profile | null> {
+  const supabase = getSupabaseClient()
+
+  try {
+    // First check if profile exists
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single()
+
+    if (existingProfile) {
+      console.log("✅ Profile already exists:", existingProfile)
+      return existingProfile
+    }
+
+    if (fetchError && fetchError.code === "PGRST116") {
+      // Profile doesn't exist, create it
+      console.log("📝 Profile not found, creating new profile...")
+      return await createUserProfile(user)
+    }
+
+    console.error("❌ Error checking profile:", fetchError)
+    return null
+  } catch (error) {
+    console.error("❌ Ensure profile exists failed:", error)
+    return null
+  }
 }
 
 export async function signOut() {
@@ -165,8 +196,6 @@ export async function signOut() {
   }
 
   console.log("✅ Signed out successfully")
-
-  // Clear any stored paths
   clearLastPath()
 }
 
@@ -207,7 +236,7 @@ export async function getUserProfile(userId: string): Promise<Profile | null> {
         console.log("📝 Profile not found, attempting to create...")
         const user = await getCurrentUser()
         if (user) {
-          return await createMissingProfile(user)
+          return await ensureProfileExists(user)
         }
       }
       return null
@@ -217,36 +246,6 @@ export async function getUserProfile(userId: string): Promise<Profile | null> {
     return data
   } catch (error) {
     console.error("❌ Profile fetch failed:", error)
-    return null
-  }
-}
-
-async function createMissingProfile(user: User): Promise<Profile | null> {
-  const supabase = getSupabaseClient()
-
-  try {
-    const profileData = {
-      id: user.id,
-      email: user.email!,
-      full_name: user.user_metadata?.full_name || user.email!.split("@")[0],
-      subscription_tier: "free" as const,
-      subscription_status: "active" as const,
-      recipes_generated_this_month: 0,
-      ask_chef_used_this_month: 0,
-      last_recipe_reset: new Date().toISOString().split("T")[0],
-    }
-
-    const { data, error } = await supabase.from("profiles").insert(profileData).select().single()
-
-    if (error) {
-      console.error("❌ Failed to create missing profile:", error)
-      return null
-    }
-
-    console.log("✅ Missing profile created:", data)
-    return data
-  } catch (error) {
-    console.error("❌ Create missing profile failed:", error)
     return null
   }
 }
@@ -276,6 +275,17 @@ export async function resetPassword(email: string) {
   })
 
   if (error) throw error
+}
+
+// Force create profile for existing user
+export async function forceCreateProfile(): Promise<Profile | null> {
+  const user = await getCurrentUser()
+  if (!user) {
+    throw new Error("No user found")
+  }
+
+  console.log("🔧 Force creating profile for user:", user.email)
+  return await createUserProfile(user)
 }
 
 export async function hasCompletedOnboarding(userId: string): Promise<boolean> {
