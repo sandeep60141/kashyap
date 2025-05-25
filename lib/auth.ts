@@ -9,7 +9,7 @@ export interface Profile {
   subscription_tier: "free" | "premium"
   subscription_status: "active" | "canceled" | "past_due"
   recipes_generated_this_month: number
-  ask_chef_used_this_month: number
+  ask_chef_used_this_month?: number // Make optional since it might not exist
   last_recipe_reset: string
   stripe_customer_id?: string
   stripe_subscription_id?: string
@@ -47,6 +47,96 @@ export async function checkUserExists(email: string): Promise<boolean> {
   } catch (error) {
     console.error("Error checking user existence:", error)
     return false
+  }
+}
+
+// Helper function to check which columns exist in the profiles table
+async function getTableColumns(): Promise<string[]> {
+  const supabase = getSupabaseClient()
+
+  try {
+    // Try to get the first row to see what columns exist
+    const { data, error } = await supabase.from("profiles").select("*").limit(1).single()
+
+    if (data) {
+      return Object.keys(data)
+    }
+
+    // If no data exists, we'll use a basic set of columns
+    return [
+      "id",
+      "email",
+      "full_name",
+      "subscription_tier",
+      "subscription_status",
+      "recipes_generated_this_month",
+      "last_recipe_reset",
+    ]
+  } catch (error) {
+    console.log("Could not determine table columns, using basic set")
+    return [
+      "id",
+      "email",
+      "full_name",
+      "subscription_tier",
+      "subscription_status",
+      "recipes_generated_this_month",
+      "last_recipe_reset",
+    ]
+  }
+}
+
+// Helper function to create user profile with only existing columns
+async function createUserProfile(user: User, fullName?: string): Promise<Profile | null> {
+  const supabase = getSupabaseClient()
+
+  try {
+    console.log("🔍 Checking available columns in profiles table...")
+    const availableColumns = await getTableColumns()
+    console.log("📋 Available columns:", availableColumns)
+
+    // Base profile data with only essential fields
+    const baseProfileData: any = {
+      id: user.id,
+      email: user.email!,
+      full_name: fullName || user.user_metadata?.full_name || user.email!.split("@")[0],
+    }
+
+    // Add optional fields only if columns exist
+    if (availableColumns.includes("subscription_tier")) {
+      baseProfileData.subscription_tier = "free"
+    }
+
+    if (availableColumns.includes("subscription_status")) {
+      baseProfileData.subscription_status = "active"
+    }
+
+    if (availableColumns.includes("recipes_generated_this_month")) {
+      baseProfileData.recipes_generated_this_month = 0
+    }
+
+    if (availableColumns.includes("ask_chef_used_this_month")) {
+      baseProfileData.ask_chef_used_this_month = 0
+    }
+
+    if (availableColumns.includes("last_recipe_reset")) {
+      baseProfileData.last_recipe_reset = new Date().toISOString().split("T")[0]
+    }
+
+    console.log("📊 Creating profile with data:", baseProfileData)
+
+    const { data, error } = await supabase.from("profiles").insert(baseProfileData).select().single()
+
+    if (error) {
+      console.error("❌ Profile creation error:", error)
+      throw error
+    }
+
+    console.log("✅ Profile created successfully:", data)
+    return data
+  } catch (error) {
+    console.error("❌ Profile creation failed:", error)
+    throw error
   }
 }
 
@@ -119,39 +209,6 @@ export async function signIn(email: string, password: string) {
   }
 
   return data
-}
-
-// Helper function to create user profile
-async function createUserProfile(user: User, fullName?: string): Promise<Profile | null> {
-  const supabase = getSupabaseClient()
-
-  try {
-    const profileData = {
-      id: user.id,
-      email: user.email!,
-      full_name: fullName || user.user_metadata?.full_name || user.email!.split("@")[0],
-      subscription_tier: "free" as const,
-      subscription_status: "active" as const,
-      recipes_generated_this_month: 0,
-      ask_chef_used_this_month: 0,
-      last_recipe_reset: new Date().toISOString().split("T")[0],
-    }
-
-    console.log("📊 Creating profile with data:", profileData)
-
-    const { data, error } = await supabase.from("profiles").insert(profileData).select().single()
-
-    if (error) {
-      console.error("❌ Profile creation error:", error)
-      throw error
-    }
-
-    console.log("✅ Profile created successfully:", data)
-    return data
-  } catch (error) {
-    console.error("❌ Profile creation failed:", error)
-    throw error
-  }
 }
 
 // Helper function to ensure profile exists

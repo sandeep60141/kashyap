@@ -37,27 +37,36 @@ export async function checkUsageLimit(
       return false
     }
 
-    const limits = SUBSCRIPTION_LIMITS[profile.subscription_tier]
+    const limits = SUBSCRIPTION_LIMITS[profile.subscription_tier || "free"]
 
     // Check if premium (unlimited)
     if (profile.subscription_tier === "premium") return true
 
     // Check monthly reset
     const today = new Date().toISOString().split("T")[0]
-    const lastReset = new Date(profile.last_recipe_reset)
+    const lastReset = new Date(profile.last_recipe_reset || today)
     const currentMonth = new Date().getMonth()
     const resetMonth = lastReset.getMonth()
 
     if (currentMonth !== resetMonth) {
-      // Reset monthly usage
-      await supabase
-        .from("profiles")
-        .update({
-          recipes_generated_this_month: 0,
-          ask_chef_used_this_month: 0,
-          last_recipe_reset: today,
-        })
-        .eq("id", userId)
+      // Reset monthly usage - only update columns that exist
+      const updateData: any = {}
+
+      if (profile.hasOwnProperty("recipes_generated_this_month")) {
+        updateData.recipes_generated_this_month = 0
+      }
+
+      if (profile.hasOwnProperty("ask_chef_used_this_month")) {
+        updateData.ask_chef_used_this_month = 0
+      }
+
+      if (profile.hasOwnProperty("last_recipe_reset")) {
+        updateData.last_recipe_reset = today
+      }
+
+      if (Object.keys(updateData).length > 0) {
+        await supabase.from("profiles").update(updateData).eq("id", userId)
+      }
 
       return true // Allow action after reset
     }
@@ -66,9 +75,9 @@ export async function checkUsageLimit(
     switch (actionType) {
       case "recipe_generation":
       case "meal_plan":
-        return profile.recipes_generated_this_month < limits.recipes_per_month
+        return (profile.recipes_generated_this_month || 0) < limits.recipes_per_month
       case "ask_chef":
-        return profile.ask_chef_used_this_month < limits.ask_chef_questions
+        return (profile.ask_chef_used_this_month || 0) < limits.ask_chef_questions
       default:
         return false
     }
@@ -97,7 +106,7 @@ export async function trackUsage(
       console.log("Usage tracking table not found, skipping...")
     }
 
-    // Update profile counter
+    // Update profile counter - only if columns exist
     if (actionType === "recipe_generation" || actionType === "meal_plan") {
       const { data: profile } = await supabase
         .from("profiles")
@@ -105,11 +114,11 @@ export async function trackUsage(
         .eq("id", userId)
         .single()
 
-      if (profile) {
+      if (profile && profile.hasOwnProperty("recipes_generated_this_month")) {
         await supabase
           .from("profiles")
           .update({
-            recipes_generated_this_month: profile.recipes_generated_this_month + 1,
+            recipes_generated_this_month: (profile.recipes_generated_this_month || 0) + 1,
           })
           .eq("id", userId)
       }
@@ -120,11 +129,11 @@ export async function trackUsage(
         .eq("id", userId)
         .single()
 
-      if (profile) {
+      if (profile && profile.hasOwnProperty("ask_chef_used_this_month")) {
         await supabase
           .from("profiles")
           .update({
-            ask_chef_used_this_month: profile.ask_chef_used_this_month + 1,
+            ask_chef_used_this_month: (profile.ask_chef_used_this_month || 0) + 1,
           })
           .eq("id", userId)
       }
@@ -145,13 +154,13 @@ export async function getUsageStats(userId: string) {
       return null
     }
 
-    const limits = SUBSCRIPTION_LIMITS[profile.subscription_tier]
+    const limits = SUBSCRIPTION_LIMITS[profile.subscription_tier || "free"]
 
     return {
-      subscription_tier: profile.subscription_tier,
-      recipes_used: profile.recipes_generated_this_month,
+      subscription_tier: profile.subscription_tier || "free",
+      recipes_used: profile.recipes_generated_this_month || 0,
       recipes_limit: limits.recipes_per_month,
-      ask_chef_used: profile.ask_chef_used_this_month,
+      ask_chef_used: profile.ask_chef_used_this_month || 0,
       ask_chef_limit: limits.ask_chef_questions,
       is_premium: profile.subscription_tier === "premium",
     }
