@@ -4,8 +4,8 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, CheckCircle, XCircle, User, Database, Shield } from "lucide-react"
-import { getCurrentUser, getUserProfile, signOut } from "@/lib/auth"
+import { Loader2, CheckCircle, XCircle, User, Database, Shield, Wrench } from "lucide-react"
+import { getCurrentUser, getUserProfile, signOut, forceCreateProfile } from "@/lib/auth"
 import { getUsageStats } from "@/lib/subscription"
 import { AuthModal } from "@/components/auth/auth-modal"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
@@ -15,6 +15,7 @@ export default function AuthTestPage() {
   const [profile, setProfile] = useState<any>(null)
   const [usageStats, setUsageStats] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isFixingProfile, setIsFixingProfile] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [testResults, setTestResults] = useState<any>({})
 
@@ -79,6 +80,33 @@ export default function AuthTestPage() {
     setIsLoading(false)
   }
 
+  const handleFixProfile = async () => {
+    if (!user) {
+      alert("Please sign in first!")
+      return
+    }
+
+    setIsFixingProfile(true)
+    try {
+      console.log("🔧 Attempting to fix profile for user:", user.email)
+      const newProfile = await forceCreateProfile()
+
+      if (newProfile) {
+        console.log("✅ Profile fixed successfully:", newProfile)
+        alert("✅ Profile created successfully! Running tests again...")
+        await checkAuthStatus() // Refresh the test results
+      } else {
+        console.error("❌ Failed to create profile")
+        alert("❌ Failed to create profile. Check console for details.")
+      }
+    } catch (error: any) {
+      console.error("❌ Fix profile error:", error)
+      alert(`❌ Error: ${error.message}`)
+    } finally {
+      setIsFixingProfile(false)
+    }
+  }
+
   const handleSignOut = async () => {
     try {
       await signOut()
@@ -92,21 +120,6 @@ export default function AuthTestPage() {
   }
 
   const TestResult = ({ title, result, icon: Icon }: any) => {
-    const getStatusColor = (status: string) => {
-      switch (status) {
-        case "success":
-          return "text-green-600"
-        case "error":
-          return "text-red-600"
-        case "no_user":
-        case "no_profile":
-        case "no_stats":
-          return "text-yellow-600"
-        default:
-          return "text-gray-600"
-      }
-    }
-
     const getStatusIcon = (status: string) => {
       switch (status) {
         case "success":
@@ -135,7 +148,7 @@ export default function AuthTestPage() {
               </Badge>
               {result.data && (
                 <div className="bg-gray-50 p-3 rounded-lg">
-                  <pre className="text-xs overflow-auto">{JSON.stringify(result.data, null, 2)}</pre>
+                  <pre className="text-xs overflow-auto max-h-40">{JSON.stringify(result.data, null, 2)}</pre>
                 </div>
               )}
               {result.error && (
@@ -160,7 +173,7 @@ export default function AuthTestPage() {
           <p className="text-gray-600">Testing Supabase authentication, profiles, and database connectivity</p>
         </div>
 
-        <div className="mb-6 flex gap-4">
+        <div className="mb-6 flex flex-wrap gap-4">
           <Button onClick={checkAuthStatus} disabled={isLoading}>
             {isLoading ? (
               <>
@@ -177,11 +190,69 @@ export default function AuthTestPage() {
               🔐 Sign In / Sign Up
             </Button>
           ) : (
-            <Button onClick={handleSignOut} variant="outline">
-              🚪 Sign Out
-            </Button>
+            <>
+              <Button onClick={handleSignOut} variant="outline">
+                🚪 Sign Out
+              </Button>
+
+              {/* Fix Profile Button - Only show if user exists but profile doesn't */}
+              {user && (!profile || testResults.profileExists?.status === "no_profile") && (
+                <Button
+                  onClick={handleFixProfile}
+                  disabled={isFixingProfile}
+                  variant="destructive"
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  {isFixingProfile ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Fixing...
+                    </>
+                  ) : (
+                    <>
+                      <Wrench className="mr-2 h-4 w-4" />🔧 Fix Profile
+                    </>
+                  )}
+                </Button>
+              )}
+            </>
           )}
         </div>
+
+        {/* Alert for missing profile */}
+        {user && (!profile || testResults.profileExists?.status === "no_profile") && (
+          <Card className="mb-6 border-orange-200 bg-orange-50">
+            <CardHeader>
+              <CardTitle className="text-orange-800 flex items-center gap-2">
+                <Wrench className="h-5 w-5" />
+                Profile Issue Detected
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-orange-700 mb-3">
+                You're logged in but your profile wasn't created properly. This will cause issues with the profile page
+                and other features.
+              </p>
+              <Button
+                onClick={handleFixProfile}
+                disabled={isFixingProfile}
+                className="bg-orange-600 hover:bg-orange-700"
+              >
+                {isFixingProfile ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating Profile...
+                  </>
+                ) : (
+                  <>
+                    <Wrench className="mr-2 h-4 w-4" />
+                    Fix Profile Now
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Test Results */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -249,7 +320,12 @@ export default function AuthTestPage() {
                       </p>
                     </>
                   ) : (
-                    <p className="text-gray-500">No profile data available</p>
+                    <div className="space-y-2">
+                      <p className="text-gray-500">No profile data available</p>
+                      {user && (
+                        <p className="text-orange-600 text-sm">⚠️ Profile missing - use "Fix Profile" button above</p>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -301,6 +377,9 @@ export default function AuthTestPage() {
                   <li>Click "Sign In / Sign Up" to test authentication modal</li>
                   <li>Create a new account and verify profile creation</li>
                   <li>Sign in with existing credentials</li>
+                  <li>
+                    <strong>If profile is missing, click "Fix Profile" button</strong>
+                  </li>
                   <li>Check if profile data is properly stored and retrieved</li>
                   <li>Verify usage statistics are tracking correctly</li>
                   <li>Test sign out functionality</li>
