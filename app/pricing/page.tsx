@@ -2,241 +2,233 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Check, ChefHat, Clock, CookingPot, Flame, Sparkles, Utensils, X, Zap } from "lucide-react"
+import { Check, ChefHat, Clock, CookingPot, Heart, Sparkles, Utensils, Zap, Star, Users, Rocket } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
 export default function Pricing() {
-  const [annual, setAnnual] = useState(true)
+  const [annual, setAnnual] = useState(false)
 
   const plans = [
     {
       name: "Basic",
-      description: "FREE FOREVER",
-      subtitle: "No Credit Card Required",
+      description: "Perfect for casual home cooks",
+      subtitle: "FREE FOREVER",
+      badge: "No Credit Card Required",
       icon: <Utensils className="h-8 w-8 text-blue-500" />,
       price: { monthly: 0, annual: 0 },
       features: [
-        "10 Monthly Generations",
-        "Meal Plans up to 3 days",
-        "Save 5 Recipes in the Cookbook",
-        "Save 5 Recipes in the Shopping List",
-        "Basic recipe customization",
+        "10 AI recipe generations per month",
+        "Basic meal plans (up to 3 days)",
+        "Save 5 recipes in cookbook",
+        "Save 5 items in shopping list",
         "Access to PantryChef mode",
-        "Email support",
+        "Basic recipe customization",
+        "Community support",
       ],
-      limitations: [],
-      cta: "Get Started",
+      cta: "Get Started Free",
       ctaLink: "/signup",
       popular: false,
     },
     {
       name: "Pro",
-      description: "For those who need a Digital Personal Chef",
-      subtitle: "",
+      description: "Your Digital Personal Chef",
+      subtitle: "MOST POPULAR",
+      badge: "Best Value",
       icon: <ChefHat className="h-8 w-8 text-white" />,
       price: { monthly: 2.99, annual: 2.39 },
       features: [
-        "Unlimited Generations",
-        "History mode",
-        "Meal Plans up to 30 days",
-        "Daily Meal Plan Tracking",
-        "Unlimited Cookbook & Shopping Lists",
-        "No Ads",
-        "All cooking modes access",
+        "Unlimited AI recipe generations",
+        "Advanced meal plans (up to 30 days)",
+        "Unlimited cookbook & shopping lists",
+        "All cooking modes (PantryChef, MasterChef, etc.)",
         "Advanced recipe customization",
-        "Detailed nutritional analysis",
-        "Priority support",
+        "Nutritional analysis & tracking",
+        "Recipe history & favorites",
+        "Daily meal plan tracking",
+        "No advertisements",
+        "Priority email support",
+        "Export recipes to PDF",
+        "Share recipes with friends",
       ],
-      limitations: [],
-      cta: "Get Started",
+      cta: "Upgrade to Pro",
       ctaLink: "/signup?plan=pro",
       popular: true,
     },
   ]
 
-  const businessPlans = [
+  const testimonials = [
     {
-      name: "Restaurant",
-      description: "For restaurants and professional kitchens",
-      price: "Custom Pricing",
-      features: [
-        "Menu development assistance",
-        "Seasonal recipe creation",
-        "Cost optimization for ingredients",
-        "Nutritional analysis for menu items",
-        "Allergen identification",
-        "Staff training resources",
-        "White-labeled recipe cards",
-      ],
+      name: "Sarah Johnson",
+      role: "Home Cook",
+      avatar: "/diverse-woman-avatar.png",
+      content:
+        "ChefGPT has completely transformed my cooking! I've discovered so many new recipes and my family loves the variety.",
+      rating: 5,
     },
     {
-      name: "Food Service",
-      description: "For catering and food service businesses",
-      price: "Custom Pricing",
-      features: [
-        "Bulk recipe scaling",
-        "Event-specific menu planning",
-        "Dietary accommodation tools",
-        "Ingredient cost analysis",
-        "Inventory management integration",
-        "Custom API access",
-        "Dedicated account manager",
-      ],
+      name: "Mike Chen",
+      role: "Food Blogger",
+      avatar: "/man-avatar.png",
+      content:
+        "The AI recipe generator is incredibly smart. It understands my dietary needs and creates perfect meal plans every time.",
+      rating: 5,
+    },
+    {
+      name: "Lisa Park",
+      role: "Busy Mom",
+      avatar: "/asian-woman-avatar.png",
+      content: "Meal planning used to take hours. Now it takes minutes! The shopping list feature is a game-changer.",
+      rating: 5,
+    },
+  ]
+
+  const features = [
+    {
+      icon: <Sparkles className="h-6 w-6 text-primary" />,
+      title: "AI-Powered Recipe Generation",
+      description:
+        "Create unlimited personalized recipes based on your ingredients, dietary preferences, and cooking style.",
+    },
+    {
+      icon: <CookingPot className="h-6 w-6 text-primary" />,
+      title: "Smart Meal Planning",
+      description:
+        "Generate complete meal plans for days or weeks with automatic shopping lists and nutritional tracking.",
+    },
+    {
+      icon: <Heart className="h-6 w-6 text-primary" />,
+      title: "Dietary Customization",
+      description: "Support for all dietary needs including vegan, keto, gluten-free, and custom restrictions.",
+    },
+    {
+      icon: <Clock className="h-6 w-6 text-primary" />,
+      title: "Time-Saving Tools",
+      description: "Cooking mode, step-by-step instructions, and timer integration to make cooking effortless.",
     },
   ]
 
   return (
-    <div className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div className="text-center">
-        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl mb-6">
-          <span className="block">Unlock the Full Power of</span>
-          <span className="block text-primary">AI-Powered Cooking</span>
+    <div className="py-16 px-4 sm:px-6 lg:px-8">
+      {/* Hero Section */}
+      <div className="container-custom text-center mb-16">
+        <h1 className="text-4xl md:text-6xl font-bold mb-6">
+          <span className="block">Choose Your</span>
+          <span className="block gradient-text">Culinary Journey</span>
         </h1>
-        <p className="mt-4 text-xl text-muted-foreground max-w-2xl mx-auto">
-          Choose the perfect plan for your cooking needs and transform your kitchen experience
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+          From casual cooking to culinary mastery, find the perfect plan to transform your kitchen experience with
+          AI-powered recipe generation.
         </p>
-      </div>
 
-      <div className="mt-12 flex justify-center">
-        <div className="relative bg-card rounded-full p-1 flex shadow-md">
-          <button
-            type="button"
-            className={`relative rounded-full py-2 text-sm font-medium whitespace-nowrap focus:outline-none px-8 ${
-              !annual ? "bg-primary text-primary-foreground" : "text-foreground"
-            }`}
-            onClick={() => setAnnual(false)}
-          >
-            Monthly billing
-          </button>
-          <button
-            type="button"
-            className={`relative rounded-full py-2 text-sm font-medium whitespace-nowrap focus:outline-none px-8 ${
-              annual ? "bg-primary text-primary-foreground" : "text-foreground"
-            }`}
-            onClick={() => setAnnual(true)}
-          >
-            Annual billing
-            <span className="absolute -top-2 -right-12 bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded-full">
-              Save 23%
-            </span>
-          </button>
+        {/* Billing Toggle */}
+        <div className="flex justify-center mb-12">
+          <div className="relative bg-secondary rounded-full p-1 flex shadow-lg border">
+            <button
+              type="button"
+              className={`relative rounded-full py-3 px-6 text-sm font-medium transition-all ${
+                !annual ? "bg-primary text-white shadow-md" : "text-foreground hover:text-primary"
+              }`}
+              onClick={() => setAnnual(false)}
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              className={`relative rounded-full py-3 px-6 text-sm font-medium transition-all ${
+                annual ? "bg-primary text-white shadow-md" : "text-foreground hover:text-primary"
+              }`}
+              onClick={() => setAnnual(true)}
+            >
+              Yearly
+              <span className="absolute -top-2 -right-2 bg-accent text-white text-xs font-bold px-2 py-1 rounded-full">
+                -20%
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-2 max-w-4xl mx-auto">
-        {plans.map((plan) => (
-          <div
-            key={plan.name}
-            className={`relative rounded-2xl border p-8 shadow-sm transition-all duration-200 hover:shadow-lg ${
-              plan.popular
-                ? "bg-green-600 text-white border-green-600 ring-2 ring-green-600 ring-opacity-50"
-                : "bg-card border-border"
-            }`}
-          >
-            {plan.popular && (
-              <div className="absolute top-0 right-0 transform translate-x-2 -translate-y-2">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary text-primary-foreground">
-                  <Zap className="mr-1 h-3 w-3" /> Most Popular
-                </span>
-              </div>
-            )}
-            <div className="flex items-center gap-4 mb-4">
-              <div className={`rounded-full p-2 ${plan.popular ? "bg-white/20" : "bg-primary/10"}`}>{plan.icon}</div>
-              <div>
-                <h2 className="text-2xl font-bold">{plan.name}</h2>
-                <p className={`text-sm font-medium ${plan.popular ? "text-green-100" : "text-muted-foreground"}`}>
+      {/* Pricing Plans */}
+      <div className="container-custom mb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {plans.map((plan) => (
+            <div
+              key={plan.name}
+              className={`relative rounded-3xl p-8 transition-all duration-300 hover:scale-105 ${
+                plan.popular
+                  ? "bg-gradient-to-br from-green-500 to-green-600 text-white shadow-2xl border-2 border-green-400"
+                  : "bg-card border-2 border-border shadow-lg hover:shadow-xl"
+              }`}
+            >
+              {/* Popular Badge */}
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-accent text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-1">
+                    <Zap className="h-4 w-4" />
+                    {plan.subtitle}
+                  </span>
+                </div>
+              )}
+
+              {/* Plan Header */}
+              <div className="text-center mb-8">
+                <div className={`inline-flex p-3 rounded-2xl mb-4 ${plan.popular ? "bg-white/20" : "bg-primary/10"}`}>
+                  {plan.icon}
+                </div>
+                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                <p className={`text-sm font-medium mb-1 ${plan.popular ? "text-green-100" : "text-muted-foreground"}`}>
                   {plan.description}
                 </p>
-                {plan.subtitle && (
-                  <p className={`text-xs ${plan.popular ? "text-green-200" : "text-muted-foreground"}`}>
-                    {plan.subtitle}
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                    plan.popular ? "bg-white/20 text-white" : "bg-primary/10 text-primary"
+                  }`}
+                >
+                  {plan.badge}
+                </span>
+              </div>
+
+              {/* Pricing */}
+              <div className="text-center mb-8">
+                <div className="flex items-baseline justify-center mb-2">
+                  <span className="text-5xl font-bold">${annual ? plan.price.annual : plan.price.monthly}</span>
+                  <span className={`ml-2 text-lg ${plan.popular ? "text-green-100" : "text-muted-foreground"}`}>
+                    /month
+                  </span>
+                </div>
+                {annual && plan.price.monthly > 0 && (
+                  <p className={`text-sm ${plan.popular ? "text-green-200" : "text-green-600"}`}>
+                    Save ${((plan.price.monthly - plan.price.annual) * 12).toFixed(0)} per year
                   </p>
                 )}
               </div>
-            </div>
 
-            <div className="mt-4 flex items-baseline">
-              <span className="text-4xl font-extrabold">${annual ? plan.price.annual : plan.price.monthly}</span>
-              <span className="ml-1 text-base font-medium text-muted-foreground">/month</span>
-            </div>
-            {annual && (
-              <p className="text-sm text-green-600 mt-1">
-                Billed annually (${(annual ? plan.price.annual : plan.price.monthly) * 12}/year)
-              </p>
-            )}
+              {/* CTA Button */}
+              <Link href={plan.ctaLink} className="block mb-8">
+                <Button
+                  className={`w-full py-4 text-lg font-semibold rounded-xl transition-all ${
+                    plan.popular
+                      ? "bg-white text-green-600 hover:bg-gray-100 shadow-lg"
+                      : "bg-primary text-white hover:bg-primary/90 shadow-lg hover:shadow-xl"
+                  }`}
+                >
+                  {plan.cta}
+                </Button>
+              </Link>
 
-            <Link href={plan.ctaLink}>
-              <Button
-                className={`mt-8 w-full rounded-full py-6 text-base ${
-                  plan.popular
-                    ? "bg-white text-green-600 hover:bg-gray-100"
-                    : "bg-accent hover:bg-accent/90 text-accent-foreground"
-                }`}
-              >
-                {plan.cta}
-              </Button>
-            </Link>
-
-            <div className="mt-8">
-              <h3 className="text-sm font-medium">What's included</h3>
-              <ul className="mt-4 space-y-4">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start">
-                    <div className="flex-shrink-0">
-                      <Check className="h-5 w-5 text-green-500" />
-                    </div>
-                    <p className="ml-3 text-sm">{feature}</p>
-                  </li>
-                ))}
-              </ul>
-
-              {plan.limitations.length > 0 && (
-                <>
-                  <h3 className="text-sm font-medium mt-8">Limitations</h3>
-                  <ul className="mt-4 space-y-4">
-                    {plan.limitations.map((limitation) => (
-                      <li key={limitation} className="flex items-start">
-                        <div className="flex-shrink-0 text-muted-foreground">
-                          <X className="h-5 w-5" />
-                        </div>
-                        <p className="ml-3 text-sm text-muted-foreground">{limitation}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-24">
-        <h2 className="text-3xl font-bold text-center mb-8">Business Solutions</h2>
-        <p className="text-center text-lg text-muted-foreground max-w-3xl mx-auto mb-12">
-          Specialized plans for restaurants, catering businesses, and food service companies
-        </p>
-
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          {businessPlans.map((plan) => (
-            <div key={plan.name} className="relative rounded-2xl border bg-card p-8 shadow-sm">
+              {/* Features */}
               <div>
-                <h2 className="text-2xl font-bold">{plan.name}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
-                <p className="mt-8 text-2xl font-bold">{plan.price}</p>
-                <Link href="/contact-sales">
-                  <Button className="mt-8 w-full rounded-full">Contact Sales</Button>
-                </Link>
-              </div>
-              <div className="mt-8">
-                <h3 className="text-sm font-medium">Features</h3>
-                <ul className="mt-4 space-y-4">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start">
-                      <div className="flex-shrink-0">
-                        <Check className="h-5 w-5 text-green-500" />
-                      </div>
-                      <p className="ml-3 text-sm">{feature}</p>
+                <h4 className={`font-semibold mb-4 ${plan.popular ? "text-white" : "text-foreground"}`}>
+                  Everything included:
+                </h4>
+                <ul className="space-y-3">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <Check
+                        className={`h-5 w-5 mt-0.5 flex-shrink-0 ${plan.popular ? "text-green-200" : "text-green-500"}`}
+                      />
+                      <span className={`text-sm ${plan.popular ? "text-green-50" : "text-foreground"}`}>{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -246,127 +238,156 @@ export default function Pricing() {
         </div>
       </div>
 
-      <div className="mt-24 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-3xl px-8 py-12 sm:px-12 lg:flex lg:items-center">
-        <div className="lg:w-0 lg:flex-1">
-          <h3 className="text-2xl font-bold">Need a custom solution?</h3>
-          <p className="mt-4 max-w-3xl text-lg">
-            Our enterprise plans offer custom features, dedicated support, and specialized AI models tailored to your
-            specific needs.
+      {/* Features Section */}
+      <div className="container-custom mb-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose ChefGPT?</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Discover the powerful features that make ChefGPT the ultimate AI cooking companion
           </p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <div className="flex items-center">
-              <CookingPot className="h-5 w-5 text-primary mr-2" />
-              <span className="text-sm">Custom AI models</span>
-            </div>
-            <div className="flex items-center">
-              <Flame className="h-5 w-5 text-primary mr-2" />
-              <span className="text-sm">Dedicated support</span>
-            </div>
-            <div className="flex items-center">
-              <Clock className="h-5 w-5 text-primary mr-2" />
-              <span className="text-sm">Priority processing</span>
-            </div>
-            <div className="flex items-center">
-              <Sparkles className="h-5 w-5 text-primary mr-2" />
-              <span className="text-sm">White-label options</span>
-            </div>
-          </div>
         </div>
-        <div className="mt-8 lg:mt-0 lg:ml-8 lg:flex-shrink-0">
-          <Link href="/contact-sales">
-            <Button size="lg" className="w-full lg:w-auto rounded-full">
-              Schedule a Demo
-            </Button>
-          </Link>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {features.map((feature, index) => (
+            <div key={index} className="feature-card text-center">
+              <div className="inline-flex p-3 bg-primary/10 rounded-2xl mb-4">{feature.icon}</div>
+              <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+              <p className="text-muted-foreground">{feature.description}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className="mt-24">
-        <h2 className="text-3xl font-bold text-center mb-12">Frequently asked questions</h2>
-        <div className="grid gap-8 lg:grid-cols-2">
-          <div className="bg-card rounded-xl p-6 shadow-sm">
-            <h3 className="text-lg font-medium mb-3">How many recipes can I generate?</h3>
+      {/* Testimonials Section */}
+      <div className="container-custom mb-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Loved by Home Cooks Everywhere</h2>
+          <p className="text-lg text-muted-foreground">
+            Join thousands of satisfied users who've transformed their cooking
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {testimonials.map((testimonial, index) => (
+            <div key={index} className="feature-card">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(testimonial.rating)].map((_, i) => (
+                  <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              <p className="text-foreground mb-4 italic">"{testimonial.content}"</p>
+              <div className="flex items-center gap-3">
+                <Image
+                  src={testimonial.avatar || "/placeholder.svg"}
+                  alt={testimonial.name}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+                <div>
+                  <p className="font-semibold text-sm">{testimonial.name}</p>
+                  <p className="text-muted-foreground text-xs">{testimonial.role}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      <div className="container-custom mb-20">
+        <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-3xl p-8 md:p-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Users className="h-6 w-6 text-primary" />
+                <span className="text-3xl font-bold text-primary">50K+</span>
+              </div>
+              <p className="text-muted-foreground">Happy Users</p>
+            </div>
+            <div>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <CookingPot className="h-6 w-6 text-primary" />
+                <span className="text-3xl font-bold text-primary">1M+</span>
+              </div>
+              <p className="text-muted-foreground">Recipes Generated</p>
+            </div>
+            <div>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Heart className="h-6 w-6 text-primary" />
+                <span className="text-3xl font-bold text-primary">4.9/5</span>
+              </div>
+              <p className="text-muted-foreground">User Rating</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="container-custom mb-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
+          <p className="text-lg text-muted-foreground">Everything you need to know about ChefGPT</p>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2 max-w-4xl mx-auto">
+          <div className="feature-card">
+            <h3 className="text-lg font-semibold mb-3">How does the AI recipe generation work?</h3>
             <p className="text-muted-foreground">
-              Basic users can generate up to 10 recipes per month. Chef plan users get 100 recipes per month, while
-              Master Chef users enjoy unlimited recipe generation.
+              Our AI analyzes your ingredients, dietary preferences, and cooking style to create personalized recipes.
+              The more you use it, the better it gets at understanding your tastes.
             </p>
           </div>
-          <div className="bg-card rounded-xl p-6 shadow-sm">
-            <h3 className="text-lg font-medium mb-3">What's the difference between the AI models?</h3>
+          <div className="feature-card">
+            <h3 className="text-lg font-semibold mb-3">Can I cancel my Pro subscription anytime?</h3>
             <p className="text-muted-foreground">
-              Standard AI (Basic plan) provides good recipe suggestions. Advanced AI (Chef plan) offers more detailed
-              recipes with better customization. Premium AI (Master Chef plan) delivers restaurant-quality recipes with
-              professional techniques.
+              Yes! You can cancel your Pro subscription at any time. You'll continue to have Pro access until the end of
+              your billing period, then automatically switch to the Basic plan.
             </p>
           </div>
-          <div className="bg-card rounded-xl p-6 shadow-sm">
-            <h3 className="text-lg font-medium mb-3">Can I change plans later?</h3>
+          <div className="feature-card">
+            <h3 className="text-lg font-semibold mb-3">What dietary restrictions are supported?</h3>
             <p className="text-muted-foreground">
-              Yes, you can upgrade, downgrade, or cancel your plan at any time. Changes to your subscription will take
-              effect immediately, with prorated refunds for downgrades.
+              We support all major dietary restrictions including vegan, vegetarian, keto, paleo, gluten-free,
+              dairy-free, and many more. You can also set custom restrictions.
             </p>
           </div>
-          <div className="bg-card rounded-xl p-6 shadow-sm">
-            <h3 className="text-lg font-medium mb-3">Is there a free trial?</h3>
+          <div className="feature-card">
+            <h3 className="text-lg font-semibold mb-3">Do I need to provide my own ingredients?</h3>
             <p className="text-muted-foreground">
-              Yes, new users can try the Chef plan for 7 days before being charged. You can cancel anytime during the
-              trial period with no obligation.
-            </p>
-          </div>
-          <div className="bg-card rounded-xl p-6 shadow-sm">
-            <h3 className="text-lg font-medium mb-3">What payment methods do you accept?</h3>
-            <p className="text-muted-foreground">
-              We accept all major credit cards, PayPal, and Apple Pay. All payments are processed securely through
-              Stripe with end-to-end encryption.
-            </p>
-          </div>
-          <div className="bg-card rounded-xl p-6 shadow-sm">
-            <h3 className="text-lg font-medium mb-3">How detailed are the meal plans?</h3>
-            <p className="text-muted-foreground">
-              Basic users can create simple 1-day meal plans. Chef plan users can create detailed weekly meal plans (up
-              to 7 days) with nutritional information. Master Chef users get additional features like event planning and
-              multi-profile meal plans.
+              You can either input ingredients you have (PantryChef mode) or let our AI suggest complete recipes with
+              shopping lists. Both options work great!
             </p>
           </div>
         </div>
       </div>
 
-      <div className="mt-24 text-center">
-        <h2 className="text-3xl font-bold mb-6">Trusted by chefs and home cooks worldwide</h2>
-        <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 mt-8 opacity-70">
-          <Image
-            src="/whole-foods-logo.png"
-            alt="Whole Foods"
-            width={120}
-            height={60}
-            className="h-12 w-auto object-contain"
-          />
-          <Image
-            src="/kitchenaid-logo.png"
-            alt="KitchenAid"
-            width={120}
-            height={60}
-            className="h-12 w-auto object-contain"
-          />
-          <Image
-            src="/blue-apron-inspired-logo.png"
-            alt="Blue Apron"
-            width={120}
-            height={60}
-            className="h-12 w-auto object-contain"
-          />
-          <Image src="/vitamix-logo.png" alt="Vitamix" width={120} height={60} className="h-12 w-auto object-contain" />
+      {/* Final CTA */}
+      <div className="container-custom text-center">
+        <div className="bg-gradient-to-r from-primary to-accent rounded-3xl p-8 md:p-12 text-white">
+          <Rocket className="h-12 w-12 mx-auto mb-6" />
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Transform Your Cooking?</h2>
+          <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+            Join thousands of home cooks who've discovered the joy of AI-powered recipe creation. Start your culinary
+            journey today!
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/signup">
+              <Button size="lg" className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 py-4 rounded-xl">
+                Start Free Today
+              </Button>
+            </Link>
+            <Link href="/signup?plan=pro">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white text-white hover:bg-white/10 font-semibold px-8 py-4 rounded-xl"
+              >
+                Upgrade to Pro
+              </Button>
+            </Link>
+          </div>
         </div>
-      </div>
-
-      <div className="mt-24 text-center">
-        <h2 className="text-2xl font-bold mb-4">Still not convinced?</h2>
-        <p className="text-lg text-muted-foreground mb-8">Try our Basic plan for free, no credit card required.</p>
-        <Link href="/signup">
-          <Button size="lg" className="rounded-full">
-            Get Started Free
-          </Button>
-        </Link>
       </div>
     </div>
   )
