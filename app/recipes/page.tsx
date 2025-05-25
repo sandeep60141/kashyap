@@ -299,7 +299,7 @@ export default function AllRecipes() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <Link href="/" className="inline-flex items-center text-indigo-600 hover:text-indigo-800 mb-4">
+        <Link href="/" className="inline-flex items-center text-primary hover:text-primary/80 mb-4">
           <ChevronLeft className="h-4 w-4 mr-1" />
           Back to Home
         </Link>
@@ -317,13 +317,13 @@ export default function AllRecipes() {
           {/* AI Recipe Generator CTA */}
           <div className="flex flex-col sm:flex-row gap-2">
             <Link href="/pantryChef">
-              <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white">
+              <Button className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white">
                 <Sparkles className="h-4 w-4 mr-2" />
                 Generate with AI
               </Button>
             </Link>
             <Link href="/masterChef">
-              <Button variant="outline" className="border-indigo-200 text-indigo-600 hover:bg-indigo-50">
+              <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10">
                 <Wand2 className="h-4 w-4 mr-2" />
                 Custom Recipe
               </Button>
@@ -332,23 +332,23 @@ export default function AllRecipes() {
         </div>
 
         {/* AI Recipe Generator Banner */}
-        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4 mb-6">
+        <div className="bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-lg p-4 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h3 className="font-semibold text-indigo-900 mb-1">Can't find what you're looking for?</h3>
-              <p className="text-indigo-700 text-sm">
+              <h3 className="font-semibold text-primary mb-1">Can't find what you're looking for?</h3>
+              <p className="text-primary/80 text-sm">
                 Use our AI-powered recipe generators to create personalized recipes based on your ingredients,
                 preferences, and dietary needs.
               </p>
             </div>
             <div className="flex gap-2">
               <Link href="/pantryChef">
-                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700">
+                <Button size="sm" className="bg-primary hover:bg-primary/90">
                   Pantry Chef AI
                 </Button>
               </Link>
               <Link href="/masterChef">
-                <Button size="sm" variant="outline" className="border-indigo-300 text-indigo-600 hover:bg-indigo-50">
+                <Button size="sm" variant="outline" className="border-primary/30 text-primary hover:bg-primary/10">
                   Cuisine Explorer
                 </Button>
               </Link>
@@ -384,7 +384,7 @@ export default function AllRecipes() {
                 <Filter className="h-4 w-4" />
                 Filters
                 {activeFiltersCount > 0 && (
-                  <span className="bg-indigo-100 text-indigo-600 text-xs px-2 py-1 rounded-full">
+                  <span className="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -393,7 +393,7 @@ export default function AllRecipes() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-indigo-600 hover:text-indigo-800 p-0 h-auto"
+                  className="text-primary hover:text-primary/80 p-0 h-auto"
                   onClick={clearAllFilters}
                 >
                   Clear All
@@ -448,7 +448,7 @@ export default function AllRecipes() {
                           setSelectedCategory(category.strCategory)
                           fetchByCategory(category.strCategory)
                         }}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                        className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300"
                       />
                       <label
                         htmlFor={`category-${category.idCategory}`}
@@ -476,7 +476,7 @@ export default function AllRecipes() {
                           setSelectedArea(area.strArea)
                           fetchByArea(area.strArea)
                         }}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                        className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300"
                       />
                       <label
                         htmlFor={`area-${area.strArea}`}
@@ -501,7 +501,7 @@ export default function AllRecipes() {
                         name="difficulty"
                         checked={selectedDifficulty === difficulty}
                         onChange={() => setSelectedDifficulty(difficulty)}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                        className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300"
                       />
                       <label
                         htmlFor={`difficulty-${difficulty}`}
@@ -525,7 +525,7 @@ export default function AllRecipes() {
                       name="time"
                       checked={selectedTime === "quick"}
                       onChange={() => setSelectedTime("quick")}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                      className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300"
                     />
                     <label
                       htmlFor="time-quick"
@@ -541,7 +541,7 @@ export default function AllRecipes() {
                       name="time"
                       checked={selectedTime === "medium"}
                       onChange={() => setSelectedTime("medium")}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                      className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300"
                     />
                     <label
                       htmlFor="time-medium"
@@ -557,7 +557,7 @@ export default function AllRecipes() {
                       name="time"
                       checked={selectedTime === "long"}
                       onChange={() => setSelectedTime("long")}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                      className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300"
                     />
                     <label
                       htmlFor="time-long"
@@ -624,7 +624,7 @@ export default function AllRecipes() {
             <Filter className="h-4 w-4 mr-2" />
             {showFilters ? "Hide Filters" : "Show Filters"}
             {activeFiltersCount > 0 && (
-              <span className="ml-2 bg-indigo-100 text-indigo-600 text-xs px-2 py-1 rounded-full">
+              <span className="ml-2 bg-primary/20 text-primary text-xs px-2 py-1 rounded-full">
                 {activeFiltersCount}
               </span>
             )}
@@ -672,7 +672,7 @@ export default function AllRecipes() {
                         {recipe.tags.slice(0, 2).map((tag: string, index: number) => (
                           <span
                             key={index}
-                            className="px-2 py-1 bg-indigo-500/80 text-white rounded-full text-xs font-medium"
+                            className="px-2 py-1 bg-primary/80 text-white rounded-full text-xs font-medium"
                           >
                             {tag}
                           </span>
@@ -698,7 +698,7 @@ export default function AllRecipes() {
                       </div>
                       <div className="flex gap-2">
                         <Button
-                          className="flex-1 bg-indigo-500 hover:bg-indigo-600"
+                          className="flex-1 bg-primary hover:bg-primary/90"
                           onClick={() => setSelectedRecipe(recipe)}
                         >
                           View Recipe
@@ -735,7 +735,7 @@ export default function AllRecipes() {
                   Go Back
                 </Button>
                 <Link href="/pantryChef">
-                  <Button className="bg-indigo-600 hover:bg-indigo-700">
+                  <Button className="bg-primary hover:bg-primary/90">
                     <Sparkles className="h-4 w-4 mr-2" />
                     Generate with AI
                   </Button>
@@ -773,7 +773,7 @@ export default function AllRecipes() {
                     <ul className="space-y-1 text-sm">
                       {selectedRecipe.ingredients.map((ingredient: string, index: number) => (
                         <li key={index} className="flex items-start">
-                          <span className="w-2 h-2 bg-indigo-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                          <span className="w-2 h-2 bg-primary rounded-full mt-2 mr-2 flex-shrink-0"></span>
                           {ingredient}
                         </li>
                       ))}
@@ -798,10 +798,10 @@ export default function AllRecipes() {
                   </div>
 
                   <div className="flex gap-2 mb-4">
-                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                    <span className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm">
                       {selectedRecipe.category}
                     </span>
-                    <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                    <span className="px-3 py-1 bg-accent/20 text-accent-foreground rounded-full text-sm">
                       {selectedRecipe.area}
                     </span>
                   </div>
