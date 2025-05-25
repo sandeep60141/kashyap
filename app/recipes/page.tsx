@@ -395,22 +395,21 @@ export default function AllRecipes() {
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Categories</h3>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {categories.map((category) => (
-                    <div key={category.idCategory} className="flex items-center">
-                      <input
-                        type="radio"
-                        id={`category-${category.idCategory}`}
-                        name="category"
-                        checked={selectedCategory === category.strCategory}
-                        onChange={() => {
-                          setSelectedCategory(category.strCategory)
-                          fetchByCategory(category.strCategory)
-                        }}
-                        className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300"
-                      />
-                      <label
-                        htmlFor={`category-${category.idCategory}`}
-                        className="ml-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800"
-                      >
+                    <div key={category.idCategory} className="generator-option">
+                      <div className="custom-radio">
+                        <input
+                          type="radio"
+                          id={`category-${category.idCategory}`}
+                          name="category"
+                          checked={selectedCategory === category.strCategory}
+                          onChange={() => {
+                            setSelectedCategory(category.strCategory)
+                            fetchByCategory(category.strCategory)
+                          }}
+                        />
+                        <div className="radio-visual"></div>
+                      </div>
+                      <label htmlFor={`category-${category.idCategory}`} className="option-text cursor-pointer">
                         {category.strCategory}
                       </label>
                     </div>
@@ -423,22 +422,21 @@ export default function AllRecipes() {
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Cuisines</h3>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {areas.map((area) => (
-                    <div key={area.strArea} className="flex items-center">
-                      <input
-                        type="radio"
-                        id={`area-${area.strArea}`}
-                        name="area"
-                        checked={selectedArea === area.strArea}
-                        onChange={() => {
-                          setSelectedArea(area.strArea)
-                          fetchByArea(area.strArea)
-                        }}
-                        className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300"
-                      />
-                      <label
-                        htmlFor={`area-${area.strArea}`}
-                        className="ml-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800"
-                      >
+                    <div key={area.strArea} className="generator-option">
+                      <div className="custom-radio">
+                        <input
+                          type="radio"
+                          id={`area-${area.strArea}`}
+                          name="area"
+                          checked={selectedArea === area.strArea}
+                          onChange={() => {
+                            setSelectedArea(area.strArea)
+                            fetchByArea(area.strArea)
+                          }}
+                        />
+                        <div className="radio-visual"></div>
+                      </div>
+                      <label htmlFor={`area-${area.strArea}`} className="option-text cursor-pointer">
                         {area.strArea}
                       </label>
                     </div>
@@ -451,19 +449,18 @@ export default function AllRecipes() {
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Difficulty</h3>
                 <div className="space-y-2">
                   {["Easy", "Medium", "Hard"].map((difficulty) => (
-                    <div key={difficulty} className="flex items-center">
-                      <input
-                        type="radio"
-                        id={`difficulty-${difficulty}`}
-                        name="difficulty"
-                        checked={selectedDifficulty === difficulty}
-                        onChange={() => setSelectedDifficulty(difficulty)}
-                        className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300"
-                      />
-                      <label
-                        htmlFor={`difficulty-${difficulty}`}
-                        className="ml-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800"
-                      >
+                    <div key={difficulty} className="generator-option">
+                      <div className="custom-radio">
+                        <input
+                          type="radio"
+                          id={`difficulty-${difficulty}`}
+                          name="difficulty"
+                          checked={selectedDifficulty === difficulty}
+                          onChange={() => setSelectedDifficulty(difficulty)}
+                        />
+                        <div className="radio-visual"></div>
+                      </div>
+                      <label htmlFor={`difficulty-${difficulty}`} className="option-text cursor-pointer">
                         {difficulty}
                       </label>
                     </div>
@@ -475,51 +472,48 @@ export default function AllRecipes() {
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Cooking Time</h3>
                 <div className="space-y-2">
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      id="time-quick"
-                      name="time"
-                      checked={selectedTime === "quick"}
-                      onChange={() => setSelectedTime("quick")}
-                      className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300"
-                    />
-                    <label
-                      htmlFor="time-quick"
-                      className="ml-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800"
-                    >
+                  <div className="generator-option">
+                    <div className="custom-radio">
+                      <input
+                        type="radio"
+                        id="time-quick"
+                        name="time"
+                        checked={selectedTime === "quick"}
+                        onChange={() => setSelectedTime("quick")}
+                      />
+                      <div className="radio-visual"></div>
+                    </div>
+                    <label htmlFor="time-quick" className="option-text cursor-pointer">
                       Quick (Under 20 min)
                     </label>
                   </div>
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      id="time-medium"
-                      name="time"
-                      checked={selectedTime === "medium"}
-                      onChange={() => setSelectedTime("medium")}
-                      className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300"
-                    />
-                    <label
-                      htmlFor="time-medium"
-                      className="ml-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800"
-                    >
+                  <div className="generator-option">
+                    <div className="custom-radio">
+                      <input
+                        type="radio"
+                        id="time-medium"
+                        name="time"
+                        checked={selectedTime === "medium"}
+                        onChange={() => setSelectedTime("medium")}
+                      />
+                      <div className="radio-visual"></div>
+                    </div>
+                    <label htmlFor="time-medium" className="option-text cursor-pointer">
                       Medium (30-45 min)
                     </label>
                   </div>
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      id="time-long"
-                      name="time"
-                      checked={selectedTime === "long"}
-                      onChange={() => setSelectedTime("long")}
-                      className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300"
-                    />
-                    <label
-                      htmlFor="time-long"
-                      className="ml-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800"
-                    >
+                  <div className="generator-option">
+                    <div className="custom-radio">
+                      <input
+                        type="radio"
+                        id="time-long"
+                        name="time"
+                        checked={selectedTime === "long"}
+                        onChange={() => setSelectedTime("long")}
+                      />
+                      <div className="radio-visual"></div>
+                    </div>
+                    <label htmlFor="time-long" className="option-text cursor-pointer">
                       Long (1+ hour)
                     </label>
                   </div>
