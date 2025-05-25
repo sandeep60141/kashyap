@@ -5,17 +5,74 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Client-side Supabase client (singleton pattern)
-let supabaseClient: ReturnType<typeof createClient> | null = null
-
 export function getSupabaseClient() {
-  if (!supabaseClient) {
-    supabaseClient = createClient(supabaseUrl, supabaseAnonKey)
-  }
-  return supabaseClient
+  return supabase
 }
 
-// Server-side Supabase client
-export function createServerClient() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+// Database types
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string
+          email: string
+          full_name: string
+          avatar_url: string | null
+          subscription_tier: "free" | "premium"
+          subscription_status: "active" | "canceled" | "past_due"
+          recipes_generated_this_month: number
+          ask_chef_used_this_month: number
+          last_recipe_reset: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          email: string
+          full_name: string
+          avatar_url?: string | null
+          subscription_tier?: "free" | "premium"
+          subscription_status?: "active" | "canceled" | "past_due"
+          recipes_generated_this_month?: number
+          ask_chef_used_this_month?: number
+          last_recipe_reset?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+        }
+        Update: {
+          email?: string
+          full_name?: string
+          avatar_url?: string | null
+          subscription_tier?: "free" | "premium"
+          subscription_status?: "active" | "canceled" | "past_due"
+          recipes_generated_this_month?: number
+          ask_chef_used_this_month?: number
+          last_recipe_reset?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+      }
+      usage_tracking: {
+        Row: {
+          id: string
+          user_id: string
+          action_type: "recipe_generation" | "meal_plan" | "ask_chef"
+          metadata: any
+          created_at: string
+        }
+        Insert: {
+          user_id: string
+          action_type: "recipe_generation" | "meal_plan" | "ask_chef"
+          metadata?: any
+        }
+        Update: {
+          metadata?: any
+        }
+      }
+    }
+  }
 }

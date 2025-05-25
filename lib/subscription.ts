@@ -28,52 +28,53 @@ export async function checkUsageLimit(
 ): Promise<boolean> {
   const supabase = getSupabaseClient()
 
-  // Get user profile
-  const { data: profile, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
+  try {
+    // Get user profile
+    const { data: profile, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
 
-  if (error || !profile) return false
-
-  const limits = SUBSCRIPTION_LIMITS[profile.subscription_tier]
-
-  // Check if premium (unlimited)
-  if (profile.subscription_tier === "premium") return true
-
-  // Check monthly reset
-  const today = new Date().toISOString().split("T")[0]
-  const lastReset = new Date(profile.last_recipe_reset)
-  const currentMonth = new Date().getMonth()
-  const resetMonth = lastReset.getMonth()
-
-  if (currentMonth !== resetMonth) {
-    // Reset monthly usage
-    await supabase
-      .from("profiles")
-      .update({
-        recipes_generated_this_month: 0,
-        last_recipe_reset: today,
-      })
-      .eq("id", userId)
-
-    return true // Allow action after reset
-  }
-
-  // Check specific limits
-  switch (actionType) {
-    case "recipe_generation":
-    case "meal_plan":
-      return profile.recipes_generated_this_month < limits.recipes_per_month
-    case "ask_chef":
-      // Count ask_chef usage this month
-      const { count } = await supabase
-        .from("usage_tracking")
-        .select("*", { count: "exact" })
-        .eq("user_id", userId)
-        .eq("action_type", "ask_chef")
-        .gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
-
-      return (count || 0) < limits.ask_chef_questions
-    default:
+    if (error || !profile) {
+      console.error("Profile fetch error:", error)
       return false
+    }
+
+    const limits = SUBSCRIPTION_LIMITS[profile.subscription_tier]
+
+    // Check if premium (unlimited)
+    if (profile.subscription_tier === "premium") return true
+
+    // Check monthly reset
+    const today = new Date().toISOString().split("T")[0]
+    const lastReset = new Date(profile.last_recipe_reset)
+    const currentMonth = new Date().getMonth()
+    const resetMonth = lastReset.getMonth()
+
+    if (currentMonth !== resetMonth) {
+      // Reset monthly usage
+      await supabase
+        .from("profiles")
+        .update({
+          recipes_generated_this_month: 0,
+          ask_chef_used_this_month: 0,
+          last_recipe_reset: today,
+        })
+        .eq("id", userId)
+
+      return true // Allow action after reset
+    }
+
+    // Check specific limits
+    switch (actionType) {
+      case "recipe_generation":
+      case "meal_plan":
+        return profile.recipes_generated_this_month < limits.recipes_per_month
+      case "ask_chef":
+        return profile.ask_chef_used_this_month < limits.ask_chef_questions
+      default:
+        return false
+    }
+  } catch (error) {
+    console.error("Usage limit check error:", error)
+    return false
   }
 }
 
@@ -84,47 +85,78 @@ export async function trackUsage(
 ) {
   const supabase = getSupabaseClient()
 
-  // Insert usage tracking
-  await supabase.from("usage_tracking").insert({
-    user_id: userId,
-    action_type: actionType,
-    metadata: metadata || {},
-  })
-
-  // Update profile counter for recipes
-  if (actionType === "recipe_generation" || actionType === "meal_plan") {
-    await supabase
-      .from("profiles")
-      .update({
-        recipes_generated_this_month: supabase.rpc("increment_recipes_count"),
+  try {
+    // Insert usage tracking if table exists
+    try {
+      await supabase.from("usage_tracking").insert({
+        user_id: userId,
+        action_type: actionType,
+        metadata: metadata || {},
       })
-      .eq("id", userId)
+    } catch (trackingError) {
+      console.log("Usage tracking table not found, skipping...")
+    }
+
+    // Update profile counter
+    if (actionType === "recipe_generation" || actionType === "meal_plan") {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("recipes_generated_this_month")
+        .eq("id", userId)
+        .single()
+
+      if (profile) {
+        await supabase
+          .from("profiles")
+          .update({
+            recipes_generated_this_month: profile.recipes_generated_this_month + 1,
+          })
+          .eq("id", userId)
+      }
+    } else if (actionType === "ask_chef") {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("ask_chef_used_this_month")
+        .eq("id", userId)
+        .single()
+
+      if (profile) {
+        await supabase
+          .from("profiles")
+          .update({
+            ask_chef_used_this_month: profile.ask_chef_used_this_month + 1,
+          })
+          .eq("id", userId)
+      }
+    }
+  } catch (error) {
+    console.error("Usage tracking error:", error)
   }
 }
 
 export async function getUsageStats(userId: string) {
   const supabase = getSupabaseClient()
 
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).single()
+  try {
+    const { data: profile, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
 
-  if (!profile) return null
+    if (error || !profile) {
+      console.error("Profile fetch error:", error)
+      return null
+    }
 
-  const limits = SUBSCRIPTION_LIMITS[profile.subscription_tier]
+    const limits = SUBSCRIPTION_LIMITS[profile.subscription_tier]
 
-  // Get current month usage for ask_chef
-  const { count: askChefCount } = await supabase
-    .from("usage_tracking")
-    .select("*", { count: "exact" })
-    .eq("user_id", userId)
-    .eq("action_type", "ask_chef")
-    .gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
-
-  return {
-    subscription_tier: profile.subscription_tier,
-    recipes_used: profile.recipes_generated_this_month,
-    recipes_limit: limits.recipes_per_month,
-    ask_chef_used: askChefCount || 0,
-    ask_chef_limit: limits.ask_chef_questions,
-    is_premium: profile.subscription_tier === "premium",
+    return {
+      subscription_tier: profile.subscription_tier,
+      recipes_used: profile.recipes_generated_this_month,
+      recipes_limit: limits.recipes_per_month,
+      ask_chef_used: profile.ask_chef_used_this_month,
+      ask_chef_limit: limits.ask_chef_questions,
+      is_premium: profile.subscription_tier === "premium",
+    }
+  } catch (error) {
+    console.error("Usage stats error:", error)
+    return null
   }
 }
