@@ -4,19 +4,7 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import {
-  Clock,
-  ChevronLeft,
-  Star,
-  Utensils,
-  ExternalLink,
-  Filter,
-  X,
-  Sparkles,
-  Wand2,
-  Leaf,
-  Calendar,
-} from "lucide-react"
+import { Clock, ChevronLeft, Star, Utensils, ExternalLink, Filter, X, Sparkles, Wand2 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import RecipeSearch from "@/components/recipe-search"
@@ -402,37 +390,6 @@ export default function AllRecipes() {
             </div>
 
             <div className="space-y-6">
-              {/* AI Recipe Generators */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-3">AI Recipe Generators</h3>
-                <div className="space-y-2">
-                  <Link href="/pantryChef">
-                    <Button variant="outline" size="sm" className="w-full justify-start text-left">
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Pantry Chef AI
-                    </Button>
-                  </Link>
-                  <Link href="/masterChef">
-                    <Button variant="outline" size="sm" className="w-full justify-start text-left">
-                      <Wand2 className="h-4 w-4 mr-2" />
-                      Cuisine Explorer
-                    </Button>
-                  </Link>
-                  <Link href="/macrosChef">
-                    <Button variant="outline" size="sm" className="w-full justify-start text-left">
-                      <Leaf className="h-4 w-4 mr-2" />
-                      Nutrition AI
-                    </Button>
-                  </Link>
-                  <Link href="/mealPlanChef">
-                    <Button variant="outline" size="sm" className="w-full justify-start text-left">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Meal Planner
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-
               {/* Categories */}
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Categories</h3>
