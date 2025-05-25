@@ -8,8 +8,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Loader2, Mail, Lock, User, AlertCircle, CheckCircle } from "lucide-react"
-import { signUp, signIn, resetPassword, hasCompletedOnboarding, getLastPath, clearLastPath } from "@/lib/auth"
+import { Loader2, Mail, Lock, User, AlertCircle, CheckCircle, UserCheck } from "lucide-react"
+import {
+  signUp,
+  signIn,
+  resetPassword,
+  hasCompletedOnboarding,
+  getLastPath,
+  clearLastPath,
+  checkUserExists,
+} from "@/lib/auth"
 import { useRouter } from "next/navigation"
 
 interface AuthModalProps {
@@ -21,7 +29,8 @@ interface AuthModalProps {
 export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const [isCheckingUser, setIsCheckingUser] = useState(false)
+  const [message, setMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null)
   const [activeTab, setActiveTab] = useState(defaultTab)
 
   // Sign In Form
@@ -40,6 +49,34 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
 
   // Reset Password Form
   const [resetEmail, setResetEmail] = useState("")
+
+  // Check if user exists when email is entered
+  const handleEmailBlur = async (email: string) => {
+    if (!email || activeTab !== "signup") return
+
+    setIsCheckingUser(true)
+    try {
+      const exists = await checkUserExists(email)
+      if (exists) {
+        setMessage({
+          type: "info",
+          text: "An account with this email already exists. Please sign in instead.",
+        })
+        // Auto-switch to sign in tab and populate email
+        setTimeout(() => {
+          setActiveTab("signin")
+          setSignInData({ email, password: "" })
+          setMessage(null)
+        }, 2000)
+      } else {
+        setMessage(null)
+      }
+    } catch (error) {
+      console.error("Error checking user:", error)
+    } finally {
+      setIsCheckingUser(false)
+    }
+  }
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,6 +119,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
     setIsLoading(true)
     setMessage(null)
 
+    // Validation
     if (signUpData.password !== signUpData.confirmPassword) {
       setMessage({ type: "error", text: "Passwords do not match" })
       setIsLoading(false)
@@ -94,33 +132,37 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
       return
     }
 
+    if (!signUpData.fullName.trim()) {
+      setMessage({ type: "error", text: "Please enter your full name" })
+      setIsLoading(false)
+      return
+    }
+
     try {
       const result = await signUp(signUpData.email, signUpData.password, signUpData.fullName)
 
       if (result.user) {
-        if (result.user.email_confirmed_at) {
-          // Email is already confirmed (instant confirmation)
-          setMessage({ type: "success", text: "Account created successfully! Redirecting to onboarding..." })
-          setTimeout(() => {
-            onClose()
-            router.push("/onboarding")
-          }, 1500)
-        } else {
-          // Email confirmation required
-          setMessage({
-            type: "success",
-            text: "Account created! Please check your email to verify your account, then sign in.",
-          })
-          // Switch to sign in tab after a delay
-          setTimeout(() => {
-            setActiveTab("signin")
-            setSignInData({ email: signUpData.email, password: "" })
-          }, 3000)
-        }
+        setMessage({ type: "success", text: "Account created successfully! Redirecting to onboarding..." })
+
+        // Immediate redirect to onboarding (no email confirmation needed)
+        setTimeout(() => {
+          onClose()
+          router.push("/onboarding")
+        }, 1500)
       }
     } catch (error: any) {
       console.error("Sign up error:", error)
-      setMessage({ type: "error", text: error.message || "Failed to create account" })
+
+      if (error.message.includes("already exists")) {
+        setMessage({ type: "error", text: "An account with this email already exists. Please sign in instead." })
+        // Auto-switch to sign in tab
+        setTimeout(() => {
+          setActiveTab("signin")
+          setSignInData({ email: signUpData.email, password: "" })
+        }, 2000)
+      } else {
+        setMessage({ type: "error", text: error.message || "Failed to create account" })
+      }
     } finally {
       setIsLoading(false)
     }
@@ -165,10 +207,18 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
               className={`flex items-center gap-2 p-3 rounded-lg ${
                 message.type === "success"
                   ? "bg-green-50 text-green-800 border border-green-200"
-                  : "bg-red-50 text-red-800 border border-red-200"
+                  : message.type === "info"
+                    ? "bg-blue-50 text-blue-800 border border-blue-200"
+                    : "bg-red-50 text-red-800 border border-red-200"
               }`}
             >
-              {message.type === "success" ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+              {message.type === "success" ? (
+                <CheckCircle className="h-4 w-4" />
+              ) : message.type === "info" ? (
+                <UserCheck className="h-4 w-4" />
+              ) : (
+                <AlertCircle className="h-4 w-4" />
+              )}
               <span className="text-sm">{message.text}</span>
             </div>
           )}
@@ -248,8 +298,10 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                     className="pl-10"
                     value={signUpData.email}
                     onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
+                    onBlur={(e) => handleEmailBlur(e.target.value)}
                     required
                   />
+                  {isCheckingUser && <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />}
                 </div>
               </div>
               <div className="space-y-2">
@@ -282,7 +334,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                   />
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading || isCheckingUser}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -293,8 +345,8 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                 )}
               </Button>
               <p className="text-xs text-gray-500 text-center">
-                By signing up, you agree to our Terms of Service and Privacy Policy. New accounts start with a free
-                plan.
+                By signing up, you agree to our Terms of Service and Privacy Policy. New accounts start with a free plan
+                and no email verification required.
               </p>
             </form>
           </TabsContent>
@@ -327,7 +379,9 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                   "Send Reset Email"
                 )}
               </Button>
-              <p className="text-xs text-gray-500 text-center">We'll send you a link to reset your password.</p>
+              <p className="text-xs text-gray-500 text-center">
+                We'll send you a link to reset your password. Email verification is required for password reset.
+              </p>
             </form>
           </TabsContent>
         </Tabs>

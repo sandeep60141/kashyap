@@ -17,12 +17,57 @@ export interface Profile {
   updated_at: string
 }
 
+// Check if user already exists
+export async function checkUserExists(email: string): Promise<boolean> {
+  const supabase = getSupabaseClient()
+
+  try {
+    // Check if user exists in auth.users table by attempting to sign in with a dummy password
+    // This is a workaround since Supabase doesn't provide a direct way to check user existence
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password: "dummy-password-check-12345",
+    })
+
+    // If we get an "Invalid login credentials" error, user exists but password is wrong
+    // If we get "User not found" or similar, user doesn't exist
+    if (error) {
+      if (
+        error.message.includes("Invalid login credentials") ||
+        error.message.includes("Email not confirmed") ||
+        error.message.includes("Invalid email or password")
+      ) {
+        return true // User exists
+      }
+      return false // User doesn't exist
+    }
+
+    // If somehow login succeeds, user definitely exists
+    if (data.user) {
+      // Sign out immediately since this was just a check
+      await supabase.auth.signOut()
+      return true
+    }
+
+    return false
+  } catch (error) {
+    console.error("Error checking user existence:", error)
+    return false
+  }
+}
+
 export async function signUp(email: string, password: string, fullName: string) {
   const supabase = getSupabaseClient()
 
   console.log("🔄 Starting signup process for:", email)
 
-  // First, sign up the user
+  // First check if user already exists
+  const userExists = await checkUserExists(email)
+  if (userExists) {
+    throw new Error("An account with this email already exists. Please sign in instead.")
+  }
+
+  // Sign up the user with email confirmation disabled
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -30,6 +75,8 @@ export async function signUp(email: string, password: string, fullName: string) 
       data: {
         full_name: fullName,
       },
+      // This should allow immediate signup without email confirmation
+      emailRedirectTo: undefined,
     },
   })
 
@@ -37,6 +84,12 @@ export async function signUp(email: string, password: string, fullName: string) 
 
   if (error) {
     console.error("❌ Signup error:", error)
+
+    // Handle specific error cases
+    if (error.message.includes("already registered")) {
+      throw new Error("An account with this email already exists. Please sign in instead.")
+    }
+
     throw error
   }
 
@@ -67,7 +120,6 @@ export async function signUp(email: string, password: string, fullName: string) 
       if (profileError) {
         console.error("❌ Profile creation error:", profileError)
         // Don't throw here as the user is already created
-        // We'll handle profile creation in the onboarding flow if needed
       } else {
         console.log("✅ Profile created successfully:", profileResult)
       }
@@ -93,6 +145,15 @@ export async function signIn(email: string, password: string) {
 
   if (error) {
     console.error("❌ Signin error:", error)
+
+    // Provide user-friendly error messages
+    if (error.message.includes("Invalid login credentials")) {
+      throw new Error("Invalid email or password. Please check your credentials and try again.")
+    }
+    if (error.message.includes("Email not confirmed")) {
+      throw new Error("Please check your email and click the confirmation link before signing in.")
+    }
+
     throw error
   }
 
