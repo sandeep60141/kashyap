@@ -9,17 +9,20 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Loader2, Mail, Lock, User, AlertCircle, CheckCircle } from "lucide-react"
-import { signUp, signIn, resetPassword } from "@/lib/auth"
+import { signUp, signIn, resetPassword, hasCompletedOnboarding, getLastPath, clearLastPath } from "@/lib/auth"
+import { useRouter } from "next/navigation"
 
 interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
+  defaultTab?: "signin" | "signup"
 }
 
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalProps) {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
-  const [activeTab, setActiveTab] = useState("signin")
+  const [activeTab, setActiveTab] = useState(defaultTab)
 
   // Sign In Form
   const [signInData, setSignInData] = useState({
@@ -44,13 +47,30 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setMessage(null)
 
     try {
-      await signIn(signInData.email, signInData.password)
-      setMessage({ type: "success", text: "Successfully signed in! Redirecting..." })
-      setTimeout(() => {
-        onClose()
-        window.location.reload() // Refresh to update auth state
-      }, 1500)
+      const result = await signIn(signInData.email, signInData.password)
+
+      if (result.user) {
+        setMessage({ type: "success", text: "Successfully signed in! Redirecting..." })
+
+        // Check if user has completed onboarding
+        const completedOnboarding = await hasCompletedOnboarding(result.user.id)
+
+        setTimeout(() => {
+          onClose()
+
+          if (completedOnboarding) {
+            // Existing user - redirect to last path or dashboard
+            const lastPath = getLastPath()
+            clearLastPath()
+            router.push(lastPath)
+          } else {
+            // User exists but no profile - redirect to onboarding
+            router.push("/onboarding")
+          }
+        }, 1500)
+      }
     } catch (error: any) {
+      console.error("Sign in error:", error)
       setMessage({ type: "error", text: error.message || "Failed to sign in" })
     } finally {
       setIsLoading(false)
@@ -77,19 +97,29 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     try {
       const result = await signUp(signUpData.email, signUpData.password, signUpData.fullName)
 
-      if (result.user?.email_confirmed_at) {
-        setMessage({ type: "success", text: "Account created successfully! Signing you in..." })
-        setTimeout(() => {
-          onClose()
-          window.location.reload()
-        }, 1500)
-      } else {
-        setMessage({
-          type: "success",
-          text: "Account created! Please check your email to verify your account.",
-        })
+      if (result.user) {
+        if (result.user.email_confirmed_at) {
+          // Email is already confirmed (instant confirmation)
+          setMessage({ type: "success", text: "Account created successfully! Redirecting to onboarding..." })
+          setTimeout(() => {
+            onClose()
+            router.push("/onboarding")
+          }, 1500)
+        } else {
+          // Email confirmation required
+          setMessage({
+            type: "success",
+            text: "Account created! Please check your email to verify your account, then sign in.",
+          })
+          // Switch to sign in tab after a delay
+          setTimeout(() => {
+            setActiveTab("signin")
+            setSignInData({ email: signUpData.email, password: "" })
+          }, 3000)
+        }
       }
     } catch (error: any) {
+      console.error("Sign up error:", error)
       setMessage({ type: "error", text: error.message || "Failed to create account" })
     } finally {
       setIsLoading(false)
