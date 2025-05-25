@@ -1,5 +1,18 @@
 import { getSupabaseClient } from "./supabase"
-import type { Profile } from "./supabase"
+import type { User } from "@supabase/supabase-js"
+
+export interface Profile {
+  id: string
+  email: string
+  full_name: string
+  avatar_url?: string
+  subscription_tier: "free" | "premium"
+  subscription_status: "active" | "canceled" | "past_due"
+  recipes_generated_this_month: number
+  last_recipe_reset: string
+  created_at: string
+  updated_at: string
+}
 
 export async function signUp(email: string, password: string, fullName: string) {
   const supabase = getSupabaseClient()
@@ -16,7 +29,7 @@ export async function signUp(email: string, password: string, fullName: string) 
 
   if (error) throw error
 
-  // Create profile manually since we can't use triggers
+  // Create profile with free plan
   if (data.user) {
     const { error: profileError } = await supabase.from("profiles").insert({
       id: data.user.id,
@@ -28,9 +41,7 @@ export async function signUp(email: string, password: string, fullName: string) 
       last_recipe_reset: new Date().toISOString().split("T")[0],
     })
 
-    if (profileError) {
-      console.error("Profile creation error:", profileError)
-    }
+    if (profileError) throw profileError
   }
 
   return data
@@ -54,7 +65,7 @@ export async function signOut() {
   if (error) throw error
 }
 
-export async function getCurrentUser() {
+export async function getCurrentUser(): Promise<User | null> {
   const supabase = getSupabaseClient()
   const {
     data: { user },
@@ -62,32 +73,25 @@ export async function getCurrentUser() {
   return user
 }
 
-export async function getUserProfile(): Promise<Profile | null> {
+export async function getUserProfile(userId: string): Promise<Profile | null> {
   const supabase = getSupabaseClient()
-  const user = await getCurrentUser()
 
-  if (!user) return null
+  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
 
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single()
-
-  if (error) {
-    console.error("Error fetching profile:", error)
-    return null
-  }
-
+  if (error) throw error
   return data
 }
 
-export async function updateProfile(updates: Partial<Profile>) {
+export async function updateProfile(userId: string, updates: Partial<Profile>) {
   const supabase = getSupabaseClient()
-  const user = await getCurrentUser()
-
-  if (!user) throw new Error("No user found")
 
   const { data, error } = await supabase
     .from("profiles")
-    .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq("id", user.id)
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", userId)
     .select()
     .single()
 
@@ -100,16 +104,6 @@ export async function resetPassword(email: string) {
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${window.location.origin}/reset-password`,
-  })
-
-  if (error) throw error
-}
-
-export async function updatePassword(newPassword: string) {
-  const supabase = getSupabaseClient()
-
-  const { error } = await supabase.auth.updateUser({
-    password: newPassword,
   })
 
   if (error) throw error
