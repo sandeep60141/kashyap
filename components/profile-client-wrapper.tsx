@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth"
@@ -27,7 +26,7 @@ export function ProfileClientWrapper({ children }: ProfileClientWrapperProps) {
 
       if (!user) {
         console.log("❌ No user found, redirecting to home")
-        router.push("/")
+        router.push("/?auth=signin&redirect=/profile")
         return
       }
 
@@ -35,7 +34,7 @@ export function ProfileClientWrapper({ children }: ProfileClientWrapperProps) {
       setIsAuthenticated(true)
     } catch (error) {
       console.error("❌ Auth check failed:", error)
-      router.push("/")
+      router.push("/?auth=signin&redirect=/profile")
     } finally {
       setIsLoading(false)
     }
@@ -57,7 +56,7 @@ export function ProfileClientWrapper({ children }: ProfileClientWrapperProps) {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
-          <p className="text-gray-600">Redirecting to home page...</p>
+          <p className="text-gray-600">Redirecting to sign in...</p>
         </div>
       </div>
     )

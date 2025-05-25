@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -45,18 +44,6 @@ export default function ProfilePageContent() {
   // Form states
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
-  const [currentPassword, setCurrentPassword] = useState("")
-  const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [showPasswords, setShowPasswords] = useState(false)
-
-  // Notification settings
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: false,
-    marketing: true,
-    updates: true,
-  })
 
   useEffect(() => {
     loadUserData()
@@ -68,6 +55,7 @@ export default function ProfilePageContent() {
       const currentUser = await getCurrentUser()
       if (!currentUser) {
         console.log("❌ No user found in profile content")
+        router.push("/")
         return
       }
 
@@ -114,34 +102,6 @@ export default function ProfilePageContent() {
       await loadUserData()
     } catch (err: any) {
       setError(err.message || "Failed to update profile")
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (newPassword !== confirmPassword) {
-      setError("New passwords do not match")
-      return
-    }
-
-    if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters")
-      return
-    }
-
-    setIsSaving(true)
-    setError(null)
-    setSuccess(null)
-
-    try {
-      setSuccess("Password updated successfully!")
-      setCurrentPassword("")
-      setNewPassword("")
-      setConfirmPassword("")
-    } catch (err: any) {
-      setError(err.message || "Failed to update password")
     } finally {
       setIsSaving(false)
     }
@@ -424,9 +384,6 @@ export default function ProfilePageContent() {
               </Card>
             )}
 
-            {/* Other tabs content remains the same... */}
-            {/* I'll include the other tabs but they're the same as before */}
-
             {/* Subscription Tab */}
             {activeTab === "subscription" && (
               <Card>
@@ -568,12 +525,12 @@ export default function ProfilePageContent() {
                             <span className="font-medium">
                               {usageStats.is_premium
                                 ? "Unlimited"
-                                : `${usageStats.ask_chef_used}/${usageStats.ask_chef_limit}`}
+                                : `${usageStats.ask_chef_used || 0}/${usageStats.ask_chef_limit || 5}`}
                             </span>
                           </div>
                           {!usageStats.is_premium && (
                             <Progress
-                              value={getUsagePercentage(usageStats.ask_chef_used, usageStats.ask_chef_limit)}
+                              value={getUsagePercentage(usageStats.ask_chef_used || 0, usageStats.ask_chef_limit || 5)}
                               className="h-3"
                             />
                           )}
@@ -592,7 +549,63 @@ export default function ProfilePageContent() {
               </Card>
             )}
 
-            {/* Add other tabs as needed... */}
+            {/* Other tabs can be added here */}
+            {activeTab === "security" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" />
+                    Security Settings
+                  </CardTitle>
+                  <CardDescription>Manage your account security and password</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <Shield className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-semibold mb-2">Security Settings</h3>
+                    <p className="text-gray-600">Password change and security features coming soon.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {activeTab === "notifications" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="h-5 w-5 text-primary" />
+                    Notification Preferences
+                  </CardTitle>
+                  <CardDescription>Manage your email and notification settings</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <Bell className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-semibold mb-2">Notification Settings</h3>
+                    <p className="text-gray-600">Notification preferences coming soon.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {activeTab === "data" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Download className="h-5 w-5 text-primary" />
+                    Data & Privacy
+                  </CardTitle>
+                  <CardDescription>Export your data and manage privacy settings</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <Download className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-semibold mb-2">Data Management</h3>
+                    <p className="text-gray-600">Data export and privacy controls coming soon.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
