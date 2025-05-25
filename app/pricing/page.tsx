@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Check, ChefHat, Clock, CookingPot, Crown, Flame, Sparkles, Utensils, X, Zap } from "lucide-react"
+import { Check, ChefHat, Clock, CookingPot, Flame, Sparkles, Utensils, X, Zap } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
@@ -12,69 +12,46 @@ export default function Pricing() {
   const plans = [
     {
       name: "Basic",
-      description: "Perfect for casual home cooks",
+      description: "FREE FOREVER",
+      subtitle: "No Credit Card Required",
       icon: <Utensils className="h-8 w-8 text-blue-500" />,
       price: { monthly: 0, annual: 0 },
       features: [
-        "10 AI recipe generations per month",
+        "10 Monthly Generations",
+        "Meal Plans up to 3 days",
+        "Save 5 Recipes in the Cookbook",
+        "Save 5 Recipes in the Shopping List",
         "Basic recipe customization",
         "Access to PantryChef mode",
-        "Save up to 20 favorite recipes",
-        "Standard response time",
         "Email support",
       ],
-      limitations: [
-        "Limited meal planning (1-day only)",
-        "No nutritional analysis",
-        "No advanced customization",
-        "Standard AI model only",
-      ],
-      cta: "Get Started Free",
+      limitations: [],
+      cta: "Get Started",
       ctaLink: "/signup",
       popular: false,
     },
     {
-      name: "Chef",
-      description: "For cooking enthusiasts and meal planners",
-      icon: <ChefHat className="h-8 w-8 text-amber-500" />,
-      price: { monthly: 12.99, annual: 9.99 },
+      name: "Pro",
+      description: "For those who need a Digital Personal Chef",
+      subtitle: "",
+      icon: <ChefHat className="h-8 w-8 text-white" />,
+      price: { monthly: 2.99, annual: 2.39 },
       features: [
-        "100 AI recipe generations per month",
+        "Unlimited Generations",
+        "History mode",
+        "Meal Plans up to 30 days",
+        "Daily Meal Plan Tracking",
+        "Unlimited Cookbook & Shopping Lists",
+        "No Ads",
+        "All cooking modes access",
         "Advanced recipe customization",
-        "All cooking modes (PantryChef, MasterChef, etc.)",
-        "Weekly meal planning (up to 7 days)",
         "Detailed nutritional analysis",
-        "Shopping list generation",
-        "Save unlimited recipes & collections",
-        "Advanced AI model access",
-        "Priority support (24hr response)",
+        "Priority support",
       ],
       limitations: [],
-      cta: "Upgrade to Chef",
-      ctaLink: "/signup?plan=chef",
+      cta: "Get Started",
+      ctaLink: "/signup?plan=pro",
       popular: true,
-    },
-    {
-      name: "Master Chef",
-      description: "For professionals and serious home chefs",
-      icon: <Crown className="h-8 w-8 text-purple-500" />,
-      price: { monthly: 24.99, annual: 19.99 },
-      features: [
-        "Unlimited AI recipe generations",
-        "Everything in Chef plan",
-        "Up to 5 user profiles",
-        "Family & event meal planning",
-        "Dietary preferences for each profile",
-        "Recipe scaling for groups & events",
-        "Multi-dish cooking mode",
-        "Premium AI model (highest quality)",
-        "24/7 priority support",
-        "Early access to new features",
-      ],
-      limitations: [],
-      cta: "Upgrade to Master Chef",
-      ctaLink: "/signup?plan=masterchef",
-      popular: false,
     },
   ]
 
@@ -147,12 +124,14 @@ export default function Pricing() {
         </div>
       </div>
 
-      <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-2 max-w-4xl mx-auto">
         {plans.map((plan) => (
           <div
             key={plan.name}
-            className={`relative rounded-2xl border bg-card p-8 shadow-sm transition-all duration-200 hover:shadow-lg ${
-              plan.popular ? "border-primary ring-2 ring-primary ring-opacity-50" : "border-border"
+            className={`relative rounded-2xl border p-8 shadow-sm transition-all duration-200 hover:shadow-lg ${
+              plan.popular
+                ? "bg-green-600 text-white border-green-600 ring-2 ring-green-600 ring-opacity-50"
+                : "bg-card border-border"
             }`}
           >
             {plan.popular && (
@@ -163,10 +142,17 @@ export default function Pricing() {
               </div>
             )}
             <div className="flex items-center gap-4 mb-4">
-              <div className="rounded-full bg-primary/10 p-2">{plan.icon}</div>
+              <div className={`rounded-full p-2 ${plan.popular ? "bg-white/20" : "bg-primary/10"}`}>{plan.icon}</div>
               <div>
                 <h2 className="text-2xl font-bold">{plan.name}</h2>
-                <p className="text-sm text-muted-foreground">{plan.description}</p>
+                <p className={`text-sm font-medium ${plan.popular ? "text-green-100" : "text-muted-foreground"}`}>
+                  {plan.description}
+                </p>
+                {plan.subtitle && (
+                  <p className={`text-xs ${plan.popular ? "text-green-200" : "text-muted-foreground"}`}>
+                    {plan.subtitle}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -184,7 +170,7 @@ export default function Pricing() {
               <Button
                 className={`mt-8 w-full rounded-full py-6 text-base ${
                   plan.popular
-                    ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                    ? "bg-white text-green-600 hover:bg-gray-100"
                     : "bg-accent hover:bg-accent/90 text-accent-foreground"
                 }`}
               >
