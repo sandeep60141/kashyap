@@ -102,7 +102,7 @@ export async function signUp(email: string, password: string, fullName: string) 
       data: {
         full_name: fullName,
       },
-      emailRedirectTo: undefined,
+      emailRedirectTo: `${window.location.origin}/auth/callback`,
     },
   })
 
@@ -116,8 +116,14 @@ export async function signUp(email: string, password: string, fullName: string) 
     throw error
   }
 
-  if (data.user) {
-    console.log("👤 User created, creating profile...")
+  if (data.user && !data.session) {
+    console.log("📧 User created, email verification required")
+    // Don't create profile yet - wait for email verification
+    return data
+  }
+
+  if (data.user && data.session) {
+    console.log("👤 User created and confirmed, creating profile...")
     await createUserProfile(data.user, fullName)
   }
 
@@ -142,7 +148,7 @@ export async function signIn(email: string, password: string) {
       throw new Error("Invalid email or password. Please check your credentials and try again.")
     }
     if (error.message.includes("Email not confirmed")) {
-      throw new Error("Please check your email and click the confirmation link before signing in.")
+      throw new Error("Please check your email and click the verification link before signing in.")
     }
     throw error
   }
@@ -235,11 +241,8 @@ export async function getUserProfile(userId: string): Promise<Profile | null> {
       console.error("❌ Get profile error:", error)
 
       if (error.code === "PGRST116") {
-        console.log("📝 Profile not found, attempting to create...")
-        const user = await getCurrentUser()
-        if (user) {
-          return await ensureProfileExists(user)
-        }
+        console.log("📝 Profile not found")
+        return null
       }
       return null
     }
@@ -273,21 +276,10 @@ export async function resetPassword(email: string) {
   const supabase = getSupabaseClient()
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/reset-password`,
+    redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
   })
 
   if (error) throw error
-}
-
-// Force create profile for existing user
-export async function forceCreateProfile(): Promise<Profile | null> {
-  const user = await getCurrentUser()
-  if (!user) {
-    throw new Error("No user found")
-  }
-
-  console.log("🔧 Force creating profile for user:", user.email)
-  return await createUserProfile(user)
 }
 
 export async function hasCompletedOnboarding(userId: string): Promise<boolean> {

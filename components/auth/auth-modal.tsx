@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Loader2, Mail, Lock, User, AlertCircle, CheckCircle, UserCheck } from "lucide-react"
+import { Loader2, Mail, Lock, User, AlertCircle, CheckCircle, UserCheck, MailCheck } from "lucide-react"
 import {
   signUp,
   signIn,
@@ -32,6 +32,8 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
   const [isCheckingUser, setIsCheckingUser] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null)
   const [activeTab, setActiveTab] = useState(defaultTab)
+  const [showEmailVerification, setShowEmailVerification] = useState(false)
+  const [verificationEmail, setVerificationEmail] = useState("")
 
   // Sign In Form
   const [signInData, setSignInData] = useState({
@@ -115,7 +117,14 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
       }
     } catch (error: any) {
       console.error("❌ Sign in error:", error)
-      setMessage({ type: "error", text: error.message || "Failed to sign in" })
+      if (error.message.includes("Email not confirmed")) {
+        setMessage({
+          type: "error",
+          text: "Please check your email and click the verification link before signing in.",
+        })
+      } else {
+        setMessage({ type: "error", text: error.message || "Failed to sign in" })
+      }
     } finally {
       setIsLoading(false)
     }
@@ -150,16 +159,13 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
       const result = await signUp(signUpData.email, signUpData.password, signUpData.fullName)
 
       if (result.user) {
-        console.log("✅ Sign up successful, redirecting to onboarding...")
-        setMessage({ type: "success", text: "Account created successfully! Redirecting to onboarding..." })
-
-        // Close modal first
-        onClose()
-
-        // Immediate redirect to onboarding
-        setTimeout(() => {
-          window.location.href = "/onboarding"
-        }, 500)
+        console.log("✅ Sign up successful")
+        setVerificationEmail(signUpData.email)
+        setShowEmailVerification(true)
+        setMessage({
+          type: "success",
+          text: "Account created! Please check your email for verification.",
+        })
       }
     } catch (error: any) {
       console.error("❌ Sign up error:", error)
@@ -191,6 +197,55 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Email Verification Screen
+  if (showEmailVerification) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MailCheck className="h-5 w-5 text-green-600" />
+              Check Your Email
+            </DialogTitle>
+            <DialogDescription>We've sent you a verification link</DialogDescription>
+          </DialogHeader>
+
+          <div className="text-center py-6">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <Mail className="h-8 w-8 text-green-600" />
+            </div>
+
+            <h3 className="text-lg font-semibold mb-2">Verify your email address</h3>
+            <p className="text-gray-600 mb-4">We've sent a verification link to:</p>
+            <p className="font-medium text-primary mb-6">{verificationEmail}</p>
+
+            <div className="space-y-3 text-sm text-gray-600">
+              <p>1. Check your email inbox (and spam folder)</p>
+              <p>2. Click the verification link in the email</p>
+              <p>3. Return here and sign in to continue</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Button
+              onClick={() => {
+                setShowEmailVerification(false)
+                setActiveTab("signin")
+                setSignInData({ email: verificationEmail, password: "" })
+              }}
+              className="w-full"
+            >
+              I've verified my email - Sign In
+            </Button>
+            <Button variant="outline" onClick={() => setShowEmailVerification(false)} className="w-full">
+              Back to Sign Up
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
   }
 
   return (
@@ -244,7 +299,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                     id="signin-email"
                     type="email"
                     placeholder="Enter your email"
-                    className="pl-10"
+                    className="pl-10 border-2"
                     value={signInData.email}
                     onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
                     required
@@ -259,14 +314,14 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                     id="signin-password"
                     type="password"
                     placeholder="Enter your password"
-                    className="pl-10"
+                    className="pl-10 border-2"
                     value={signInData.password}
                     onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
                     required
                   />
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full border-2 border-primary" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -290,7 +345,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                     id="signup-name"
                     type="text"
                     placeholder="Enter your full name"
-                    className="pl-10"
+                    className="pl-10 border-2"
                     value={signUpData.fullName}
                     onChange={(e) => setSignUpData({ ...signUpData, fullName: e.target.value })}
                     required
@@ -305,7 +360,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                     id="signup-email"
                     type="email"
                     placeholder="Enter your email"
-                    className="pl-10"
+                    className="pl-10 border-2"
                     value={signUpData.email}
                     onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
                     onBlur={(e) => handleEmailBlur(e.target.value)}
@@ -322,7 +377,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                     id="signup-password"
                     type="password"
                     placeholder="Create a password (min 6 chars)"
-                    className="pl-10"
+                    className="pl-10 border-2"
                     value={signUpData.password}
                     onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
                     required
@@ -337,14 +392,14 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                     id="signup-confirm"
                     type="password"
                     placeholder="Confirm your password"
-                    className="pl-10"
+                    className="pl-10 border-2"
                     value={signUpData.confirmPassword}
                     onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
                     required
                   />
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading || isCheckingUser}>
+              <Button type="submit" className="w-full border-2 border-primary" disabled={isLoading || isCheckingUser}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -355,8 +410,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                 )}
               </Button>
               <p className="text-xs text-gray-500 text-center">
-                By signing up, you agree to our Terms of Service and Privacy Policy. New accounts start with a free plan
-                and no email verification required.
+                By signing up, you agree to our Terms of Service and Privacy Policy. Email verification is required.
               </p>
             </form>
           </TabsContent>
@@ -372,14 +426,14 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                     id="reset-email"
                     type="email"
                     placeholder="Enter your email"
-                    className="pl-10"
+                    className="pl-10 border-2"
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
                     required
                   />
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full border-2 border-primary" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -389,9 +443,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = "signin" }: AuthModalP
                   "Send Reset Email"
                 )}
               </Button>
-              <p className="text-xs text-gray-500 text-center">
-                We'll send you a link to reset your password. Email verification is required for password reset.
-              </p>
+              <p className="text-xs text-gray-500 text-center">We'll send you a link to reset your password.</p>
             </form>
           </TabsContent>
         </Tabs>
