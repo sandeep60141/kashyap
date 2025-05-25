@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Clock, ChevronLeft, Star, Utensils, ExternalLink } from "lucide-react"
+import { Clock, ChevronLeft, Star, Utensils, ExternalLink, Filter, X } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import RecipeSearch from "@/components/recipe-search"
@@ -22,16 +22,26 @@ interface MealDBRecipe {
   strMealThumb: string
   strTags?: string
   strYoutube?: string
-  [key: string]: any // For dynamic ingredient properties
+  [key: string]: any
 }
 
 interface MealDBResponse {
   meals: MealDBRecipe[] | null
 }
 
+interface Category {
+  idCategory: string
+  strCategory: string
+  strCategoryThumb: string
+  strCategoryDescription: string
+}
+
+interface Area {
+  strArea: string
+}
+
 // Transform MealDB recipe to our format
 const transformMealDBRecipe = (meal: MealDBRecipe) => {
-  // Extract ingredients
   const ingredients = []
   for (let i = 1; i <= 20; i++) {
     const ingredient = meal[`strIngredient${i}`]
@@ -41,7 +51,6 @@ const transformMealDBRecipe = (meal: MealDBRecipe) => {
     }
   }
 
-  // Estimate cooking time based on instructions length
   const instructionLength = meal.strInstructions?.length || 0
   let estimatedTime = "30 mins"
   if (instructionLength < 500) estimatedTime = "15 mins"
@@ -49,7 +58,6 @@ const transformMealDBRecipe = (meal: MealDBRecipe) => {
   else if (instructionLength < 1500) estimatedTime = "45 mins"
   else estimatedTime = "1 hr+"
 
-  // Determine difficulty based on ingredient count
   let difficulty = "Easy"
   if (ingredients.length > 10) difficulty = "Medium"
   if (ingredients.length > 15) difficulty = "Hard"
@@ -61,7 +69,7 @@ const transformMealDBRecipe = (meal: MealDBRecipe) => {
     description: meal.strInstructions?.substring(0, 120) + "..." || "Delicious recipe from TheMealDB",
     time: estimatedTime,
     difficulty,
-    rating: (4.2 + Math.random() * 0.6).toFixed(1), // Random rating between 4.2-4.8
+    rating: (4.2 + Math.random() * 0.6).toFixed(1),
     tags: [meal.strCategory, meal.strArea, ...(meal.strTags?.split(",").map((tag) => tag.trim()) || [])]
       .filter(Boolean)
       .slice(0, 3),
@@ -69,6 +77,8 @@ const transformMealDBRecipe = (meal: MealDBRecipe) => {
     instructions: meal.strInstructions,
     youtube: meal.strYoutube,
     source: meal.strSource,
+    category: meal.strCategory,
+    area: meal.strArea,
   }
 }
 
@@ -76,22 +86,76 @@ export default function SearchResults() {
   const searchParams = useSearchParams()
   const query = searchParams.get("q") || ""
   const [results, setResults] = useState<any[]>([])
+  const [allResults, setAllResults] = useState<any[]>([]) // Store unfiltered results
   const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
-  const [mealTypeFilter, setMealTypeFilter] = useState<string | null>(null)
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const handleMealTypeFilter = (mealType: string | null) => {
-    setMealTypeFilter(mealType)
-    // Filter results based on meal type
-    if (mealType && results.length > 0) {
-      const filtered = results.filter((recipe) =>
-        recipe.tags.some((tag: string) => tag.toLowerCase().includes(mealType.toLowerCase())),
-      )
-      setResults(filtered)
+  // Filter states
+  const [categories, setCategories] = useState<Category[]>([])
+  const [areas, setAreas] = useState<Area[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string>("")
+  const [selectedArea, setSelectedArea] = useState<string>("")
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>("")
+  const [selectedTime, setSelectedTime] = useState<string>("")
+
+  // Fetch categories and areas on component mount
+  useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        const [categoriesRes, areasRes] = await Promise.all([
+          fetch("https://www.themealdb.com/api/json/v1/1/categories.php"),
+          fetch("https://www.themealdb.com/api/json/v1/1/list.php?a=list"),
+        ])
+
+        const categoriesData = await categoriesRes.json()
+        const areasData = await areasRes.json()
+
+        setCategories(categoriesData.meals || [])
+        setAreas(areasData.meals || [])
+      } catch (err) {
+        console.error("Error fetching filters:", err)
+      }
     }
-  }
+
+    fetchFilters()
+  }, [])
+
+  // Apply filters to results
+  useEffect(() => {
+    let filtered = [...allResults]
+
+    if (selectedCategory) {
+      filtered = filtered.filter((recipe) => recipe.category === selectedCategory)
+    }
+
+    if (selectedArea) {
+      filtered = filtered.filter((recipe) => recipe.area === selectedArea)
+    }
+
+    if (selectedDifficulty) {
+      filtered = filtered.filter((recipe) => recipe.difficulty === selectedDifficulty)
+    }
+
+    if (selectedTime) {
+      filtered = filtered.filter((recipe) => {
+        const time = recipe.time
+        switch (selectedTime) {
+          case "quick":
+            return time.includes("15") || time.includes("20")
+          case "medium":
+            return time.includes("30") || time.includes("45")
+          case "long":
+            return time.includes("1 hr") || time.includes("60")
+          default:
+            return true
+        }
+      })
+    }
+
+    setResults(filtered)
+  }, [allResults, selectedCategory, selectedArea, selectedDifficulty, selectedTime])
 
   const fetchRecipes = async (searchQuery: string) => {
     setLoading(true)
@@ -101,7 +165,6 @@ export default function SearchResults() {
       let recipes: any[] = []
 
       if (searchQuery) {
-        // Search by name
         const searchResponse = await fetch(
           `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(searchQuery)}`,
         )
@@ -111,7 +174,6 @@ export default function SearchResults() {
           recipes = searchData.meals.map(transformMealDBRecipe)
         }
       } else {
-        // Get random recipes for initial load
         const randomPromises = Array.from({ length: 12 }, () =>
           fetch("https://www.themealdb.com/api/json/v1/1/random.php")
             .then((res) => res.json())
@@ -122,14 +184,79 @@ export default function SearchResults() {
         recipes = randomMeals.filter(Boolean).map(transformMealDBRecipe)
       }
 
+      setAllResults(recipes)
       setResults(recipes)
     } catch (err) {
       console.error("Error fetching recipes:", err)
       setError("Failed to fetch recipes. Please try again.")
+      setAllResults([])
       setResults([])
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchByCategory = async (category: string) => {
+    setLoading(true)
+    try {
+      const response = await fetch(
+        `https://www.themealdb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(category)}`,
+      )
+      const data: MealDBResponse = await response.json()
+
+      if (data.meals) {
+        // Get full details for each meal
+        const detailedRecipes = await Promise.all(
+          data.meals.slice(0, 12).map(async (meal) => {
+            const detailResponse = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`)
+            const detailData = await detailResponse.json()
+            return detailData.meals?.[0]
+          }),
+        )
+
+        const recipes = detailedRecipes.filter(Boolean).map(transformMealDBRecipe)
+        setAllResults(recipes)
+        setResults(recipes)
+      }
+    } catch (err) {
+      console.error("Error fetching by category:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchByArea = async (area: string) => {
+    setLoading(true)
+    try {
+      const response = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${encodeURIComponent(area)}`)
+      const data: MealDBResponse = await response.json()
+
+      if (data.meals) {
+        const detailedRecipes = await Promise.all(
+          data.meals.slice(0, 12).map(async (meal) => {
+            const detailResponse = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`)
+            const detailData = await detailResponse.json()
+            return detailData.meals?.[0]
+          }),
+        )
+
+        const recipes = detailedRecipes.filter(Boolean).map(transformMealDBRecipe)
+        setAllResults(recipes)
+        setResults(recipes)
+      }
+    } catch (err) {
+      console.error("Error fetching by area:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const clearAllFilters = () => {
+    setSelectedCategory("")
+    setSelectedArea("")
+    setSelectedDifficulty("")
+    setSelectedTime("")
+    setResults(allResults)
   }
 
   const loadMoreRandomRecipes = async () => {
@@ -144,7 +271,7 @@ export default function SearchResults() {
       const randomMeals = await Promise.all(randomPromises)
       const newRecipes = randomMeals.filter(Boolean).map(transformMealDBRecipe)
 
-      setResults((prev) => [...prev, ...newRecipes])
+      setAllResults((prev) => [...prev, ...newRecipes])
     } catch (err) {
       console.error("Error loading more recipes:", err)
     } finally {
@@ -155,6 +282,8 @@ export default function SearchResults() {
   useEffect(() => {
     fetchRecipes(query)
   }, [query])
+
+  const activeFiltersCount = [selectedCategory, selectedArea, selectedDifficulty, selectedTime].filter(Boolean).length
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -176,7 +305,7 @@ export default function SearchResults() {
         <RecipeSearch />
         <div className="mt-4">
           <h3 className="text-sm font-medium text-gray-700 mb-2">Filter by meal type:</h3>
-          <MealTypeFilters onFilterChange={handleMealTypeFilter} />
+          <MealTypeFilters onFilterChange={() => {}} />
         </div>
         <SearchHistory />
       </div>
@@ -192,25 +321,180 @@ export default function SearchResults() {
 
       <div className="flex flex-col md:flex-row gap-6">
         {/* Filters sidebar */}
-        <div className="md:w-64 flex-shrink-0">
+        <div className="md:w-80 flex-shrink-0">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sticky top-4">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-gray-800">Filters</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-indigo-600 hover:text-indigo-800 p-0 h-auto"
-                onClick={() => fetchRecipes(query)}
-              >
-                Reset
-              </Button>
+              <h2 className="font-semibold text-gray-800 flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Filters
+                {activeFiltersCount > 0 && (
+                  <span className="bg-indigo-100 text-indigo-600 text-xs px-2 py-1 rounded-full">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </h2>
+              {activeFiltersCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-indigo-600 hover:text-indigo-800 p-0 h-auto"
+                  onClick={clearAllFilters}
+                >
+                  Clear All
+                </Button>
+              )}
             </div>
 
             <div className="space-y-6">
+              {/* Categories */}
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Quick Actions</h3>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Categories</h3>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {categories.map((category) => (
+                    <div key={category.idCategory} className="flex items-center">
+                      <input
+                        type="radio"
+                        id={`category-${category.idCategory}`}
+                        name="category"
+                        checked={selectedCategory === category.strCategory}
+                        onChange={() => {
+                          setSelectedCategory(category.strCategory)
+                          fetchByCategory(category.strCategory)
+                        }}
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                      />
+                      <label
+                        htmlFor={`category-${category.idCategory}`}
+                        className="ml-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800"
+                      >
+                        {category.strCategory}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Areas/Cuisines */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Cuisines</h3>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {areas.map((area) => (
+                    <div key={area.strArea} className="flex items-center">
+                      <input
+                        type="radio"
+                        id={`area-${area.strArea}`}
+                        name="area"
+                        checked={selectedArea === area.strArea}
+                        onChange={() => {
+                          setSelectedArea(area.strArea)
+                          fetchByArea(area.strArea)
+                        }}
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                      />
+                      <label
+                        htmlFor={`area-${area.strArea}`}
+                        className="ml-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800"
+                      >
+                        {area.strArea}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Difficulty */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Difficulty</h3>
                 <div className="space-y-2">
-                  <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => fetchRecipes("")}>
+                  {["Easy", "Medium", "Hard"].map((difficulty) => (
+                    <div key={difficulty} className="flex items-center">
+                      <input
+                        type="radio"
+                        id={`difficulty-${difficulty}`}
+                        name="difficulty"
+                        checked={selectedDifficulty === difficulty}
+                        onChange={() => setSelectedDifficulty(difficulty)}
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                      />
+                      <label
+                        htmlFor={`difficulty-${difficulty}`}
+                        className="ml-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800"
+                      >
+                        {difficulty}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cooking Time */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Cooking Time</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <input
+                      type="radio"
+                      id="time-quick"
+                      name="time"
+                      checked={selectedTime === "quick"}
+                      onChange={() => setSelectedTime("quick")}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                    />
+                    <label
+                      htmlFor="time-quick"
+                      className="ml-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800"
+                    >
+                      Quick (Under 20 min)
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="radio"
+                      id="time-medium"
+                      name="time"
+                      checked={selectedTime === "medium"}
+                      onChange={() => setSelectedTime("medium")}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                    />
+                    <label
+                      htmlFor="time-medium"
+                      className="ml-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800"
+                    >
+                      Medium (30-45 min)
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="radio"
+                      id="time-long"
+                      name="time"
+                      checked={selectedTime === "long"}
+                      onChange={() => setSelectedTime("long")}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                    />
+                    <label
+                      htmlFor="time-long"
+                      className="ml-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800"
+                    >
+                      Long (1+ hour)
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Quick Actions</h3>
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      clearAllFilters()
+                      fetchRecipes("")
+                    }}
+                  >
                     Show Random Recipes
                   </Button>
                   <Button
@@ -239,25 +523,25 @@ export default function SearchResults() {
                   </Button>
                 </div>
               </div>
-
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Popular Cuisines</h3>
-                <div className="space-y-2">
-                  {["Italian", "Chinese", "Indian", "Mexican", "Thai"].map((cuisine) => (
-                    <Button
-                      key={cuisine}
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start text-left"
-                      onClick={() => fetchRecipes(cuisine)}
-                    >
-                      {cuisine}
-                    </Button>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
+        </div>
+
+        {/* Mobile filters button */}
+        <div className="md:hidden mb-4">
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            {showFilters ? "Hide Filters" : "Show Filters"}
+            {activeFiltersCount > 0 && (
+              <span className="ml-2 bg-indigo-100 text-indigo-600 text-xs px-2 py-1 rounded-full">
+                {activeFiltersCount}
+              </span>
+            )}
+          </Button>
         </div>
 
         {/* Results grid */}
@@ -378,7 +662,7 @@ export default function SearchResults() {
               <div className="flex justify-between items-start mb-4">
                 <h2 className="text-2xl font-bold text-gray-900">{selectedRecipe.title}</h2>
                 <Button variant="ghost" size="sm" onClick={() => setSelectedRecipe(null)}>
-                  ✕
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
 
@@ -421,8 +705,19 @@ export default function SearchResults() {
                     </div>
                   </div>
 
+                  <div className="flex gap-2 mb-4">
+                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                      {selectedRecipe.category}
+                    </span>
+                    <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                      {selectedRecipe.area}
+                    </span>
+                  </div>
+
                   <h3 className="font-semibold mb-2">Instructions:</h3>
-                  <div className="text-sm text-gray-700 leading-relaxed">{selectedRecipe.instructions}</div>
+                  <div className="text-sm text-gray-700 leading-relaxed max-h-64 overflow-y-auto">
+                    {selectedRecipe.instructions}
+                  </div>
 
                   <div className="flex gap-2 mt-6">
                     {selectedRecipe.youtube && (
