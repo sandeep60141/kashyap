@@ -6,10 +6,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { generateRecipe } from "@/lib/client-recipe-generator"
 import { ChefForm } from "@/components/chef-form"
-import FormStep from "@/components/form-step"
-import FreeTierBanner from "@/components/free-tier-banner"
-import ModelSelector from "@/components/model-selector"
-import PopularIngredients from "@/components/popular-ingredients"
+import { FormStep } from "@/components/form-step"
+import { FreeTierBanner } from "@/components/free-tier-banner"
+import { ModelSelector } from "@/components/model-selector"
+import { PopularIngredients } from "@/components/popular-ingredients"
+import LanguageSelector from "@/components/language-selector"
 
 export default function MixologyMaestro() {
   const router = useRouter()
@@ -19,6 +20,7 @@ export default function MixologyMaestro() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
+  const [selectedLanguage, setSelectedLanguage] = useState("en")
 
   const handleIngredientClick = (ingredient: string) => {
     const currentIngredients = ingredients
@@ -59,8 +61,14 @@ export default function MixologyMaestro() {
     setError(null)
 
     try {
+      // Add language instruction to the prompt
+      const languageInstruction =
+        selectedLanguage !== "en"
+          ? `\n\nIMPORTANT: Generate this cocktail recipe in ${getLanguageName(selectedLanguage)} language. Include ingredient names, mixing instructions, and all text in ${getLanguageName(selectedLanguage)}.`
+          : ""
+
       const recipe = await generateRecipe({
-        ingredients,
+        ingredients: ingredients + languageInstruction,
         preferences,
         alcoholic,
         type: "cocktail",
@@ -75,6 +83,32 @@ export default function MixologyMaestro() {
     } finally {
       setIsGenerating(false)
     }
+  }
+
+  const getLanguageName = (code: string) => {
+    const languages = {
+      en: "English",
+      es: "Spanish",
+      fr: "French",
+      de: "German",
+      it: "Italian",
+      pt: "Portuguese",
+      ru: "Russian",
+      ja: "Japanese",
+      ko: "Korean",
+      zh: "Chinese",
+      hi: "Hindi",
+      ar: "Arabic",
+      tr: "Turkish",
+      nl: "Dutch",
+      sv: "Swedish",
+      da: "Danish",
+      no: "Norwegian",
+      fi: "Finnish",
+      pl: "Polish",
+      cs: "Czech",
+    }
+    return languages[code] || "English"
   }
 
   return (
@@ -212,10 +246,12 @@ export default function MixologyMaestro() {
         <FormStep
           number={3}
           title="Final Settings"
-          subtitle="Choose your AI model and review your drink specifications"
+          subtitle="Choose your AI model, language, and review your drink specifications"
         >
           <div className="space-y-6">
             <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+
+            <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={setSelectedLanguage} />
 
             <div className="bg-primary/10 p-4 rounded-lg">
               <h4 className="font-medium text-primary mb-2">Drink Summary</h4>
@@ -228,6 +264,9 @@ export default function MixologyMaestro() {
                 </p>
                 <p>
                   <strong>Style:</strong> {preferences || "Any"}
+                </p>
+                <p>
+                  <strong>Language:</strong> {getLanguageName(selectedLanguage)}
                 </p>
               </div>
             </div>

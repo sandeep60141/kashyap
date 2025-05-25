@@ -6,10 +6,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Slider } from "@/components/ui/slider"
 import { generateRecipe } from "@/lib/client-recipe-generator"
 import { ChefForm } from "@/components/chef-form"
-import FormStep from "@/components/form-step"
+import { FormStep } from "@/components/form-step"
 import DietaryRequirements from "@/components/dietary-requirements"
-import FreeTierBanner from "@/components/free-tier-banner"
+import { FreeTierBanner } from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
+import LanguageSelector from "@/components/language-selector"
 
 export default function MealPlanChef() {
   const router = useRouter()
@@ -20,12 +21,19 @@ export default function MealPlanChef() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-4")
+  const [selectedLanguage, setSelectedLanguage] = useState("en")
 
   const handleSubmit = async () => {
     setIsGenerating(true)
     setError(null)
 
     try {
+      // Add language instruction to the prompt
+      const languageInstruction =
+        selectedLanguage !== "en"
+          ? `\n\nIMPORTANT: Generate this meal plan in ${getLanguageName(selectedLanguage)} language. Include meal names, ingredient names, cooking instructions, and all text in ${getLanguageName(selectedLanguage)}.`
+          : ""
+
       const mealPlanPrompt = `Create a comprehensive ${days}-day meal plan with these exact specifications:
 
 MEAL PLAN REQUIREMENTS:
@@ -42,7 +50,7 @@ CRITICAL INSTRUCTIONS:
 - Include daily nutrition totals
 - Format as a structured meal plan
 
-Do not create a single recipe. Create a ${days}-day meal plan.`
+Do not create a single recipe. Create a ${days}-day meal plan.${languageInstruction}`
 
       const recipe = await generateRecipe({
         type: "mealPlan",
@@ -61,6 +69,32 @@ Do not create a single recipe. Create a ${days}-day meal plan.`
     } finally {
       setIsGenerating(false)
     }
+  }
+
+  const getLanguageName = (code: string) => {
+    const languages = {
+      en: "English",
+      es: "Spanish",
+      fr: "French",
+      de: "German",
+      it: "Italian",
+      pt: "Portuguese",
+      ru: "Russian",
+      ja: "Japanese",
+      ko: "Korean",
+      zh: "Chinese",
+      hi: "Hindi",
+      ar: "Arabic",
+      tr: "Turkish",
+      nl: "Dutch",
+      sv: "Swedish",
+      da: "Danish",
+      no: "Norwegian",
+      fi: "Finnish",
+      pl: "Polish",
+      cs: "Czech",
+    }
+    return languages[code] || "English"
   }
 
   return (
@@ -134,9 +168,15 @@ Do not create a single recipe. Create a ${days}-day meal plan.`
           </div>
         </FormStep>
 
-        <FormStep number={3} title="Final Settings" subtitle="Choose your AI model and review your meal plan settings">
+        <FormStep
+          number={3}
+          title="Final Settings"
+          subtitle="Choose your AI model, language, and review your meal plan settings"
+        >
           <div className="space-y-6">
             <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+
+            <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={setSelectedLanguage} />
 
             <div className="bg-primary/10 p-4 rounded-lg">
               <h4 className="font-medium text-primary mb-2">Meal Plan Summary</h4>
@@ -154,13 +194,16 @@ Do not create a single recipe. Create a ${days}-day meal plan.`
                   <strong>Dietary Requirements:</strong>{" "}
                   {dietaryRequirements.length > 0 ? dietaryRequirements.join(", ") : "None"}
                 </p>
+                <p>
+                  <strong>Language:</strong> {getLanguageName(selectedLanguage)}
+                </p>
               </div>
             </div>
 
             <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
               <p className="text-sm text-yellow-800">
                 <strong>Note:</strong> Meal plans may take longer to generate due to their complexity. Please be patient
-                while we create your personalized plan.
+                while we create your personalized plan in {getLanguageName(selectedLanguage)}.
               </p>
             </div>
           </div>

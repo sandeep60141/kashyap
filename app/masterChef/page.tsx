@@ -12,6 +12,7 @@ import FreeTierBanner from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
 import CuisineSuggestions from "@/components/cuisine-suggestions"
 import RecipeSuggestions from "@/components/recipe-suggestions"
+import LanguageSelector from "@/components/language-selector"
 
 export default function MasterChef() {
   const router = useRouter()
@@ -22,6 +23,7 @@ export default function MasterChef() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
+  const [selectedLanguage, setSelectedLanguage] = useState("en")
 
   const handleSubmit = async () => {
     if (!recipeName.trim()) {
@@ -33,8 +35,14 @@ export default function MasterChef() {
     setError(null)
 
     try {
+      // Add language instruction to the prompt
+      const languageInstruction =
+        selectedLanguage !== "en"
+          ? `\n\nIMPORTANT: Generate this recipe in ${getLanguageName(selectedLanguage)} language. Include ingredient names, cooking instructions, and all text in ${getLanguageName(selectedLanguage)}.`
+          : ""
+
       const recipe = await generateRecipe({
-        recipeName,
+        recipeName: recipeName + languageInstruction,
         cuisine,
         difficulty,
         dietaryRequirements,
@@ -49,6 +57,32 @@ export default function MasterChef() {
     } finally {
       setIsGenerating(false)
     }
+  }
+
+  const getLanguageName = (code: string) => {
+    const languages = {
+      en: "English",
+      es: "Spanish",
+      fr: "French",
+      de: "German",
+      it: "Italian",
+      pt: "Portuguese",
+      ru: "Russian",
+      ja: "Japanese",
+      ko: "Korean",
+      zh: "Chinese",
+      hi: "Hindi",
+      ar: "Arabic",
+      tr: "Turkish",
+      nl: "Dutch",
+      sv: "Swedish",
+      da: "Danish",
+      no: "Norwegian",
+      fi: "Finnish",
+      pl: "Polish",
+      cs: "Czech",
+    }
+    return languages[code] || "English"
   }
 
   return (
@@ -137,9 +171,15 @@ export default function MasterChef() {
           </div>
         </FormStep>
 
-        <FormStep number={3} title="Final Settings" subtitle="Choose your AI model and review your selections">
+        <FormStep
+          number={3}
+          title="Final Settings"
+          subtitle="Choose your AI model, language, and review your selections"
+        >
           <div className="space-y-6">
             <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+
+            <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={setSelectedLanguage} />
 
             <div className="bg-primary/10 p-4 rounded-lg">
               <h4 className="font-medium text-primary mb-2">Recipe Summary</h4>
@@ -156,6 +196,9 @@ export default function MasterChef() {
                 <p>
                   <strong>Dietary Requirements:</strong>{" "}
                   {dietaryRequirements.length > 0 ? dietaryRequirements.join(", ") : "None"}
+                </p>
+                <p>
+                  <strong>Language:</strong> {getLanguageName(selectedLanguage)}
                 </p>
               </div>
             </div>

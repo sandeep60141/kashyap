@@ -12,6 +12,7 @@ import FormStep from "@/components/form-step"
 import DietaryRequirements from "@/components/dietary-requirements"
 import FreeTierBanner from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
+import LanguageSelector from "@/components/language-selector"
 
 export default function MacrosChef() {
   const router = useRouter()
@@ -25,6 +26,7 @@ export default function MacrosChef() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
+  const [selectedLanguage, setSelectedLanguage] = useState("en")
 
   const mealTypeOptions = [
     "Breakfast",
@@ -61,8 +63,14 @@ export default function MacrosChef() {
     setError(null)
 
     try {
+      // Add language instruction to the prompt
+      const languageInstruction =
+        selectedLanguage !== "en"
+          ? `\n\nIMPORTANT: Generate this recipe in ${getLanguageName(selectedLanguage)} language. Include ingredient names, cooking instructions, and all text in ${getLanguageName(selectedLanguage)}.`
+          : ""
+
       const recipe = await generateRecipe({
-        mealType,
+        mealType: mealType + languageInstruction,
         macros: { protein, carbs, fat, calories },
         preferences,
         dietaryRequirements,
@@ -77,6 +85,32 @@ export default function MacrosChef() {
     } finally {
       setIsGenerating(false)
     }
+  }
+
+  const getLanguageName = (code: string) => {
+    const languages = {
+      en: "English",
+      es: "Spanish",
+      fr: "French",
+      de: "German",
+      it: "Italian",
+      pt: "Portuguese",
+      ru: "Russian",
+      ja: "Japanese",
+      ko: "Korean",
+      zh: "Chinese",
+      hi: "Hindi",
+      ar: "Arabic",
+      tr: "Turkish",
+      nl: "Dutch",
+      sv: "Swedish",
+      da: "Danish",
+      no: "Norwegian",
+      fi: "Finnish",
+      pl: "Polish",
+      cs: "Czech",
+    }
+    return languages[code] || "English"
   }
 
   return (
@@ -251,7 +285,7 @@ export default function MacrosChef() {
           </div>
         </FormStep>
 
-        <FormStep number={3} title="Final Settings" subtitle="Set dietary requirements and AI model">
+        <FormStep number={3} title="Final Settings" subtitle="Set dietary requirements, AI model, and language">
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-primary mb-3">Dietary Requirements (optional)</label>
@@ -259,6 +293,8 @@ export default function MacrosChef() {
             </div>
 
             <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+
+            <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={setSelectedLanguage} />
 
             <div className="bg-primary/10 p-4 rounded-lg">
               <h4 className="font-medium text-primary mb-2">Nutrition Summary</h4>
@@ -277,6 +313,9 @@ export default function MacrosChef() {
                 </p>
                 <p>
                   <strong>Fat:</strong> {fat}% ({Math.round((fat / 100) * calories)} cal)
+                </p>
+                <p>
+                  <strong>Language:</strong> {getLanguageName(selectedLanguage)}
                 </p>
               </div>
             </div>

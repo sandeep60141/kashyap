@@ -10,6 +10,7 @@ import DietaryRequirements from "@/components/dietary-requirements"
 import FreeTierBanner from "@/components/free-tier-banner"
 import ModelSelector from "@/components/model-selector"
 import PopularIngredients from "@/components/popular-ingredients"
+import LanguageSelector from "@/components/language-selector"
 
 export default function PantryChef() {
   const router = useRouter()
@@ -19,6 +20,7 @@ export default function PantryChef() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState("gpt-3.5-turbo")
+  const [selectedLanguage, setSelectedLanguage] = useState("en")
 
   const handleIngredientClick = (ingredient: string) => {
     const currentIngredients = ingredients
@@ -45,8 +47,14 @@ export default function PantryChef() {
     setError(null)
 
     try {
+      // Add language instruction to the prompt
+      const languageInstruction =
+        selectedLanguage !== "en"
+          ? `\n\nIMPORTANT: Generate this recipe in ${getLanguageName(selectedLanguage)} language. Include ingredient names, cooking instructions, and all text in ${getLanguageName(selectedLanguage)}.`
+          : ""
+
       const recipe = await generateRecipe({
-        ingredients,
+        ingredients: ingredients + languageInstruction,
         preferences,
         dietaryRequirements,
         model: selectedModel,
@@ -60,6 +68,32 @@ export default function PantryChef() {
     } finally {
       setIsGenerating(false)
     }
+  }
+
+  const getLanguageName = (code: string) => {
+    const languages = {
+      en: "English",
+      es: "Spanish",
+      fr: "French",
+      de: "German",
+      it: "Italian",
+      pt: "Portuguese",
+      ru: "Russian",
+      ja: "Japanese",
+      ko: "Korean",
+      zh: "Chinese",
+      hi: "Hindi",
+      ar: "Arabic",
+      tr: "Turkish",
+      nl: "Dutch",
+      sv: "Swedish",
+      da: "Danish",
+      no: "Norwegian",
+      fi: "Finnish",
+      pl: "Polish",
+      cs: "Czech",
+    }
+    return languages[code] || "English"
   }
 
   const preferenceOptions = [
@@ -188,14 +222,21 @@ export default function PantryChef() {
           </div>
         </FormStep>
 
-        <FormStep number={3} title="AI Model Selection" subtitle="Choose the AI model that best fits your needs">
-          <div className="space-y-4">
+        <FormStep
+          number={3}
+          title="AI Model & Language Selection"
+          subtitle="Choose the AI model and language for your recipe"
+        >
+          <div className="space-y-6">
             <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+
+            <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={setSelectedLanguage} />
 
             <div className="bg-primary/10 p-4 rounded-lg">
               <h4 className="font-medium text-primary mb-2">Ready to Generate!</h4>
               <p className="text-sm text-foreground/80 mb-3">
-                We'll create a delicious recipe using your available ingredients and preferences.
+                We'll create a delicious recipe using your available ingredients and preferences in{" "}
+                {getLanguageName(selectedLanguage)}.
               </p>
               <div className="text-xs text-foreground/70 space-y-1">
                 <p>
@@ -207,6 +248,9 @@ export default function PantryChef() {
                 <p>
                   <strong>Dietary Requirements:</strong>{" "}
                   {dietaryRequirements.length > 0 ? dietaryRequirements.join(", ") : "None"}
+                </p>
+                <p>
+                  <strong>Language:</strong> {getLanguageName(selectedLanguage)}
                 </p>
               </div>
             </div>
