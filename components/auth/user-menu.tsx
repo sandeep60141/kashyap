@@ -77,7 +77,8 @@ export function UserMenu() {
 
   const handleProfileClick = () => {
     console.log("🔗 Navigating to profile page...")
-    router.push("/profile")
+    // Use window.location for direct navigation
+    window.location.href = "/profile"
   }
 
   const handleDashboardClick = () => {
