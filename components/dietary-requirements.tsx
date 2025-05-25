@@ -1,5 +1,5 @@
 "use client"
-import { Check, Leaf, Wheat, Milk, Nut, Fish, Egg } from "lucide-react"
+import { Leaf, Wheat, Milk, Nut, Fish, Egg } from "lucide-react"
 
 interface DietaryRequirementsProps {
   selectedRequirements: string[]
@@ -8,18 +8,18 @@ interface DietaryRequirementsProps {
 
 export default function DietaryRequirements({ selectedRequirements, onChange }: DietaryRequirementsProps) {
   const requirements = [
-    { name: "Vegetarian", icon: <Leaf className="h-4 w-4" /> },
-    { name: "Vegan", icon: <Leaf className="h-4 w-4" /> },
-    { name: "Gluten-Free", icon: <Wheat className="h-4 w-4" /> },
-    { name: "Dairy-Free", icon: <Milk className="h-4 w-4" /> },
-    { name: "Nut-Free", icon: <Nut className="h-4 w-4" /> },
-    { name: "Low-Carb", icon: <Wheat className="h-4 w-4" /> },
-    { name: "Keto", icon: <Leaf className="h-4 w-4" /> },
-    { name: "Paleo", icon: <Leaf className="h-4 w-4" /> },
-    { name: "Pescatarian", icon: <Fish className="h-4 w-4" /> },
-    { name: "Egg-Free", icon: <Egg className="h-4 w-4" /> },
-    { name: "Halal", icon: <Leaf className="h-4 w-4" /> },
-    { name: "Kosher", icon: <Leaf className="h-4 w-4" /> },
+    { name: "Vegetarian", icon: <Leaf className="option-icon" /> },
+    { name: "Vegan", icon: <Leaf className="option-icon" /> },
+    { name: "Gluten-Free", icon: <Wheat className="option-icon" /> },
+    { name: "Dairy-Free", icon: <Milk className="option-icon" /> },
+    { name: "Nut-Free", icon: <Nut className="option-icon" /> },
+    { name: "Low-Carb", icon: <Wheat className="option-icon" /> },
+    { name: "Keto", icon: <Leaf className="option-icon" /> },
+    { name: "Paleo", icon: <Leaf className="option-icon" /> },
+    { name: "Pescatarian", icon: <Fish className="option-icon" /> },
+    { name: "Egg-Free", icon: <Egg className="option-icon" /> },
+    { name: "Halal", icon: <Leaf className="option-icon" /> },
+    { name: "Kosher", icon: <Leaf className="option-icon" /> },
   ]
 
   const toggleRequirement = (requirement: string) => {
@@ -31,25 +31,25 @@ export default function DietaryRequirements({ selectedRequirements, onChange }: 
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+    <div className="dietary-grid">
       {requirements.map((requirement) => (
         <div
           key={requirement.name}
           className={`generator-option ${selectedRequirements.includes(requirement.name) ? "generator-option-active" : ""}`}
           onClick={() => toggleRequirement(requirement.name)}
         >
-          <div
-            className={`flex-shrink-0 w-5 h-5 rounded border flex items-center justify-center ${
-              selectedRequirements.includes(requirement.name)
-                ? "bg-primary border-primary text-white"
-                : "border-primary/30"
-            }`}
-          >
-            {selectedRequirements.includes(requirement.name) && <Check className="h-3 w-3" />}
+          <div className="custom-checkbox">
+            <input
+              type="checkbox"
+              id={`dietary-${requirement.name}`}
+              checked={selectedRequirements.includes(requirement.name)}
+              onChange={() => toggleRequirement(requirement.name)}
+            />
+            <div className="checkbox-visual"></div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-primary">{requirement.icon}</span>
-            <span className="text-sm font-medium">{requirement.name}</span>
+          <div className="option-content">
+            {requirement.icon}
+            <span className="option-text">{requirement.name}</span>
           </div>
         </div>
       ))}
