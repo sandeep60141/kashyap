@@ -4,8 +4,6 @@ import { useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { AuthModal } from "@/components/auth/auth-modal"
 import { getCurrentUser, setLastPath } from "@/lib/auth"
-import Header from "@/components/header"
-import Footer from "@/components/footer"
 import { RecipeOfDay } from "@/components/recipe-of-day"
 import { RecipeSearch } from "@/components/recipe-search"
 import { TrendingSearches } from "@/components/trending-searches"
@@ -78,8 +76,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      <Header />
-
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -95,8 +91,6 @@ export default function HomePage() {
           </div>
         </div>
       </main>
-
-      <Footer />
 
       {/* Auth Modal */}
       <AuthModal isOpen={isAuthModalOpen} onClose={handleAuthModalClose} defaultTab={authTab} />
