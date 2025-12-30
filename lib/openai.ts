@@ -189,16 +189,10 @@ CRITICAL:
 
     // Initialize the appropriate client based on the provider
     let client
-    if (modelInfo.provider === "deepseek") {
-      client = new OpenAI({
-        apiKey: process.env.DEEPSEEK_API_KEY || "",
-        baseURL: "https://api.deepseek.com/v1",
-      })
-    } else {
-      client = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY || "",
-      })
-    }
+    // REMOVE DeepSeek provider check and always use OpenAI
+    client = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY || "",
+    })
 
     // Optimize model selection and token limits based on request type
     let selectedModel = modelInfo.value
@@ -209,10 +203,7 @@ CRITICAL:
       maxTokens = 3500 // Meal plans need more tokens for accuracy
     } else if (prompt.includes("cocktail") || prompt.includes("pairing")) {
       maxTokens = 1200 // Simpler requests
-      // Use GPT-3.5-turbo for simpler requests to save tokens
-      if (modelInfo.provider === "openai") {
-        selectedModel = "gpt-3.5-turbo"
-      }
+      selectedModel = "gpt-3.5-turbo"
     } else {
       maxTokens = 1800 // Standard recipes
     }
@@ -1179,7 +1170,6 @@ function createSafeBeefRecipe() {
       protein: "26g",
       carbs: "12g",
       fat: "14g",
-      fiber: "3g",
       sodium: "780mg",
     },
     allergenWarnings: ["soy", "gluten"],
