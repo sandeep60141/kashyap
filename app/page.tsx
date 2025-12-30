@@ -22,36 +22,27 @@ export default function HomePage() {
 
   const checkAuthAndHandleRedirect = async () => {
     try {
-      // Check if we have auth params
       const authParam = searchParams.get("auth")
       const redirectParam = searchParams.get("redirect")
-
-      console.log("🔍 Auth params:", { authParam, redirectParam })
 
       if (redirectParam) {
         setLastPath(redirectParam)
       }
 
-      // Check if user is already authenticated
       const user = await getCurrentUser()
-      console.log("👤 Current user:", user?.email || "None")
 
       if (user && redirectParam) {
-        console.log("✅ User authenticated, redirecting to:", redirectParam)
-        // Clear URL params and redirect
         window.history.replaceState({}, "", "/")
         router.push(redirectParam)
         return
       }
 
-      // Show auth modal if requested
       if (authParam === "signin" || authParam === "signup") {
-        console.log("🔓 Opening auth modal:", authParam)
         setAuthTab(authParam as "signin" | "signup")
         setIsAuthModalOpen(true)
       }
     } catch (error) {
-      console.error("❌ Error checking auth:", error)
+      console.error("Error checking auth:", error)
     } finally {
       setIsCheckingAuth(false)
     }
@@ -59,7 +50,6 @@ export default function HomePage() {
 
   const handleAuthModalClose = () => {
     setIsAuthModalOpen(false)
-    // Clear URL params when modal closes
     window.history.replaceState({}, "", "/")
   }
 
@@ -78,21 +68,18 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             <RecipeOfDay />
             <RecipeSearch />
             <TrendingSearches />
           </div>
 
-          {/* Sidebar */}
           <div className="lg:col-span-1">
             <SearchHistory />
           </div>
         </div>
       </main>
 
-      {/* Auth Modal */}
       <AuthModal isOpen={isAuthModalOpen} onClose={handleAuthModalClose} defaultTab={authTab} />
     </div>
   )
