@@ -35,3 +35,5 @@ export default function TrendingSearches() {
     </div>
   )
 }
+
+export { TrendingSearches }

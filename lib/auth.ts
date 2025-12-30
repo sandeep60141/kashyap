@@ -287,6 +287,54 @@ export async function hasCompletedOnboarding(userId: string): Promise<boolean> {
   return profile !== null
 }
 
+export async function forceCreateProfile(): Promise<Profile | null> {
+  const user = await getCurrentUser()
+  if (!user) {
+    console.error("❌ No user found to create profile for")
+    return null
+  }
+
+  const supabase = getSupabaseClient()
+
+  try {
+    // Check if profile already exists
+    const { data: existingProfile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+
+    if (existingProfile) {
+      console.log("✅ Profile already exists:", existingProfile)
+      return existingProfile
+    }
+
+    // Create new profile
+    const profileData = {
+      id: user.id,
+      email: user.email!,
+      full_name: user.user_metadata?.full_name || user.email!.split("@")[0],
+      subscription_tier: "free" as const,
+      subscription_status: "active" as const,
+      recipes_generated_this_month: 0,
+      last_recipe_reset: new Date().toISOString().split("T")[0],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    console.log("📊 Force creating profile with data:", profileData)
+
+    const { data, error } = await supabase.from("profiles").insert(profileData).select().single()
+
+    if (error) {
+      console.error("❌ Profile creation error:", error)
+      throw error
+    }
+
+    console.log("✅ Profile created successfully:", data)
+    return data
+  } catch (error) {
+    console.error("❌ Force create profile failed:", error)
+    return null
+  }
+}
+
 export function setLastPath(path: string) {
   if (typeof window !== "undefined") {
     const authPaths = ["/auth-test", "/onboarding", "/login", "/signup"]

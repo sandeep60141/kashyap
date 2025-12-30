@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { AuthModal } from "@/components/auth/auth-modal"
 import { getCurrentUser, setLastPath } from "@/lib/auth"
 import RecipeOfDay from "@/components/recipe-of-day"
-import { RecipeSearch } from "@/components/recipe-search"
+import RecipeSearch from "@/components/recipe-search"
 import { TrendingSearches } from "@/components/trending-searches"
 import { SearchHistory } from "@/components/search-history"
 

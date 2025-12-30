@@ -70,3 +70,5 @@ export default function SearchHistory() {
     </div>
   )
 }
+
+export { SearchHistory }
